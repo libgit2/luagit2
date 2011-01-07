@@ -8,7 +8,7 @@ macro(GenLuaNativeObjects _src_files_var)
 			string(REGEX REPLACE ".nobj.lua" ".nobj.c" _src_file_out ${_src_file})
 			string(REGEX REPLACE ".nobj.lua" ".nobj.h" _header_file_out ${_src_file})
 			add_custom_command(OUTPUT ${_src_file_out} ${_header_file_out}
-				COMMAND lua ${LUA_NATIVE_OBJECTS_PATH}/api_gen.lua -outpath ${CMAKE_CURRENT_BINARY_DIR} -gen lua ${_src_file}
+				COMMAND lua ${LUA_NATIVE_OBJECTS_PATH}/native_objects.lua -outpath ${CMAKE_CURRENT_BINARY_DIR} -gen lua ${_src_file}
 				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 				DEPENDS ${_src_file}
 			)
