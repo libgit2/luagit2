@@ -44,6 +44,17 @@ static void RawObject_set_data_and_ref(lua_State *L, RawObject *obj, const char 
 		obj->ref = LUA_NOREF;
 	}
 }
+
+static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, const git_rawobj *obj) {
+  /* push raw object's data onto stack. */
+  lua_pushlstring(L, obj->data, obj->len);
+  /* get Lua's pointer to the string. */
+  raw->raw.data = (void *)lua_tolstring(L, -1, &(raw->raw.len));
+  raw->raw.type = obj->type;
+  /* get reference to string. */
+  raw->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+}
+
 ]]
 
 object "RawObject" {

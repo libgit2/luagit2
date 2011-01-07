@@ -39,16 +39,27 @@ object "Database" {
 	destructor "close" {
 		c_call "void"  "git_odb_close" {}
 	},
-	-- TODO: add_backend
+	method "add_backend" {
+		var_in{"DatabaseBackend *", "backend"},
+		var_out{"GitError", "err"},
+		c_source [[
+	${err} = git_odb_add_backend(${this}, &(${backend}->backend));
+	DatabaseBackend_ref(${backend});
+]],
+	},
 	method "read" {
 		var_in{"OID", "id"},
 		var_out{"RawObject *", "obj"},
 		var_out{"GitError", "err"},
 		c_source [[
-	RawObject raw_obj;
-	raw_obj.ref = LUA_NOREF;
-	${obj} = &(raw_obj);
-	${err} = git_odb_read(&(raw_obj.raw), ${this}, &(${id}));
+	RawObject raw;
+	git_rawobj obj;
+	${err} = git_odb_read(&(obj), ${this}, &(${id}));
+	if(${err} == GIT_SUCCESS) {
+		/* convert git_rawobj to RawObject */
+		RawObject_from_git_rawobj(L, &raw, &obj);
+		${obj} = &(raw);
+	}
 ]],
 	},
 	method "read_header" {
@@ -56,10 +67,14 @@ object "Database" {
 		var_out{"RawObject *", "obj"},
 		var_out{"GitError", "err"},
 		c_source [[
-	RawObject raw_obj;
-	raw_obj.ref = LUA_NOREF;
-	${obj} = &(raw_obj);
-	${err} = git_odb_read_header(&(raw_obj.raw), ${this}, &(${id}));
+	RawObject raw;
+	git_rawobj obj;
+	${err} = git_odb_read_header(&(obj), ${this}, &(${id}));
+	if(${err} == GIT_SUCCESS) {
+		/* convert git_rawobj to RawObject */
+		RawObject_from_git_rawobj(L, &raw, &obj);
+		${obj} = &(raw);
+	}
 ]],
 	},
 	method "write" {
