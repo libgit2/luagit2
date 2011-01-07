@@ -20,6 +20,7 @@
 
 -- Convert Git Error codes into strings.
 error_code "GitError" "int" {
+	is_error_check = function(rec) return "(GIT_SUCCESS != ${" .. rec.name .. "})" end,
 	default = "GIT_SUCCESS",
 	c_source [[
 	if(err != GIT_SUCCESS) {
