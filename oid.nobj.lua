@@ -40,8 +40,9 @@ object "OID" {
 	method "__str__" {
 		var_out{"const char *", "ret"},
     c_source [[
-	char buf[GIT_OID_HEXSZ];
+	char buf[GIT_OID_HEXSZ+1];
   git_oid_fmt(buf, &(${this}));
+	buf[GIT_OID_HEXSZ] = 0;
 	${ret} = buf;
 ]],
 	},
