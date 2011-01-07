@@ -12,7 +12,6 @@ subfiles {
 "rawobject.nobj.lua",
 "index.nobj.lua",
 "index_entry.nobj.lua",
-"otype.nobj.lua",
 "oid.nobj.lua",
 "error.nobj.lua",
 "object.nobj.lua",

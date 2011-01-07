@@ -18,21 +18,13 @@ local rep = assert(git2.Repository.open(git_path))
 print("dump Repository interface")
 print(dbg_dump(rep))
 
-local db = rep:database()
-print("dump Database interface")
-print(dbg_dump(db))
-
-local index = rep:index()
-print("dump Index interface")
-print(dbg_dump(index))
-
 local oid = git2.OID.str("d5a93c463d4cca0068750eb6af7b4b54eea8599b")
 print("dump OID interface")
 print(dbg_dump(oid))
 print('convert OID value to string = <' .. tostring(oid) .. '>')
 
 print('test writing to the object database:')
-local raw_obj = git2.RawObject(git2.OType('blob'),"any ol content will do")
+local raw_obj = git2.RawObject('blob',"any ol content will do")
 print()
 print("dump RawObject interface")
 print(dbg_dump(raw_obj))
@@ -60,6 +52,10 @@ print("test setting data of RawObject:")
 raw_obj:set_data("any ol content will do")
 dump_rawobj(raw_obj)
 
+local db = rep:database()
+print("dump Database interface")
+print(dbg_dump(db))
+
 print()
 print("test writing RawObject to database:")
 local oid, err = db:write(raw_obj)
@@ -85,7 +81,7 @@ end
 local commit_id = git2.OID.str("d5a93c463d4cca0068750eb6af7b4b54eea8599b")
 print()
 print("test parsing a commit object: ", commit_id)
-local commit2, err = rep:lookup(commit_id, git2.OType('commit'))
+local commit2, err = rep:lookup(commit_id, 'commit')
 print(commit2, err)
 local commit1, err = git2.Commit.lookup(rep, commit_id)
 print(commit1, err)
@@ -97,6 +93,12 @@ local function dump_signature(pre, sig)
 	print(pre .. '.email = ', sig:email())
 	print(pre .. '.when = ', sig:when())
 end
+local function dump_blob(blob)
+	print("dump Blob interface")
+	print(dbg_dump(blob))
+	print('blob.rawcontent.size =', blob:rawsize())
+	print('blob.rawcontents =', blob:rawcontent())
+end
 local function dump_tree_entry(entry)
 	if entry == nil then
 		return
@@ -104,6 +106,11 @@ local function dump_tree_entry(entry)
 	print('tree_entry.id = ', entry:id())
 	print('tree_entry.name = ', entry:name())
 	print('tree_entry.attributes = ', string.format('0x%08X', entry:attributes()))
+	local obj = entry:object()
+	print('tree_entry.object = ', obj)
+	if obj:type() == 'blob' then
+		dump_blob(obj)
+	end
 end
 local function dump_tree(tree)
 	if tree == nil then
@@ -139,6 +146,89 @@ local function dump_commit(commit)
 end
 dump_commit(commit1)
 
+local index = rep:index()
+print("dump Index interface")
+print(dbg_dump(index))
+local function dump_index_entry(entry)
+	if entry == nil then
+		return
+	end
+	print(' idx.entry.ctime = ', entry:ctime())
+	print(' idx.entry.mtime = ', entry:mtime())
+	print(' idx.entry.dev = ', entry:dev())
+	print(' idx.entry.ino = ', entry:ino())
+	print(' idx.entry.mode = ', entry:mode())
+	print(' idx.entry.uid = ', entry:uid())
+	print(' idx.entry.gid = ', entry:gid())
+	print(' idx.entry.file_size = ', entry:file_size())
+	print(' idx.entry.id = ', entry:id())
+	print(' idx.entry.flags = ', string.format('0x%08X', entry:flags()))
+	print(' idx.entry.flags_extended = ', string.format('0x%08X', entry:flags_extended()))
+	print(' idx.entry.path = ', entry:path())
+end
+local function dump_index(index)
+	if index == nil then
+		return
+	end
+	local cnt = index:entrycount()
+	print('entrycount = ', cnt)
+	for i=0,cnt-1 do
+		local entry = index:get(i)
+		print('entry:', entry)
+		dump_index_entry(entry)
+	end
+end
+print('index:read():', index:read())
+dump_index(index)
 
+local revwalk = git2.RevWalk(rep)
+print("dump RevWalk interface")
+print(dbg_dump(revwalk))
+print('sorting:', revwalk:sorting(revwalk.SORT_TOPOLOGICAL + revwalk.SORT_REVERSE))
+local head_id = git2.OID.str("5c697d74eb692d650799ca1b0a10254d7130953d")
+local head = assert(git2.Commit.lookup(rep, head_id))
+print('push:', revwalk:push(head))
+assert(revwalk:repository() == rep)
+
+local commit = revwalk:next()
+while (commit ~= nil) do
+	dump_commit(commit)
+	-- get next commit
+	commit = revwalk:next()
+end
+
+local tag_id = git2.OID.str('82dfe36284d77b608ccc9d96e0ffa5782cb7c835')
+local tag = git2.Tag.lookup(rep, tag_id)
+print("dump Tag interface")
+print(dbg_dump(tag))
+local function dump_tag(tag)
+	if tag == nil then
+		return
+	end
+	print('name = ', tag:name())
+	dump_signature('tagger', tag:tagger())
+	print('message = ', tag:message())
+	local obj = tag:target()
+	print('target = ', obj)
+end
+dump_tag(tag)
+
+
+revwalk = nil
+head = nil
+commit = nil
+commit1 = nil
+commit2 = nil
+index = nil
+rep = nil
+db = nil
+
+collectgarbage"collect"
+collectgarbage"collect"
+collectgarbage"collect"
+
+
+print()
+print()
 print("finished")
 

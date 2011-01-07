@@ -65,5 +65,8 @@ object "Blob" {
 	${buffer}_len = git_blob_rawsize(${this});
 ]]
 	},
+	method "rawsize" {
+		c_call "int"  "git_blob_rawsize" {}
+	},
 }
 

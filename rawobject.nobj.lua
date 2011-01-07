@@ -50,14 +50,14 @@ object "RawObject" {
 	userdata_type = 'embed',
 	default = 'NULL',
 	constructor {
-		var_in{"OType", "type"},
+		var_in{"const char *", "type"},
 		var_in{"const char *", "data"},
 		c_source [[
 	RawObject obj;
 	${this} = &(obj);
 	obj.raw.data = NULL;
 	obj.raw.len = 0;
-	obj.raw.type = ${type};
+	obj.raw.type = git_object_string2type(${type});
 	obj.ref = LUA_NOREF;
 	RawObject_set_data_and_ref(L, &obj, ${data}, ${data}_len, ${data::idx});
 ]],
@@ -87,16 +87,12 @@ object "RawObject" {
 ]],
 	},
 	method "type" {
-		var_out{"OType", "type"},
-		c_source [[
-	${type} = ${this}->raw.type;
-]],
+		var_out{"const char *", "type"},
+		c_source "${type} = git_object_type2string(${this}->raw.type);"
 	},
 	method "set_type" {
-		var_in{"OType", "type"},
-		c_source [[
-	${this}->raw.type = ${type};
-]],
+		var_in{"const char *", "type"},
+		c_source "${this}->raw.type = git_object_string2type(${type});"
 	},
 	method "hash" {
 		var_out{"OID", "id"},

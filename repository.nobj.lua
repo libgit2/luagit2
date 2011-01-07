@@ -51,19 +51,19 @@ object "Repository" {
 	},
 	method "lookup" {
 		var_in{"OID", "id"},
-		var_in{"OType", "type"},
+		var_in{"const char *", "type"},
 		var_out{"Object *", "obj"},
 		var_out{"GitError", "err"},
 		c_source [[
-	${err} = git_repository_lookup(&(${obj}), ${this}, &(${id}), ${type});
+	${err} = git_repository_lookup(&(${obj}), ${this}, &(${id}), git_object_string2type(${type}));
 ]],
 	},
 	method "newobject" {
-		var_in{"OType", "type"},
+		var_in{"const char *", "type"},
 		var_out{"Object *", "obj"},
 		var_out{"GitError", "err"},
 		c_source [[
-	${err} = git_repository_newobject(&(${obj}), ${this}, ${type});
+	${err} = git_repository_newobject(&(${obj}), ${this}, git_object_string2type(${type}));
 ]],
 	},
 	method "blob_writefile" {

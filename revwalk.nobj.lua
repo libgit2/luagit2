@@ -24,6 +24,10 @@ typedef git_revwalk RevWalk;
 
 object "RevWalk" {
 	extends "Object",
+	const "SORT_NONE"        { 0x00 },
+	const "SORT_TOPOLOGICAL" { 0x01 },
+	const "SORT_TIME"        { 0x02 },
+	const "SORT_REVERSE"     { 0x04 },
 	constructor "new" {
 		var_in{"Repository *", "repo"},
 		var_out{"GitError", "err"},

@@ -23,6 +23,11 @@ typedef git_index_entry IndexEntry;
 ]]
 
 object "IndexEntry" {
+	const "NAMEMASK" { 0x0fff },
+	const "STAGEMASK" { 0x3000 },
+	const "EXTENDED" { 0x4000 },
+	const "VALID" { 0x8000 },
+	const "STAGESHIFT" { 12 },
 	constructor {
 		c_source [[
 	${this} = calloc(1, sizeof(IndexEntry));

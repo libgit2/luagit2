@@ -46,6 +46,7 @@ object "Database" {
 		var_out{"GitError", "err"},
 		c_source [[
 	RawObject raw_obj;
+	raw_obj.ref = LUA_NOREF;
 	${obj} = &(raw_obj);
 	${err} = git_odb_read(&(raw_obj.raw), ${this}, &(${id}));
 ]],
@@ -56,6 +57,7 @@ object "Database" {
 		var_out{"GitError", "err"},
 		c_source [[
 	RawObject raw_obj;
+	raw_obj.ref = LUA_NOREF;
 	${obj} = &(raw_obj);
 	${err} = git_odb_read_header(&(raw_obj.raw), ${this}, &(${id}));
 ]],

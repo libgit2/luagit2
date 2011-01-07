@@ -45,7 +45,8 @@ object "Object" {
 ]]
 	},
 	method "type" {
-		c_call "OType"  "git_object_type" {}
+		var_out{"const char *", "type"},
+		c_source "${type} = git_object_type2string(git_object_type(${this}));"
 	},
 	method "owner" {
 		c_call "Repository *"  "git_object_owner" {}
