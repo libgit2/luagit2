@@ -42,26 +42,32 @@ object "Database" {
 	-- TODO: add_backend
 	method "read" {
 		var_in{"OID", "id"},
-		var_out{"RawObject", "obj"},
+		var_out{"RawObject *", "obj"},
 		var_out{"GitError", "err"},
 		c_source [[
-	${err} = git_odb_read(&(${obj}.raw), ${this}, &(${id}));
+	RawObject raw_obj;
+	${obj} = &(raw_obj);
+	${err} = git_odb_read(&(raw_obj.raw), ${this}, &(${id}));
 ]],
 	},
 	method "read_header" {
 		var_in{"OID", "id"},
-		var_out{"RawObject", "obj"},
+		var_out{"RawObject *", "obj"},
 		var_out{"GitError", "err"},
 		c_source [[
-	${err} = git_odb_read_header(&(${obj}.raw), ${this}, &(${id}));
+	RawObject raw_obj;
+	${obj} = &(raw_obj);
+	${err} = git_odb_read_header(&(raw_obj.raw), ${this}, &(${id}));
 ]],
 	},
 	method "write" {
 		var_in{"OID", "id"},
-		var_in{"RawObject", "obj"},
+		var_in{"RawObject *", "obj"},
 		var_out{"GitError", "err"},
 		c_source [[
-	${err} = git_odb_write(&(${id}), ${this}, &(${obj}.raw));
+	RawObject raw_obj;
+	${obj} = &(raw_obj);
+	${err} = git_odb_write(&(${id}), ${this}, &(raw_obj.raw));
 ]],
 	},
 	method "exists" {

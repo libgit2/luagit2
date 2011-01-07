@@ -26,60 +26,65 @@ typedef struct RawObject {
 ]]
 
 object "RawObject" {
-	userdata_type = 'simple',
-	default = '{ .raw = { .data = NULL, .len = 0, .type = GIT_OBJ_BAD }, .ref = LUA_NOREF }',
+	userdata_type = 'embed',
+	default = 'NULL',
 	constructor {
 		var_in{"OType", "type"},
 		var_in{"const char *", "data"},
 		c_source [[
-	${this}.raw.data = (void *)${data};
-	${this}.raw.len = ${data}_len;
-	${this}.raw.type = ${type};
+	RawObject obj;
+	${this} = &(obj);
+	obj.raw.data = (void *)${data};
+	obj.raw.len = ${data}_len;
+	obj.raw.type = ${type};
 	if(${data}) {
 		/* keep a reference to the Lua string. */
 		lua_pushvalue(L, ${data::idx});
-		${this}.ref = luaL_ref(L, LUA_REGISTRYINDEX);
+		obj.ref = luaL_ref(L, LUA_REGISTRYINDEX);
 	} else {
-		${this}.ref = LUA_NOREF;
+		obj.ref = LUA_NOREF;
 	}
 ]],
 	},
 	destructor "close" {
 		c_source [[
-	if(${this}.ref == LUA_NOREF) {
-		if(${this}.raw.data != NULL) {
-			git_rawobj_close(&(${this}.raw));
+	if(${this}->ref == LUA_NOREF) {
+		if(${this}->raw.data != NULL) {
+			git_rawobj_close(&(${this}->raw));
 		}
 	} else {
 		/* this raw object was pointing to a Lua string, release our reference to it. */
-		luaL_unref(L, LUA_REGISTRYINDEX, ${this}.ref);
+		luaL_unref(L, LUA_REGISTRYINDEX, ${this}->ref);
+		${this}->ref = LUA_NOREF;
 	}
+	${this}->raw.data = NULL;
+	${this}->raw.len = 0;
 ]],
 	},
 	method "data" {
 		var_out{"const char *", "data", has_length = true},
 		c_source [[
-	${data} = ${this}.raw.data;
-	${data}_len = ${this}.raw.len;
+	${data} = ${this}->raw.data;
+	${data}_len = ${this}->raw.len;
 ]],
 	},
 	method "len" {
 		var_out{"size_t", "len"},
 		c_source [[
-	${len} = ${this}.raw.len;
+	${len} = ${this}->raw.len;
 ]],
 	},
 	method "type" {
 		var_out{"OType", "type"},
 		c_source [[
-	${type} = ${this}.raw.type;
+	${type} = ${this}->raw.type;
 ]],
 	},
 	method "hash" {
 		var_out{"OID", "id"},
 		var_out{"GitError", "err"},
 		c_source [[
-	${err} = git_rawobj_hash(&(${id}), &(${this}.raw));
+	${err} = git_rawobj_hash(&(${id}), &(${this}->raw));
 ]],
 	},
 }
