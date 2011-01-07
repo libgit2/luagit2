@@ -61,13 +61,11 @@ object "Database" {
 ]],
 	},
 	method "write" {
-		var_in{"OID", "id"},
 		var_in{"RawObject *", "obj"},
+		var_out{"OID", "id"},
 		var_out{"GitError", "err"},
 		c_source [[
-	RawObject raw_obj;
-	${obj} = &(raw_obj);
-	${err} = git_odb_write(&(${id}), ${this}, &(raw_obj.raw));
+	${err} = git_odb_write(&(${id}), ${this}, &(${obj}->raw));
 ]],
 	},
 	method "exists" {
