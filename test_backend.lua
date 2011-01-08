@@ -109,12 +109,12 @@ for _,obj in ipairs(object_ids) do
 	print()
 end
 
+print("Creating repository from git repository:", git_path)
 local status, rep = pcall(git2.Repository.open_no_backend,
 	git_path, git_path .. 'objects', git_path .. 'index', git_path .. '../')
 
 if not status then
-	print("Creating repository from git repository:", git_path)
-	rep = git2.Repository.open(git_path)
+	rep = assert(git2.Repository.open(git_path))
 else
 	print("Created repository with no backends from git repository:", git_path)
 end
