@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 
-package	= 'luagit2'
+package	= 'lua-git2'
 version	= 'scm-0'
 source	= {
 	url	= 'git://github.com/Neopallium/luagit2.git'
@@ -17,8 +17,8 @@ dependencies = {
 }
 external_dependencies = {
 	GIT2 = {
-		header = { "git2.h" },
-		library = { "git2" },
+		header = "git2.h",
+		library = "git2",
 	}
 }
 build	= {
@@ -28,12 +28,5 @@ build	= {
 			sources = { "pre_generated-git2.nobj.c" },
 			libraries = { "git2" },
 		}
---[[
-	type		= 'cmake',
-	variables = {
-		INSTALL_CMOD = "$(LIBDIR)",
-		CMAKE_BUILD_TYPE = "$(CMAKE_BUILD_TYPE)",
-		["CFLAGS:STRING"] = "$(CFLAGS)",
-	},
---]]
+	}
 }
