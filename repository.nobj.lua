@@ -40,6 +40,14 @@ object "Repository" {
 	${err} = git_repository_open2(&(${this}), ${dir}, ${object_directory}, ${index_file}, ${work_tree});
 ]],
 	},
+	constructor "init" {
+		var_in{"const char *", "path"},
+		var_in{"bool", "is_bare"},
+		var_out{"GitError", "err"},
+		c_source [[
+	${err} = git_repository_init(&(${this}), ${path}, ${is_bare});
+]],
+	},
 	destructor {
 		c_call "void"  "git_repository_free" {}
 	},

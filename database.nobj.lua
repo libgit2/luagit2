@@ -53,11 +53,11 @@ object "Database" {
 		var_out{"GitError", "err"},
 		c_source [[
 	RawObject raw;
-	git_rawobj obj;
-	${err} = git_odb_read(&(obj), ${this}, &(${id}));
+	git_rawobj git;
+	${err} = git_odb_read(&(git), ${this}, &(${id}));
 	if(${err} == GIT_SUCCESS) {
 		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &obj);
+		RawObject_from_git_rawobj(L, &raw, &git);
 		${obj} = &(raw);
 	}
 ]],
@@ -68,11 +68,11 @@ object "Database" {
 		var_out{"GitError", "err"},
 		c_source [[
 	RawObject raw;
-	git_rawobj obj;
-	${err} = git_odb_read_header(&(obj), ${this}, &(${id}));
+	git_rawobj git;
+	${err} = git_odb_read_header(&(git), ${this}, &(${id}));
 	if(${err} == GIT_SUCCESS) {
 		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &obj);
+		RawObject_from_git_rawobj(L, &raw, &git);
 		${obj} = &(raw);
 	}
 ]],
@@ -82,7 +82,7 @@ object "Database" {
 		var_out{"OID", "id"},
 		var_out{"GitError", "err"},
 		c_source [[
-	${err} = git_odb_write(&(${id}), ${this}, &(${obj}->raw));
+	${err} = git_odb_write(&(${id}), ${this}, &(${obj}->git));
 ]],
 	},
 	method "exists" {

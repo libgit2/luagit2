@@ -64,7 +64,7 @@ static int database_backend_read_cb(git_rawobj *obj, git_odb_backend *backend, c
 	err = lua_tointeger(L, -1);
 	if(err == 0) {
 		RawObject *raw_obj = obj_type_RawObject_check(L,-2);
-		*obj = raw_obj->raw;
+		*obj = raw_obj->git;
 	}
 
 	return err;
@@ -85,7 +85,7 @@ static int database_backend_read_header_cb(git_rawobj *obj, git_odb_backend *bac
 	err = lua_tointeger(L, -1);
 	if(err == 0) {
 		RawObject *raw_obj = obj_type_RawObject_check(L,-2);
-		*obj = raw_obj->raw;
+		*obj = raw_obj->git;
 	}
 
 	return err;
