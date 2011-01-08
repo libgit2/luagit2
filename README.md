@@ -13,6 +13,12 @@ curl -O "https://github.com/Neopallium/luagit2/raw/master/lua-git2-scm-0.rockspe
 luarocks install lua-git2-scm-0.rockspec
 
 
+To re-generating the bindings
+-----------------------------
+
+You will need to install LuaNativeObjects and set the CMake variable USE_PRE_GENERATED_BINDINGS to FALSE.
+By default CMake will use the pre-generated bindings that are include in the project.
+
 Build Dependencies
 ------------------
 
