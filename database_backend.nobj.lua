@@ -64,7 +64,21 @@ static int database_backend_read_cb(git_rawobj *obj, git_odb_backend *backend, c
 	err = lua_tointeger(L, -1);
 	if(err == 0) {
 		RawObject *raw_obj = obj_type_RawObject_check(L,-2);
-		*obj = raw_obj->git;
+		/* copy header fields. */
+		obj->len = raw_obj->git.len;
+		obj->type = raw_obj->git.type;
+		/* we must malloc & copy the RawObject's data. */
+		if(raw_obj->git.data) {
+			obj->data = malloc(obj->len);
+			if(obj->data == NULL) {
+				/* failed to allocate buffer. */
+				return GIT_ENOMEM;
+			}
+			/* copy data. */
+			memcpy(obj->data, raw_obj->git.data, obj->len);
+		} else {
+			obj->data = NULL;
+		}
 	}
 
 	return err;
@@ -85,7 +99,10 @@ static int database_backend_read_header_cb(git_rawobj *obj, git_odb_backend *bac
 	err = lua_tointeger(L, -1);
 	if(err == 0) {
 		RawObject *raw_obj = obj_type_RawObject_check(L,-2);
-		*obj = raw_obj->git;
+		/* copy only header fields. */
+		obj->data = NULL;
+		obj->len = raw_obj->git.len;
+		obj->type = raw_obj->git.type;
 	}
 
 	return err;
@@ -102,7 +119,7 @@ static int database_backend_write_cb(git_oid *oid, git_odb_backend *backend, git
 	lua_rawgeti(L, LUA_REGISTRYINDEX, lua_backend->write);
 
 	/* convert git_rawobj to RawObject */
-	RawObject_from_git_rawobj(L, &raw, obj);
+	RawObject_from_git_rawobj(L, &raw, obj, false);
 	/* push RawObject onto stack. */
 	obj_type_RawObject_push(L, &raw, 0);
 

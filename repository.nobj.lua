@@ -20,6 +20,7 @@
 
 c_source [[
 typedef git_repository Repository;
+
 ]]
 
 object "Repository" {
@@ -38,6 +39,21 @@ object "Repository" {
 		var_out{"GitError", "err"},
 		c_source [[
 	${err} = git_repository_open2(&(${this}), ${dir}, ${object_directory}, ${index_file}, ${work_tree});
+]],
+	},
+	constructor "open_no_backend" {
+		var_in{"const char *", "dir"},
+		var_in{"const char *", "object_directory"},
+		var_in{"const char *", "index_file"},
+		var_in{"const char *", "work_tree"},
+		var_out{"GitError", "err"},
+		c_source [[
+#ifdef HAVE_git_repository_open_no_backend
+	${err} = git_repository_open_no_backend(&(${this}), ${dir}, ${object_directory}, ${index_file}, ${work_tree});
+#else
+	luaL_error(L, "Your version of LibGit2 doesn't have 'git_repository_open_no_backend'");
+#endif
+
 ]],
 	},
 	constructor "init" {

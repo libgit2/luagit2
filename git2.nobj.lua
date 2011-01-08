@@ -5,6 +5,7 @@ use_globals = false,
 hide_meta_info = false, --true,
 
 include "git2.h",
+include "config.h",
 
 package "GIT" {
 const "SUCCESS"        { 0 },

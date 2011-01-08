@@ -57,7 +57,7 @@ object "Database" {
 	${err} = git_odb_read(&(git), ${this}, &(${id}));
 	if(${err} == GIT_SUCCESS) {
 		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &git);
+		RawObject_from_git_rawobj(L, &raw, &git, true);
 		${obj} = &(raw);
 	}
 ]],
@@ -72,7 +72,7 @@ object "Database" {
 	${err} = git_odb_read_header(&(git), ${this}, &(${id}));
 	if(${err} == GIT_SUCCESS) {
 		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &git);
+		RawObject_from_git_rawobj(L, &raw, &git, true);
 		${obj} = &(raw);
 	}
 ]],

@@ -24,7 +24,7 @@ print(dbg_dump(oid))
 print('convert OID value to string = <' .. tostring(oid) .. '>')
 
 print('test writing to the object database:')
-local raw_obj = git2.RawObject('blob',"any ol content will do")
+local raw_obj = git2.RawObject.new('blob',"any ol content will do")
 print()
 print("dump RawObject interface")
 print(dbg_dump(raw_obj))

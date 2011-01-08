@@ -40,14 +40,18 @@ static void RawObject_set_data_and_ref(lua_State *L, RawObject *raw, const char 
 	}
 }
 
-static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, const git_rawobj *git) {
-  /* push raw object's data onto stack. */
-  lua_pushlstring(L, git->data, git->len);
-  /* get Lua's pointer to the string. */
-  raw->git.data = (void *)lua_tolstring(L, -1, &(raw->git.len));
-  raw->git.type = git->type;
-  /* get reference to string. */
-  raw->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, git_rawobj *git, int cleanup) {
+	/* push raw object's data onto stack. */
+	lua_pushlstring(L, git->data, git->len);
+	/* get Lua's pointer to the string. */
+	raw->git.data = (void *)lua_tolstring(L, -1, &(raw->git.len));
+	raw->git.type = git->type;
+	/* get reference to string. */
+	raw->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+	/* clean-up git_rawobj. */
+	if(cleanup && git->data != NULL) {
+		git_rawobj_close(git);
+	}
 }
 
 ]]
@@ -55,7 +59,19 @@ static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, const git_ra
 object "RawObject" {
 	userdata_type = 'embed',
 	default = 'NULL',
-	constructor {
+	constructor "header" {
+		var_in{"const char *", "type"},
+		var_in{"size_t", "len"},
+		c_source [[
+	RawObject raw; /* temp. storage, this gets copied. */
+	${this} = &(raw);
+	raw.git.data = NULL;
+	raw.git.len = ${len};
+	raw.git.type = git_object_string2type(${type});
+	raw.ref = LUA_REFNIL;
+]],
+	},
+	constructor "new" {
 		var_in{"const char *", "type"},
 		var_in{"const char *", "data"},
 		c_source [[
@@ -71,8 +87,6 @@ object "RawObject" {
 	luaL_unref(L, LUA_REGISTRYINDEX, ${this}->ref);
 	${this}->ref = LUA_REFNIL;
 	${this}->git.data = NULL;
-	${this}->git.len = 0;
-	RawObject_set_data_and_ref(L, ${this}, NULL, 0, 0);
 ]],
 	},
 	method "data" {

@@ -33,8 +33,21 @@ set(COMMON_CFLAGS "${COMMON_CFLAGS} ${GIT2_CFLAGS}")
 set(COMMON_LDFLAGS "${COMMON_LDFLAGS} ${GIT2_LDFLAGS}")
 set(COMMON_LIBS "${COMMON_LIBS};${GIT2_LIBRARIES}")
 
+## check for git_repository_open_no_backend() function.
+include(CheckCSourceCompiles)
+set(CMAKE_REQUIRED_LIBRARIES "${GIT2_LIBRARIES}")
+check_c_source_compiles("
+	#include <git2.h>
+	int main(int argc, char *argv[]) {
+		return git_repository_open_no_backend(NULL,NULL,NULL,NULL,NULL);
+	}" HAVE_git_repository_open_no_backend)
+
 ## LuaNativeObjects
 include(LuaNativeObjects)
+
+## generate config.h
+configure_file(${CMAKE_SOURCE_DIR}/config.h.cmake
+				 ${CMAKE_SOURCE_DIR}/build/config.h)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${LUA_INCLUDE_DIR})

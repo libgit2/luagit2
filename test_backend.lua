@@ -1,7 +1,7 @@
 #!/usr/bin/env lua
 
 local build_dir = arg[1]
-local git_path = arg[2] or "./test_rep/.git"
+local git_path = arg[2] or "./test_rep/.git/"
 -- Make it easier to test
 if ( build_dir ) then
     package.cpath = build_dir .. "?.so;" .. package.cpath
@@ -87,7 +87,7 @@ local backend = git2.DatabaseBackend(cbs, 1)
 print('add backend:', assert(db:add_backend(backend)))
 
 print('create test blob:')
-local raw_obj = git2.RawObject('blob',"any ol content will do")
+local raw_obj = git2.RawObject.new('blob',"any ol content will do")
 
 print("test writing RawObject to database:")
 local oid, err = db:write(raw_obj)
@@ -106,6 +106,27 @@ for _,obj in ipairs(object_ids) do
 	local raw_obj, err = db:read(oid)
 	print('read', raw_obj, err)
 	dump_rawobj(raw_obj)
+	print()
+end
+
+local status, rep = pcall(git2.Repository.open_no_backend,
+	git_path, git_path .. 'objects', git_path .. 'index', git_path .. '../')
+
+print(status, rep)
+
+print()
+print("try reading objects from repository:")
+local object_ids = {
+	{'tree', "31f3d5703ce27f0b63c3eb0d829abdc95b51deae"},
+	{'commit', "d5a93c463d4cca0068750eb6af7b4b54eea8599b"},
+	{'blob', "f534deb63f967cddd4bd440d05d3f6f075e55fca"},
+	{'blob', "275a4019807c7bb7bc80c0ca8903bf84345e1bdf"},
+}
+for _,obj in ipairs(object_ids) do
+	local oid = git2.OID.str(obj[2])
+	local obj, err = rep:lookup(oid, obj[1])
+	print('read', obj, err)
+	dump_rawobj(obj)
 	print()
 end
 
