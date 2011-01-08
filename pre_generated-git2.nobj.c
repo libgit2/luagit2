@@ -3,6 +3,7 @@
 #include "lualib.h"
 
 #include "git2.h"
+#include "config.h"
 
 
 #define REG_PACKAGE_IS_CONSTRUCTOR 0
@@ -659,6 +660,7 @@ static FUNC_UNUSED int lua_checktype_ref(lua_State *L, int _index, int _type) {
 
 typedef git_repository Repository;
 
+
 typedef struct RawObject {
 	git_rawobj git;
 	int ref;
@@ -680,14 +682,18 @@ static void RawObject_set_data_and_ref(lua_State *L, RawObject *raw, const char 
 	}
 }
 
-static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, const git_rawobj *git) {
-  /* push raw object's data onto stack. */
-  lua_pushlstring(L, git->data, git->len);
-  /* get Lua's pointer to the string. */
-  raw->git.data = (void *)lua_tolstring(L, -1, &(raw->git.len));
-  raw->git.type = git->type;
-  /* get reference to string. */
-  raw->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, git_rawobj *git, int cleanup) {
+	/* push raw object's data onto stack. */
+	lua_pushlstring(L, git->data, git->len);
+	/* get Lua's pointer to the string. */
+	raw->git.data = (void *)lua_tolstring(L, -1, &(raw->git.len));
+	raw->git.type = git->type;
+	/* get reference to string. */
+	raw->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+	/* clean-up git_rawobj. */
+	if(cleanup && git->data != NULL) {
+		git_rawobj_close(git);
+	}
 }
 
 
@@ -740,7 +746,21 @@ static int database_backend_read_cb(git_rawobj *obj, git_odb_backend *backend, c
 	err = lua_tointeger(L, -1);
 	if(err == 0) {
 		RawObject *raw_obj = obj_type_RawObject_check(L,-2);
-		*obj = raw_obj->git;
+		/* copy header fields. */
+		obj->len = raw_obj->git.len;
+		obj->type = raw_obj->git.type;
+		/* we must malloc & copy the RawObject's data. */
+		if(raw_obj->git.data) {
+			obj->data = malloc(obj->len);
+			if(obj->data == NULL) {
+				/* failed to allocate buffer. */
+				return GIT_ENOMEM;
+			}
+			/* copy data. */
+			memcpy(obj->data, raw_obj->git.data, obj->len);
+		} else {
+			obj->data = NULL;
+		}
 	}
 
 	return err;
@@ -761,7 +781,10 @@ static int database_backend_read_header_cb(git_rawobj *obj, git_odb_backend *bac
 	err = lua_tointeger(L, -1);
 	if(err == 0) {
 		RawObject *raw_obj = obj_type_RawObject_check(L,-2);
-		*obj = raw_obj->git;
+		/* copy only header fields. */
+		obj->data = NULL;
+		obj->len = raw_obj->git.len;
+		obj->type = raw_obj->git.type;
 	}
 
 	return err;
@@ -778,7 +801,7 @@ static int database_backend_write_cb(git_oid *oid, git_odb_backend *backend, git
 	lua_rawgeti(L, LUA_REGISTRYINDEX, lua_backend->write);
 
 	/* convert git_rawobj to RawObject */
-	RawObject_from_git_rawobj(L, &raw, obj);
+	RawObject_from_git_rawobj(L, &raw, obj, false);
 	/* push RawObject onto stack. */
 	obj_type_RawObject_push(L, &raw, 0);
 
@@ -876,6 +899,36 @@ static int Repository__open2__meth(lua_State *L) {
   const char * work_tree_idx4 = luaL_checklstring(L,4,&(work_tree_idx4_len));
   GitError err_idx2 = GIT_SUCCESS;
 	err_idx2 = git_repository_open2(&(this_idx1), dir_idx1, object_directory_idx2, index_file_idx3, work_tree_idx4);
+
+  is_error = (GIT_SUCCESS != err_idx2);
+  if(is_error) {
+    lua_pushnil(L);
+  } else {
+    obj_type_Repository_push(L, this_idx1, OBJ_UDATA_FLAG_OWN);
+  }
+  error_code__GitError__push(L, err_idx2);
+  return 2;
+}
+
+/* method: open_no_backend */
+static int Repository__open_no_backend__meth(lua_State *L) {
+  int is_error = 0;
+  Repository * this_idx1;
+  size_t dir_idx1_len;
+  const char * dir_idx1 = luaL_checklstring(L,1,&(dir_idx1_len));
+  size_t object_directory_idx2_len;
+  const char * object_directory_idx2 = luaL_checklstring(L,2,&(object_directory_idx2_len));
+  size_t index_file_idx3_len;
+  const char * index_file_idx3 = luaL_checklstring(L,3,&(index_file_idx3_len));
+  size_t work_tree_idx4_len;
+  const char * work_tree_idx4 = luaL_checklstring(L,4,&(work_tree_idx4_len));
+  GitError err_idx2 = GIT_SUCCESS;
+#ifdef HAVE_git_repository_open_no_backend
+	err_idx2 = git_repository_open_no_backend(&(this_idx1), dir_idx1, object_directory_idx2, index_file_idx3, work_tree_idx4);
+#else
+	luaL_error(L, "Your version of LibGit2 doesn't have 'git_repository_open_no_backend'");
+#endif
+
 
   is_error = (GIT_SUCCESS != err_idx2);
   if(is_error) {
@@ -995,6 +1048,23 @@ static int Repository__blob_writefile__meth(lua_State *L) {
   return 2;
 }
 
+/* method: header */
+static int RawObject__header__meth(lua_State *L) {
+  RawObject * this_idx1 = NULL;
+  size_t type_idx1_len;
+  const char * type_idx1 = luaL_checklstring(L,1,&(type_idx1_len));
+  size_t len_idx2 = luaL_checkinteger(L,2);
+	RawObject raw; /* temp. storage, this gets copied. */
+	this_idx1 = &(raw);
+	raw.git.data = NULL;
+	raw.git.len = len_idx2;
+	raw.git.type = git_object_string2type(type_idx1);
+	raw.ref = LUA_REFNIL;
+
+  obj_type_RawObject_push(L, this_idx1, OBJ_UDATA_FLAG_OWN);
+  return 1;
+}
+
 /* method: new */
 static int RawObject__new__meth(lua_State *L) {
   RawObject * this_idx1 = NULL;
@@ -1020,8 +1090,6 @@ static int RawObject__close__meth(lua_State *L) {
 	luaL_unref(L, LUA_REGISTRYINDEX, this_idx1->ref);
 	this_idx1->ref = LUA_REFNIL;
 	this_idx1->git.data = NULL;
-	this_idx1->git.len = 0;
-	RawObject_set_data_and_ref(L, this_idx1, NULL, 0, 0);
 
   return 0;
 }
@@ -1228,7 +1296,7 @@ static int Database__read__meth(lua_State *L) {
 	err_idx2 = git_odb_read(&(git), this_idx1, &(id_idx2));
 	if(err_idx2 == GIT_SUCCESS) {
 		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &git);
+		RawObject_from_git_rawobj(L, &raw, &git, true);
 		obj_idx1 = &(raw);
 	}
 
@@ -1254,7 +1322,7 @@ static int Database__read_header__meth(lua_State *L) {
 	err_idx2 = git_odb_read_header(&(git), this_idx1, &(id_idx2));
 	if(err_idx2 == GIT_SUCCESS) {
 		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &git);
+		RawObject_from_git_rawobj(L, &raw, &git, true);
 		obj_idx1 = &(raw);
 	}
 
@@ -2619,6 +2687,7 @@ static const obj_const obj_GIT_constants[] = {
 static const luaL_reg obj_Repository_pub_funcs[] = {
   {"open", Repository__open__meth},
   {"open2", Repository__open2__meth},
+  {"open_no_backend", Repository__open_no_backend__meth},
   {"init", Repository__init__meth},
   {NULL, NULL}
 };
@@ -2652,6 +2721,7 @@ static const obj_const obj_Repository_constants[] = {
 };
 
 static const luaL_reg obj_RawObject_pub_funcs[] = {
+  {"header", RawObject__header__meth},
   {"new", RawObject__new__meth},
   {NULL, NULL}
 };
