@@ -12,14 +12,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 set(INSTALL_CMOD share/lua/cmod CACHE PATH "Directory to install Lua binary modules (configure lua via LUA_CPATH)")
 set(LUA_NATIVE_OBJECTS_PATH ../LuaNativeObjects CACHE PATH
 				"Directory to LuaNativeObjects bindings generator.")
+set(USE_PRE_GENERATED_BINDINGS TRUE CACHE BOOL
+				"Set this to FALSE to re-generate bindings using LuaNativeObjects")
 
-set(COMMON_CFLAGS)
+set(COMMON_CFLAGS "${CFLAGS}")
 set(COMMON_LDFLAGS)
 set(COMMON_LIBS)
 
 ## Lua 5.1.x
 include(FindLua51)
-if(!${LUA51_FOUND})
+if(NOT ${LUA51_FOUND})
     message(FATAL_ERROR "The FindLua51 module could not find lua :-(")
 endif()
 set(COMMON_LIBS "${COMMON_LIBS};${LUA_LIBRARIES}")
@@ -42,8 +44,12 @@ set(LUA_GIT2_SRC
 	git2.nobj.lua
 )
 
-# Generate Lua bindings.
-GenLuaNativeObjects(LUA_GIT2_SRC)
+if(${USE_PRE_GENERATED_BINDINGS})
+	set(LUA_GIT2_SRC pre_generated-git2.nobj.c)
+else()
+	# Generate Lua bindings.
+	GenLuaNativeObjects(LUA_GIT2_SRC)
+endif()
 
 add_library(lua-git2 MODULE ${LUA_GIT2_SRC})
 target_link_libraries(lua-git2 ${COMMON_LIBS})
