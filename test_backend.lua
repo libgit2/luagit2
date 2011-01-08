@@ -82,9 +82,9 @@ on_free = function()
 end,
 }
 
-local backend = git2.DatabaseBackend(cbs, 1)
+local backend = git2.DatabaseBackend(cbs, 0)
 
-print('add backend:', assert(db:add_backend(backend)))
+--print('add backend:', assert(db:add_backend(backend)))
 
 print('create test blob:')
 local raw_obj = git2.RawObject.new('blob',"any ol content will do")
@@ -112,7 +112,14 @@ end
 local status, rep = pcall(git2.Repository.open_no_backend,
 	git_path, git_path .. 'objects', git_path .. 'index', git_path .. '../')
 
-print(status, rep)
+if not status then
+	print("Creating repository from git repository:", git_path)
+	rep = git2.Repository.open(git_path)
+else
+	print("Created repository with no backends from git repository:", git_path)
+end
+db = rep:database()
+print("add backend repository's database:", assert(db:add_backend(backend)))
 
 print()
 print("try reading objects from repository:")
@@ -126,7 +133,6 @@ for _,obj in ipairs(object_ids) do
 	local oid = git2.OID.str(obj[2])
 	local obj, err = rep:lookup(oid, obj[1])
 	print('read', obj, err)
-	dump_rawobj(obj)
 	print()
 end
 

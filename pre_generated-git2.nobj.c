@@ -11,7 +11,6 @@
 #include "lualib.h"
 
 #include "git2.h"
-#include "config.h"
 
 
 #define REG_PACKAGE_IS_CONSTRUCTOR 0
