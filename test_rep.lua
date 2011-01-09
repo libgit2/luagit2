@@ -13,7 +13,7 @@ require"utils"
 print("dump git2 interface")
 print(dbg_dump(git2))
 
-local rep = assert(git2.Repository.open(git_path))
+local rep = assert(git2.Repository(git_path))
 
 print("dump Repository interface")
 print(dbg_dump(rep))
@@ -24,7 +24,7 @@ print(dbg_dump(oid))
 print('convert OID value to string = <' .. tostring(oid) .. '>')
 
 print('test writing to the object database:')
-local raw_obj = git2.RawObject.new('blob',"any ol content will do")
+local raw_obj = git2.RawObject('blob',"any ol content will do")
 print()
 print("dump RawObject interface")
 print(dbg_dump(raw_obj))

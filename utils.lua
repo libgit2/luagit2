@@ -98,7 +98,7 @@ function dump(obj)
 	return dump_recur(seen, obj, 0, 0)
 end
 
-local function sizeof2(size, ...)
+local function sizeof2(size, test, ...)
 	collectgarbage"collect"
 	size= collectgarbage"count"*1024 - size
 	print("used size: " .. size)
@@ -107,12 +107,11 @@ end
 
 function sizeof(test, ...)
 	local size=0
-	local ret
 	if type(test) == "string" then
 		test=assert(loadstring(test))
 	end
 	collectgarbage"collect"
 	size=collectgarbage"count"*1024
-	return sizeof2(size, maker(...))
+	return sizeof2(size, test, test(...))
 end
 

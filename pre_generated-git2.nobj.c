@@ -574,35 +574,45 @@ static FUNC_UNUSED int obj_simple_udata_default_tostring(lua_State *L) {
 	return 1;
 }
 
+static int obj_constructor_call_wrapper(lua_State *L) {
+	/* replace '__call' table with constructor function. */
+	lua_pushvalue(L, lua_upvalueindex(1));
+	lua_replace(L, 1);
+
+	/* call constructor function with all parameters after the '__call' table. */
+	lua_call(L, lua_gettop(L) - 1, LUA_MULTRET);
+	/* return all results from constructor. */
+	return lua_gettop(L);
+}
+
 static void obj_type_register(lua_State *L, const obj_type_reg *type_reg) {
 	const luaL_reg *reg_list;
 	obj_type *type = type_reg->type;
 	const obj_base *base = type_reg->bases;
 	const obj_const *constants = type_reg->constants;
 
-	/* create methods table. */
-	lua_newtable(L);
-	luaL_register(L, NULL, type_reg->methods); /* fill methods table. */
-
 	/* create public functions table. */
 	reg_list = type_reg->pub_funcs;
 	if(reg_list != NULL && reg_list[0].name != NULL) {
-		if(reg_list[1].name != NULL) {
-			lua_newtable(L);
-			luaL_register(L, NULL, reg_list); /* fill public functions table. */
-		} else {
-			lua_pushcfunction(L, reg_list[0].func); /* push single 'new' function. */
-		}
-		/* register "public functions table" or "constructor" as '<object_name> */
+		/* register "constructors" as to object's public API */
+		luaL_register(L, NULL, reg_list); /* fill public API table. */
+
+		/* make public API table callable as the default constructor. */
+		lua_newtable(L); /* create metatable */
+		lua_pushliteral(L, "__call");
+		lua_pushcfunction(L, reg_list[0].func); /* push first constructor function. */
+		lua_pushcclosure(L, obj_constructor_call_wrapper, 1); /* make __call wrapper. */
+		lua_rawset(L, -3);         /* metatable.__call = <default constructor> */
+		lua_setmetatable(L, -2);
+
+		lua_pop(L, 1); /* pop public API table, don't need it any more. */
+		/* create methods table. */
+		lua_newtable(L);
 	} else {
-		/* register "methods table" as '<object_name> */
-		lua_pushvalue(L, -1);
+		/* register all methods as public functions. */
 	}
-#if REG_OBJECTS_AS_GLOBALS
-	lua_pushvalue(L, -1);            /* dup value. */
-	lua_setglobal(L, type->name);    /* global: <object_name> = value */
-#endif
-	lua_setfield(L, -3, type->name); /* module["<object_name>"] = value */
+
+	luaL_register(L, NULL, type_reg->methods); /* fill methods table. */
 
 	luaL_newmetatable(L, type->name); /* create metatable */
 	lua_pushliteral(L, ".name");
@@ -3282,11 +3292,24 @@ static const obj_type_reg obj_type_regs[] = {
 
 
 
-int luaopen_git2(lua_State *L) {
-	const obj_type_reg *reg = obj_type_regs;
-	/* module table. */
-	luaL_register(L, "git2", git2_function);
 
+
+
+
+static const luaL_Reg submodule_libs[] = {
+  {NULL, NULL}
+};
+
+
+
+static void create_object_instance_cache(lua_State *L) {
+	lua_pushlightuserdata(L, obj_udata_weak_ref_key); /* key for weak table. */
+	lua_rawget(L, LUA_REGISTRYINDEX);  /* check if weak table exists already. */
+	if(!lua_isnil(L, -1)) {
+		lua_pop(L, 1); /* pop weak table. */
+		return;
+	}
+	lua_pop(L, 1); /* pop nil. */
 	/* create weak table for object instance references. */
 	lua_pushlightuserdata(L, obj_udata_weak_ref_key); /* key for weak table. */
 	lua_newtable(L);               /* weak table. */
@@ -3296,12 +3319,35 @@ int luaopen_git2(lua_State *L) {
 	lua_rawset(L, -3);             /* metatable.__mode = 'v'  weak values. */
 	lua_setmetatable(L, -2);       /* add metatable to weak table. */
 	lua_rawset(L, LUA_REGISTRYINDEX);  /* create reference to weak table. */
+}
+
+int luaopen_git2(lua_State *L) {
+	const obj_type_reg *reg = obj_type_regs;
+	const luaL_Reg *submodules = submodule_libs;
+	/* module table. */
+	luaL_register(L, "git2", git2_function);
+
+	/* create object cache. */
+	create_object_instance_cache(L);
+
+	for(; submodules->func != NULL ; submodules++) {
+		lua_pushcfunction(L, submodules->func);
+		lua_pushstring(L, submodules->name);
+		lua_call(L, 1, 0);
+	}
 
 	/* register objects */
-	while(reg->type != NULL) {
+	for(; reg->type != NULL ; reg++) {
+		lua_newtable(L); /* create public API table for object. */
+		lua_pushvalue(L, -1); /* dup. object's public API table. */
+		lua_setfield(L, -3, reg->type->name); /* module["<object_name>"] = <object public API> */
+#if REG_OBJECTS_AS_GLOBALS
+		lua_pushvalue(L, -1);                 /* dup value. */
+		lua_setglobal(L, reg->type->name);    /* global: <object_name> = <object public API> */
+#endif
 		obj_type_register(L, reg);
-		reg++;
 	}
+
 	return 1;
 }
 
