@@ -105,15 +105,16 @@ typedef struct obj_field {
 	uint32_t        flags;  /**< is_writable:1bit */
 } obj_field;
 
-typedef struct obj_type_reg {
+typedef struct reg_sub_module {
 	obj_type        *type;
+	int             is_package;
 	const luaL_reg  *pub_funcs;
 	const luaL_reg  *methods;
 	const luaL_reg  *metas;
 	const obj_base  *bases;
 	const obj_field *fields;
 	const obj_const *constants;
-} obj_type_reg;
+} reg_sub_module;
 
 #define OBJ_UDATA_FLAG_OWN (1<<0)
 #define OBJ_UDATA_FLAG_LOOKUP (1<<1)
@@ -126,15 +127,7 @@ typedef struct obj_udata {
 static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 
 
-#define obj_type_id_GIT 0
-#define obj_type_GIT_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_GIT))
-#define obj_type_GIT_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_GIT), flags)
-#define obj_type_GIT_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_GIT), flags)
-
-#define obj_type_id_Repository 1
+#define obj_type_id_Repository 0
 #define obj_type_Repository_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_Repository))
 #define obj_type_Repository_delete(L, _index, flags) \
@@ -142,7 +135,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_Repository_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Repository), flags)
 
-#define obj_type_id_RawObject 2
+#define obj_type_id_RawObject 1
 #define obj_type_RawObject_check(L, _index) \
   (RawObject *)obj_simple_udata_luacheck(L, _index, &(obj_type_RawObject))
 #define obj_type_RawObject_delete(L, _index, flags) \
@@ -150,7 +143,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_RawObject_push(L, obj, flags) \
   obj_simple_udata_luapush(L, obj, sizeof(RawObject), &(obj_type_RawObject))
 
-#define obj_type_id_OID 3
+#define obj_type_id_OID 2
 #define obj_type_OID_check(L, _index) \
   *((OID *)obj_simple_udata_luacheck(L, _index, &(obj_type_OID)))
 #define obj_type_OID_delete(L, _index, flags) \
@@ -158,7 +151,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_OID_push(L, obj, flags) \
   obj_simple_udata_luapush(L, &(obj), sizeof(OID), &(obj_type_OID))
 
-#define obj_type_id_Database 4
+#define obj_type_id_Database 3
 #define obj_type_Database_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_Database))
 #define obj_type_Database_delete(L, _index, flags) \
@@ -166,7 +159,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_Database_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Database), flags)
 
-#define obj_type_id_DatabaseBackend 5
+#define obj_type_id_DatabaseBackend 4
 #define obj_type_DatabaseBackend_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_DatabaseBackend))
 #define obj_type_DatabaseBackend_delete(L, _index, flags) \
@@ -174,7 +167,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_DatabaseBackend_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_DatabaseBackend), flags)
 
-#define obj_type_id_Index 6
+#define obj_type_id_Index 5
 #define obj_type_Index_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_Index))
 #define obj_type_Index_delete(L, _index, flags) \
@@ -182,7 +175,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_Index_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Index), flags)
 
-#define obj_type_id_IndexEntry 7
+#define obj_type_id_IndexEntry 6
 #define obj_type_IndexEntry_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_IndexEntry))
 #define obj_type_IndexEntry_delete(L, _index, flags) \
@@ -190,7 +183,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_IndexEntry_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_IndexEntry), flags)
 
-#define obj_type_id_Object 8
+#define obj_type_id_Object 7
 #define obj_type_Object_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_Object))
 #define obj_type_Object_delete(L, _index, flags) \
@@ -198,7 +191,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_Object_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Object), flags)
 
-#define obj_type_id_Blob 9
+#define obj_type_id_Blob 8
 #define obj_type_Blob_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_Blob))
 #define obj_type_Blob_delete(L, _index, flags) \
@@ -206,7 +199,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_Blob_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Blob), flags)
 
-#define obj_type_id_Signature 10
+#define obj_type_id_Signature 9
 #define obj_type_Signature_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_Signature))
 #define obj_type_Signature_delete(L, _index, flags) \
@@ -214,7 +207,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_Signature_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Signature), flags)
 
-#define obj_type_id_Commit 11
+#define obj_type_id_Commit 10
 #define obj_type_Commit_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_Commit))
 #define obj_type_Commit_delete(L, _index, flags) \
@@ -222,7 +215,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_Commit_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Commit), flags)
 
-#define obj_type_id_Tree 12
+#define obj_type_id_Tree 11
 #define obj_type_Tree_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_Tree))
 #define obj_type_Tree_delete(L, _index, flags) \
@@ -230,7 +223,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_Tree_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Tree), flags)
 
-#define obj_type_id_TreeEntry 13
+#define obj_type_id_TreeEntry 12
 #define obj_type_TreeEntry_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_TreeEntry))
 #define obj_type_TreeEntry_delete(L, _index, flags) \
@@ -238,7 +231,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_TreeEntry_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_TreeEntry), flags)
 
-#define obj_type_id_Tag 14
+#define obj_type_id_Tag 13
 #define obj_type_Tag_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_Tag))
 #define obj_type_Tag_delete(L, _index, flags) \
@@ -246,7 +239,7 @@ static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
 #define obj_type_Tag_push(L, obj, flags) \
   obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Tag), flags)
 
-#define obj_type_id_RevWalk 15
+#define obj_type_id_RevWalk 14
 #define obj_type_RevWalk_check(L, _index) \
   obj_udata_luacheck(L, _index, &(obj_type_RevWalk))
 #define obj_type_RevWalk_delete(L, _index, flags) \
@@ -262,22 +255,21 @@ static void error_code__GitError__push(lua_State *L, GitError err);
 static void dyn_caster_Object(void **obj, obj_type **type);
 
 
-static obj_type obj_type_GIT = { NULL, 0, OBJ_TYPE_FLAG_WEAK_REF, "GIT" };
-static obj_type obj_type_Repository = { NULL, 1, OBJ_TYPE_FLAG_WEAK_REF, "Repository" };
-static obj_type obj_type_RawObject = { NULL, 2, OBJ_TYPE_SIMPLE, "RawObject" };
-static obj_type obj_type_OID = { NULL, 3, OBJ_TYPE_SIMPLE, "OID" };
-static obj_type obj_type_Database = { NULL, 4, OBJ_TYPE_FLAG_WEAK_REF, "Database" };
-static obj_type obj_type_DatabaseBackend = { NULL, 5, OBJ_TYPE_FLAG_WEAK_REF, "DatabaseBackend" };
-static obj_type obj_type_Index = { NULL, 6, OBJ_TYPE_FLAG_WEAK_REF, "Index" };
-static obj_type obj_type_IndexEntry = { NULL, 7, OBJ_TYPE_FLAG_WEAK_REF, "IndexEntry" };
-static obj_type obj_type_Object = { dyn_caster_Object, 8, OBJ_TYPE_FLAG_WEAK_REF, "Object" };
-static obj_type obj_type_Blob = { NULL, 9, OBJ_TYPE_FLAG_WEAK_REF, "Blob" };
-static obj_type obj_type_Signature = { NULL, 10, OBJ_TYPE_FLAG_WEAK_REF, "Signature" };
-static obj_type obj_type_Commit = { NULL, 11, OBJ_TYPE_FLAG_WEAK_REF, "Commit" };
-static obj_type obj_type_Tree = { NULL, 12, OBJ_TYPE_FLAG_WEAK_REF, "Tree" };
-static obj_type obj_type_TreeEntry = { NULL, 13, OBJ_TYPE_FLAG_WEAK_REF, "TreeEntry" };
-static obj_type obj_type_Tag = { NULL, 14, OBJ_TYPE_FLAG_WEAK_REF, "Tag" };
-static obj_type obj_type_RevWalk = { NULL, 15, OBJ_TYPE_FLAG_WEAK_REF, "RevWalk" };
+static obj_type obj_type_Repository = { NULL, 0, OBJ_TYPE_FLAG_WEAK_REF, "Repository" };
+static obj_type obj_type_RawObject = { NULL, 1, OBJ_TYPE_SIMPLE, "RawObject" };
+static obj_type obj_type_OID = { NULL, 2, OBJ_TYPE_SIMPLE, "OID" };
+static obj_type obj_type_Database = { NULL, 3, OBJ_TYPE_FLAG_WEAK_REF, "Database" };
+static obj_type obj_type_DatabaseBackend = { NULL, 4, OBJ_TYPE_FLAG_WEAK_REF, "DatabaseBackend" };
+static obj_type obj_type_Index = { NULL, 5, OBJ_TYPE_FLAG_WEAK_REF, "Index" };
+static obj_type obj_type_IndexEntry = { NULL, 6, OBJ_TYPE_FLAG_WEAK_REF, "IndexEntry" };
+static obj_type obj_type_Object = { dyn_caster_Object, 7, OBJ_TYPE_FLAG_WEAK_REF, "Object" };
+static obj_type obj_type_Blob = { NULL, 8, OBJ_TYPE_FLAG_WEAK_REF, "Blob" };
+static obj_type obj_type_Signature = { NULL, 9, OBJ_TYPE_FLAG_WEAK_REF, "Signature" };
+static obj_type obj_type_Commit = { NULL, 10, OBJ_TYPE_FLAG_WEAK_REF, "Commit" };
+static obj_type obj_type_Tree = { NULL, 11, OBJ_TYPE_FLAG_WEAK_REF, "Tree" };
+static obj_type obj_type_TreeEntry = { NULL, 12, OBJ_TYPE_FLAG_WEAK_REF, "TreeEntry" };
+static obj_type obj_type_Tag = { NULL, 13, OBJ_TYPE_FLAG_WEAK_REF, "Tag" };
+static obj_type obj_type_RevWalk = { NULL, 14, OBJ_TYPE_FLAG_WEAK_REF, "RevWalk" };
 
 
 #ifndef REG_PACKAGE_IS_CONSTRUCTOR
@@ -585,11 +577,52 @@ static int obj_constructor_call_wrapper(lua_State *L) {
 	return lua_gettop(L);
 }
 
-static void obj_type_register(lua_State *L, const obj_type_reg *type_reg) {
+static void obj_type_register_constants(lua_State *L, const obj_const *constants, int tab_idx) {
+	/* register constants. */
+	while(constants->name != NULL) {
+		lua_pushstring(L, constants->name);
+		switch(constants->type) {
+		case CONST_BOOLEAN:
+			lua_pushboolean(L, constants->num != 0.0);
+			break;
+		case CONST_NUMBER:
+			lua_pushnumber(L, constants->num);
+			break;
+		case CONST_STRING:
+			lua_pushstring(L, constants->str);
+			break;
+		default:
+			lua_pushnil(L);
+			break;
+		}
+		lua_rawset(L, tab_idx - 2);
+		constants++;
+	}
+}
+
+static void obj_type_register_package(lua_State *L, const reg_sub_module *type_reg) {
+	obj_type *type = type_reg->type;
+	const luaL_reg *reg_list = type_reg->pub_funcs;
+
+	/* create public functions table. */
+	if(reg_list != NULL && reg_list[0].name != NULL) {
+		/* register functions */
+		luaL_register(L, NULL, reg_list);
+	}
+
+	obj_type_register_constants(L, type_reg->constants, -1);
+
+	lua_pop(L, 1);  /* drop package table */
+}
+
+static void obj_type_register(lua_State *L, const reg_sub_module *type_reg) {
 	const luaL_reg *reg_list;
 	obj_type *type = type_reg->type;
 	const obj_base *base = type_reg->bases;
-	const obj_const *constants = type_reg->constants;
+
+	if(type_reg->is_package == 1) {
+		return obj_type_register_package(L, type_reg);
+	}
 
 	/* create public functions table. */
 	reg_list = type_reg->pub_funcs;
@@ -634,26 +667,7 @@ static void obj_type_register(lua_State *L, const obj_type_reg *type_reg) {
 		base++;
 	}
 
-	/* add obj_constants to metatable. */
-	while(constants->name != NULL) {
-		lua_pushstring(L, constants->name);
-		switch(constants->type) {
-		case CONST_BOOLEAN:
-			lua_pushboolean(L, constants->num != 0.0);
-			break;
-		case CONST_NUMBER:
-			lua_pushnumber(L, constants->num);
-			break;
-		case CONST_STRING:
-			lua_pushstring(L, constants->str);
-			break;
-		default:
-			lua_pushnil(L);
-			break;
-		}
-		lua_rawset(L, -4);
-		constants++;
-	}
+	obj_type_register_constants(L, type_reg->constants, -2);
 
 	lua_pushliteral(L, "__index");
 	lua_pushvalue(L, -3);               /* dup methods table */
@@ -676,7 +690,6 @@ static FUNC_UNUSED int lua_checktype_ref(lua_State *L, int _index, int _type) {
 
 
 typedef git_repository Repository;
-
 
 typedef struct RawObject {
 	git_rawobj git;
@@ -1065,23 +1078,6 @@ static int Repository__blob_writefile__meth(lua_State *L) {
   return 2;
 }
 
-/* method: header */
-static int RawObject__header__meth(lua_State *L) {
-  RawObject * this_idx1 = NULL;
-  size_t type_idx1_len;
-  const char * type_idx1 = luaL_checklstring(L,1,&(type_idx1_len));
-  size_t len_idx2 = luaL_checkinteger(L,2);
-	RawObject raw; /* temp. storage, this gets copied. */
-	this_idx1 = &(raw);
-	raw.git.data = NULL;
-	raw.git.len = len_idx2;
-	raw.git.type = git_object_string2type(type_idx1);
-	raw.ref = LUA_REFNIL;
-
-  obj_type_RawObject_push(L, this_idx1, OBJ_UDATA_FLAG_OWN);
-  return 1;
-}
-
 /* method: new */
 static int RawObject__new__meth(lua_State *L) {
   RawObject * this_idx1 = NULL;
@@ -1094,6 +1090,23 @@ static int RawObject__new__meth(lua_State *L) {
 	raw.git.type = git_object_string2type(type_idx1);
 	raw.ref = LUA_REFNIL;
 	RawObject_set_data_and_ref(L, &raw, data_idx2, data_idx2_len, 2);
+
+  obj_type_RawObject_push(L, this_idx1, OBJ_UDATA_FLAG_OWN);
+  return 1;
+}
+
+/* method: header */
+static int RawObject__header__meth(lua_State *L) {
+  RawObject * this_idx1 = NULL;
+  size_t type_idx1_len;
+  const char * type_idx1 = luaL_checklstring(L,1,&(type_idx1_len));
+  size_t len_idx2 = luaL_checkinteger(L,2);
+	RawObject raw; /* temp. storage, this gets copied. */
+	this_idx1 = &(raw);
+	raw.git.data = NULL;
+	raw.git.len = len_idx2;
+	raw.git.type = git_object_string2type(type_idx1);
+	raw.ref = LUA_REFNIL;
 
   obj_type_RawObject_push(L, this_idx1, OBJ_UDATA_FLAG_OWN);
   return 1;
@@ -2659,48 +2672,6 @@ static int RevWalk__repository__meth(lua_State *L) {
 
 
 
-static const luaL_reg obj_GIT_pub_funcs[] = {
-  {NULL, NULL}
-};
-
-static const luaL_reg obj_GIT_methods[] = {
-  {NULL, NULL}
-};
-
-static const luaL_reg obj_GIT_metas[] = {
-  {"__tostring", obj_udata_default_tostring},
-  {"__eq", obj_udata_default_equal},
-  {NULL, NULL}
-};
-
-static const obj_base obj_GIT_bases[] = {
-  {-1, NULL}
-};
-
-static const obj_field obj_GIT_fields[] = {
-  {NULL, 0, 0, 0}
-};
-
-static const obj_const obj_GIT_constants[] = {
-  {"EFLOCKFAIL", NULL, -12, CONST_NUMBER},
-  {"SUCCESS", NULL, 0, CONST_NUMBER},
-  {"EBUSY", NULL, -14, CONST_NUMBER},
-  {"ENOMEM", NULL, -4, CONST_NUMBER},
-  {"EBAREINDEX", NULL, -15, CONST_NUMBER},
-  {"EMISSINGOBJDATA", NULL, -10, CONST_NUMBER},
-  {"EPACKCORRUPTED", NULL, -11, CONST_NUMBER},
-  {"EZLIB", NULL, -13, CONST_NUMBER},
-  {"ENOTFOUND", NULL, -3, CONST_NUMBER},
-  {"EOBJTYPE", NULL, -6, CONST_NUMBER},
-  {"ENOTAREPO", NULL, -8, CONST_NUMBER},
-  {"ENOTOID", NULL, -2, CONST_NUMBER},
-  {"EINVALIDTYPE", NULL, -9, CONST_NUMBER},
-  {"ERROR", NULL, -1, CONST_NUMBER},
-  {"EOSERR", NULL, -5, CONST_NUMBER},
-  {"EOBJCORRUPTED", NULL, -7, CONST_NUMBER},
-  {NULL, NULL, 0.0 , 0}
-};
-
 static const luaL_reg obj_Repository_pub_funcs[] = {
   {"open", Repository__open__meth},
   {"open2", Repository__open2__meth},
@@ -2738,8 +2709,8 @@ static const obj_const obj_Repository_constants[] = {
 };
 
 static const luaL_reg obj_RawObject_pub_funcs[] = {
-  {"header", RawObject__header__meth},
   {"new", RawObject__new__meth},
+  {"header", RawObject__header__meth},
   {NULL, NULL}
 };
 
@@ -3016,7 +2987,7 @@ static const luaL_reg obj_Blob_metas[] = {
 };
 
 static const obj_base obj_Blob_bases[] = {
-  {8, NULL},
+  {7, NULL},
   {-1, NULL}
 };
 
@@ -3094,7 +3065,7 @@ static const luaL_reg obj_Commit_metas[] = {
 };
 
 static const obj_base obj_Commit_bases[] = {
-  {8, NULL},
+  {7, NULL},
   {-1, NULL}
 };
 
@@ -3134,7 +3105,7 @@ static const luaL_reg obj_Tree_metas[] = {
 };
 
 static const obj_base obj_Tree_bases[] = {
-  {8, NULL},
+  {7, NULL},
   {-1, NULL}
 };
 
@@ -3209,7 +3180,7 @@ static const luaL_reg obj_Tag_metas[] = {
 };
 
 static const obj_base obj_Tag_bases[] = {
-  {8, NULL},
+  {7, NULL},
   {-1, NULL}
 };
 
@@ -3248,7 +3219,7 @@ static const luaL_reg obj_RevWalk_metas[] = {
 };
 
 static const obj_base obj_RevWalk_bases[] = {
-  {8, NULL},
+  {7, NULL},
   {-1, NULL}
 };
 
@@ -3268,26 +3239,45 @@ static const luaL_reg git2_function[] = {
   {NULL, NULL}
 };
 
+static const obj_const git2_constants[] = {
+  {"EFLOCKFAIL", NULL, -12, CONST_NUMBER},
+  {"SUCCESS", NULL, 0, CONST_NUMBER},
+  {"EBUSY", NULL, -14, CONST_NUMBER},
+  {"ENOMEM", NULL, -4, CONST_NUMBER},
+  {"EBAREINDEX", NULL, -15, CONST_NUMBER},
+  {"EMISSINGOBJDATA", NULL, -10, CONST_NUMBER},
+  {"EPACKCORRUPTED", NULL, -11, CONST_NUMBER},
+  {"EZLIB", NULL, -13, CONST_NUMBER},
+  {"ENOTFOUND", NULL, -3, CONST_NUMBER},
+  {"EOBJTYPE", NULL, -6, CONST_NUMBER},
+  {"ENOTAREPO", NULL, -8, CONST_NUMBER},
+  {"ENOTOID", NULL, -2, CONST_NUMBER},
+  {"EINVALIDTYPE", NULL, -9, CONST_NUMBER},
+  {"ERROR", NULL, -1, CONST_NUMBER},
+  {"EOSERR", NULL, -5, CONST_NUMBER},
+  {"EOBJCORRUPTED", NULL, -7, CONST_NUMBER},
+  {NULL, NULL, 0.0 , 0}
+};
 
 
-static const obj_type_reg obj_type_regs[] = {
-  { &(obj_type_GIT), obj_GIT_pub_funcs, obj_GIT_methods, obj_GIT_metas, obj_GIT_bases, obj_GIT_fields, obj_GIT_constants},
-  { &(obj_type_Repository), obj_Repository_pub_funcs, obj_Repository_methods, obj_Repository_metas, obj_Repository_bases, obj_Repository_fields, obj_Repository_constants},
-  { &(obj_type_RawObject), obj_RawObject_pub_funcs, obj_RawObject_methods, obj_RawObject_metas, obj_RawObject_bases, obj_RawObject_fields, obj_RawObject_constants},
-  { &(obj_type_OID), obj_OID_pub_funcs, obj_OID_methods, obj_OID_metas, obj_OID_bases, obj_OID_fields, obj_OID_constants},
-  { &(obj_type_Database), obj_Database_pub_funcs, obj_Database_methods, obj_Database_metas, obj_Database_bases, obj_Database_fields, obj_Database_constants},
-  { &(obj_type_DatabaseBackend), obj_DatabaseBackend_pub_funcs, obj_DatabaseBackend_methods, obj_DatabaseBackend_metas, obj_DatabaseBackend_bases, obj_DatabaseBackend_fields, obj_DatabaseBackend_constants},
-  { &(obj_type_Index), obj_Index_pub_funcs, obj_Index_methods, obj_Index_metas, obj_Index_bases, obj_Index_fields, obj_Index_constants},
-  { &(obj_type_IndexEntry), obj_IndexEntry_pub_funcs, obj_IndexEntry_methods, obj_IndexEntry_metas, obj_IndexEntry_bases, obj_IndexEntry_fields, obj_IndexEntry_constants},
-  { &(obj_type_Object), obj_Object_pub_funcs, obj_Object_methods, obj_Object_metas, obj_Object_bases, obj_Object_fields, obj_Object_constants},
-  { &(obj_type_Blob), obj_Blob_pub_funcs, obj_Blob_methods, obj_Blob_metas, obj_Blob_bases, obj_Blob_fields, obj_Blob_constants},
-  { &(obj_type_Signature), obj_Signature_pub_funcs, obj_Signature_methods, obj_Signature_metas, obj_Signature_bases, obj_Signature_fields, obj_Signature_constants},
-  { &(obj_type_Commit), obj_Commit_pub_funcs, obj_Commit_methods, obj_Commit_metas, obj_Commit_bases, obj_Commit_fields, obj_Commit_constants},
-  { &(obj_type_Tree), obj_Tree_pub_funcs, obj_Tree_methods, obj_Tree_metas, obj_Tree_bases, obj_Tree_fields, obj_Tree_constants},
-  { &(obj_type_TreeEntry), obj_TreeEntry_pub_funcs, obj_TreeEntry_methods, obj_TreeEntry_metas, obj_TreeEntry_bases, obj_TreeEntry_fields, obj_TreeEntry_constants},
-  { &(obj_type_Tag), obj_Tag_pub_funcs, obj_Tag_methods, obj_Tag_metas, obj_Tag_bases, obj_Tag_fields, obj_Tag_constants},
-  { &(obj_type_RevWalk), obj_RevWalk_pub_funcs, obj_RevWalk_methods, obj_RevWalk_metas, obj_RevWalk_bases, obj_RevWalk_fields, obj_RevWalk_constants},
-  {NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+
+static const reg_sub_module reg_sub_modules[] = {
+  { &(obj_type_Repository), 0, obj_Repository_pub_funcs, obj_Repository_methods, obj_Repository_metas, obj_Repository_bases, obj_Repository_fields, obj_Repository_constants},
+  { &(obj_type_RawObject), 0, obj_RawObject_pub_funcs, obj_RawObject_methods, obj_RawObject_metas, obj_RawObject_bases, obj_RawObject_fields, obj_RawObject_constants},
+  { &(obj_type_OID), 0, obj_OID_pub_funcs, obj_OID_methods, obj_OID_metas, obj_OID_bases, obj_OID_fields, obj_OID_constants},
+  { &(obj_type_Database), 0, obj_Database_pub_funcs, obj_Database_methods, obj_Database_metas, obj_Database_bases, obj_Database_fields, obj_Database_constants},
+  { &(obj_type_DatabaseBackend), 0, obj_DatabaseBackend_pub_funcs, obj_DatabaseBackend_methods, obj_DatabaseBackend_metas, obj_DatabaseBackend_bases, obj_DatabaseBackend_fields, obj_DatabaseBackend_constants},
+  { &(obj_type_Index), 0, obj_Index_pub_funcs, obj_Index_methods, obj_Index_metas, obj_Index_bases, obj_Index_fields, obj_Index_constants},
+  { &(obj_type_IndexEntry), 0, obj_IndexEntry_pub_funcs, obj_IndexEntry_methods, obj_IndexEntry_metas, obj_IndexEntry_bases, obj_IndexEntry_fields, obj_IndexEntry_constants},
+  { &(obj_type_Object), 0, obj_Object_pub_funcs, obj_Object_methods, obj_Object_metas, obj_Object_bases, obj_Object_fields, obj_Object_constants},
+  { &(obj_type_Blob), 0, obj_Blob_pub_funcs, obj_Blob_methods, obj_Blob_metas, obj_Blob_bases, obj_Blob_fields, obj_Blob_constants},
+  { &(obj_type_Signature), 0, obj_Signature_pub_funcs, obj_Signature_methods, obj_Signature_metas, obj_Signature_bases, obj_Signature_fields, obj_Signature_constants},
+  { &(obj_type_Commit), 0, obj_Commit_pub_funcs, obj_Commit_methods, obj_Commit_metas, obj_Commit_bases, obj_Commit_fields, obj_Commit_constants},
+  { &(obj_type_Tree), 0, obj_Tree_pub_funcs, obj_Tree_methods, obj_Tree_metas, obj_Tree_bases, obj_Tree_fields, obj_Tree_constants},
+  { &(obj_type_TreeEntry), 0, obj_TreeEntry_pub_funcs, obj_TreeEntry_methods, obj_TreeEntry_metas, obj_TreeEntry_bases, obj_TreeEntry_fields, obj_TreeEntry_constants},
+  { &(obj_type_Tag), 0, obj_Tag_pub_funcs, obj_Tag_methods, obj_Tag_metas, obj_Tag_bases, obj_Tag_fields, obj_Tag_constants},
+  { &(obj_type_RevWalk), 0, obj_RevWalk_pub_funcs, obj_RevWalk_methods, obj_RevWalk_metas, obj_RevWalk_bases, obj_RevWalk_fields, obj_RevWalk_constants},
+  {NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL}
 };
 
 
@@ -3322,10 +3312,13 @@ static void create_object_instance_cache(lua_State *L) {
 }
 
 int luaopen_git2(lua_State *L) {
-	const obj_type_reg *reg = obj_type_regs;
+	const reg_sub_module *reg = reg_sub_modules;
 	const luaL_Reg *submodules = submodule_libs;
 	/* module table. */
 	luaL_register(L, "git2", git2_function);
+
+	/* register module constants. */
+	obj_type_register_constants(L, git2_constants, -1);
 
 	/* create object cache. */
 	create_object_instance_cache(L);
