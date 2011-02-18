@@ -18,11 +18,10 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
-typedef git_index_entry IndexEntry;
-]]
-
 object "IndexEntry" {
+	c_source [[
+typedef git_index_entry IndexEntry;
+]],
 	const "NAMEMASK" { 0x0fff },
 	const "STAGEMASK" { 0x3000 },
 	const "EXTENDED" { 0x4000 },

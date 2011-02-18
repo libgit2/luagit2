@@ -18,40 +18,49 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
-typedef git_oid OID;
-]]
-
-object "OID" {
-	userdata_type = 'simple',
-	constructor "str" {
-    var_in{"const char *", "hex"},
-    var_out{"GitError", "err"},
-    c_source [[
-  ${err} = git_oid_mkstr(&(${this}), ${hex});
+object "Tree" {
+	c_source [[
+typedef git_tree Tree;
+]],
+	extends "Object",
+	constructor "new" {
+		var_in{"Repository *", "repo"},
+		var_out{"GitError", "err"},
+		c_source [[
+	${err} = git_tree_new(&(${this}), ${repo});
 ]],
 	},
-	constructor "raw" {
-    var_in{"const unsigned char *", "raw"},
-    c_source [[
-  git_oid_mkraw(&(${this}), ${raw});
+	constructor "lookup" {
+		var_in{"Repository *", "repo"},
+		var_in{"OID", "id"},
+		var_out{"GitError", "err"},
+		c_source [[
+	${err} = git_tree_lookup(&(${this}), ${repo}, &(${id}));
 ]],
 	},
-	method "__str__" {
-		var_out{"const char *", "ret"},
-    c_source [[
-	char buf[GIT_OID_HEXSZ+1];
-  git_oid_fmt(buf, &(${this}));
-	buf[GIT_OID_HEXSZ] = 0;
-	${ret} = buf;
+	method "entrycount" {
+		c_call "size_t"  "git_tree_entrycount" {}
+	},
+	method "entry_byname" {
+		c_call "TreeEntry *"  "git_tree_entry_byname" { "const char *", "filename" }
+	},
+	method "entry_byindex" {
+		c_call "TreeEntry *"  "git_tree_entry_byindex" { "int", "index" }
+	},
+	method "add_entry" {
+		var_in{"const OID", "id"},
+		var_in{"const char *", "filename"},
+		var_in{"int", "attributes"},
+		var_out{"GitError", "err"},
+		c_source [[
+	${err} = git_tree_add_entry(${this}, &(${id}), ${filename}, ${attributes});
 ]],
 	},
-	method "__eq__" {
-    var_in{"OID", "id"},
-		var_out{"int", "ret"},
-    c_source [[
-  ${ret} = git_oid_cmp(&(${this}), &(${id}));
-]],
+	method "remove_entry_byname" {
+		c_call "GitError"  "git_tree_remove_entry_byname" { "const char *", "filename" }
+	},
+	method "remove_entry_byindex" {
+		c_call "GitError"  "git_tree_remove_entry_byindex" { "int", "index" }
 	},
 }
 

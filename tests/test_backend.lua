@@ -1,7 +1,7 @@
 #!/usr/bin/env lua
 
 local build_dir = arg[1]
-local git_path = arg[2] or "./test_rep/.git/"
+local git_path = arg[2] or "./tests/test_rep/.git/"
 -- Make it easier to test
 if ( build_dir ) then
     package.cpath = build_dir .. "?.so;" .. package.cpath
@@ -10,6 +10,7 @@ end
 require"git2"
 require"utils"
 
+print(dump(git2))
 local function dump_rawobj(obj)
 	print('dump RawObject:', obj)
 	if obj == nil then
@@ -43,18 +44,18 @@ on_read = function(oid)
 	print("------------------- read callback:", oid)
 	raw_obj = get_obj(oid)
 	if not raw_obj then
-		return nil, git2.GIT.ENOTFOUND
+		return nil, git2.ENOTFOUND
 	end
-	return raw_obj, git2.GIT.SUCCESS
+	return raw_obj, git2.SUCCESS
 end,
 on_read_header = function(oid)
 	local raw_obj = nil
 	print("------------------- read_header callback:", oid)
 	raw_obj = get_obj(oid)
 	if not raw_obj then
-		return nil, git2.GIT.ENOTFOUND
+		return nil, git2.ENOTFOUND
 	end
-	return raw_obj, git2.GIT.SUCCESS
+	return raw_obj, git2.SUCCESS
 end,
 on_write = function(raw_obj)
 	local oid = raw_obj:hash()
@@ -66,16 +67,16 @@ on_write = function(raw_obj)
 	local oid_str = tostring(oid)
 	-- put raw object in cache
 	obj_cache[oid_str] = raw_obj
-	return oid, git2.GIT.SUCCESS
+	return oid, git2.SUCCESS
 end,
 on_exists = function(oid)
 	local raw_obj = nil
 	print("------------------- exists callback:", oid)
 	raw_obj = get_obj(oid)
 	if not raw_obj then
-		return raw_obj, git2.GIT.ENOTFOUND
+		return raw_obj, git2.ENOTFOUND
 	end
-	return git2.GIT.SUCCESS
+	return git2.SUCCESS
 end,
 on_free = function()
 	print("------------------- free callback:")
@@ -84,7 +85,7 @@ end,
 
 local backend = git2.DatabaseBackend(cbs, 0)
 
---print('add backend:', assert(db:add_backend(backend)))
+print('add backend:', assert(db:add_backend(backend)))
 
 print('create test blob:')
 local raw_obj = git2.RawObject.new('blob',"any ol content will do")
@@ -119,6 +120,7 @@ else
 	print("Created repository with no backends from git repository:", git_path)
 end
 db = rep:database()
+backend = git2.DatabaseBackend(cbs, 0)
 print("add backend repository's database:", assert(db:add_backend(backend)))
 
 print()

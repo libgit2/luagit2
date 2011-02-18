@@ -61,7 +61,7 @@ set(LUA_GIT2_SRC
 )
 
 if(${USE_PRE_GENERATED_BINDINGS})
-	set(LUA_GIT2_SRC pre_generated-git2.nobj.c)
+	set(LUA_GIT2_SRC src/pre_generated-git2.nobj.c)
 else()
 	# Generate Lua bindings.
 	GenLuaNativeObjects(LUA_GIT2_SRC)

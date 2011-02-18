@@ -18,38 +18,50 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
-typedef git_object Object;
-]]
-
-object "Object" {
-	dyn_caster {
-		caster_type = "switch",
-		value_function = "git_object_type",
-		value_map = {
-		GIT_OBJ_BLOB = "Blob",
-		GIT_OBJ_COMMIT = "Commit",
-		GIT_OBJ_TREE = "Tree",
-		},
+object "Index" {
+	c_source [[
+typedef git_index Index;
+]],
+	constructor "bare" {
+		var_in{"const char *", "index_path"},
+		var_out{"GitError", "err"},
+		c_source [[
+	${err} = git_index_open_bare(&(${this}), ${index_path});
+]],
+	},
+	constructor "inrepo" {
+		var_in{"Repository *", "repo"},
+		var_out{"GitError", "err"},
+		c_source [[
+	${err} = git_index_open_inrepo(&(${this}), ${repo});
+]],
 	},
 	destructor {
-		c_call "void"  "git_object_free" {}
+		c_call "void"  "git_index_free" {}
 	},
-	method "write" {
-		c_call "GitError"  "git_object_write" {}
+	method "clear" {
+		c_call "void"  "git_index_clear" {}
 	},
-	method "id" {
-		var_out{ "OID", "id" },
-		c_source [[
-	${id} = *(git_object_id(${this}));
-]]
+	method "read" {
+		c_call "GitError"  "git_index_read" {}
 	},
-	method "type" {
-		var_out{"const char *", "type"},
-		c_source "${type} = git_object_type2string(git_object_type(${this}));"
+	method "find" {
+		c_call "int"  "git_index_find" { "const char *", "path" }
 	},
-	method "owner" {
-		c_call "Repository *"  "git_object_owner" {}
+	method "add" {
+		c_call "GitError"  "git_index_add" { "const char *", "path", "int", "stage" }
+	},
+	method "remove" {
+		c_call "GitError"  "git_index_remove" { "int", "position" }
+	},
+	method "insert" {
+		c_call "GitError"  "git_index_insert" { "IndexEntry *", "source_entry" }
+	},
+	method "get" {
+		c_call "IndexEntry *"  "git_index_get" { "int", "n" }
+	},
+	method "entrycount" {
+		c_call "unsigned int"  "git_index_entrycount" {}
 	},
 }
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env lua
 
 local build_dir = arg[1]
-local git_path = arg[2] or "./test_rep/.git"
+local git_path = arg[2] or "./tests/test_rep/.git"
 -- Make it easier to test
 if ( build_dir ) then
     package.cpath = build_dir .. "?.so;" .. package.cpath

@@ -18,11 +18,10 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
-typedef git_signature Signature;
-]]
-
 object "Signature" {
+	c_source [[
+typedef git_signature Signature;
+]],
 	constructor {
 		c_call "Signature *" "git_signature_new"
 			{ "const char *", "name", "const char *", "email", "time_t", "time", "int", "offset" },

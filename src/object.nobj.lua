@@ -18,43 +18,37 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
-typedef git_revwalk RevWalk;
-]]
-
-object "RevWalk" {
-	extends "Object",
-	const "SORT_NONE"        { 0x00 },
-	const "SORT_TOPOLOGICAL" { 0x01 },
-	const "SORT_TIME"        { 0x02 },
-	const "SORT_REVERSE"     { 0x04 },
-	constructor "new" {
-		var_in{"Repository *", "repo"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_revwalk_new(&(${this}), ${repo});
+object "Object" {
+	c_source [[
+typedef git_object Object;
 ]],
+	dyn_caster {
+		caster_type = "switch",
+		value_function = "git_object_type",
+		value_map = {
+		GIT_OBJ_BLOB = "Blob",
+		GIT_OBJ_COMMIT = "Commit",
+		GIT_OBJ_TREE = "Tree",
+		},
 	},
 	destructor {
-		c_call "void" "git_revwalk_free" {}
+		c_call "void"  "git_object_free" {}
 	},
-	method "reset" {
-		c_call "void" "git_revwalk_reset" {}
+	method "write" {
+		c_call "GitError"  "git_object_write" {}
 	},
-	method "push" {
-		c_call "GitError" "git_revwalk_push" { "Commit *", "commit" }
+	method "id" {
+		var_out{ "OID", "id" },
+		c_source [[
+	${id} = *(git_object_id(${this}));
+]]
 	},
-	method "hide" {
-		c_call "GitError" "git_revwalk_hide" { "Commit *", "commit" }
+	method "type" {
+		var_out{"const char *", "type"},
+		c_source "${type} = git_object_type2string(git_object_type(${this}));"
 	},
-	method "next" {
-		c_call "Commit *" "git_revwalk_next" {}
-	},
-	method "sorting" {
-		c_call "GitError" "git_revwalk_sorting" { "unsigned int", "sort_mode" }
-	},
-	method "repository" {
-		c_call "Repository *" "git_revwalk_repository" {}
+	method "owner" {
+		c_call "Repository *"  "git_object_owner" {}
 	},
 }
 

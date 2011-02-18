@@ -18,11 +18,10 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
-typedef git_odb Database;
-]]
-
 object "Database" {
+	c_source [[
+typedef git_odb Database;
+]],
 	constructor "new" {
 		var_out{"GitError", "err"},
 		c_source [[

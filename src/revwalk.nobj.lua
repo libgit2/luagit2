@@ -18,51 +18,42 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
-typedef git_index Index;
-]]
-
-object "Index" {
-	constructor "bare" {
-		var_in{"const char *", "index_path"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_index_open_bare(&(${this}), ${index_path});
+object "RevWalk" {
+	c_source [[
+typedef git_revwalk RevWalk;
 ]],
-	},
-	constructor "inrepo" {
+	extends "Object",
+	const "SORT_NONE"        { 0x00 },
+	const "SORT_TOPOLOGICAL" { 0x01 },
+	const "SORT_TIME"        { 0x02 },
+	const "SORT_REVERSE"     { 0x04 },
+	constructor "new" {
 		var_in{"Repository *", "repo"},
 		var_out{"GitError", "err"},
 		c_source [[
-	${err} = git_index_open_inrepo(&(${this}), ${repo});
+	${err} = git_revwalk_new(&(${this}), ${repo});
 ]],
 	},
 	destructor {
-		c_call "void"  "git_index_free" {}
+		c_call "void" "git_revwalk_free" {}
 	},
-	method "clear" {
-		c_call "void"  "git_index_clear" {}
+	method "reset" {
+		c_call "void" "git_revwalk_reset" {}
 	},
-	method "read" {
-		c_call "GitError"  "git_index_read" {}
+	method "push" {
+		c_call "GitError" "git_revwalk_push" { "Commit *", "commit" }
 	},
-	method "find" {
-		c_call "int"  "git_index_find" { "const char *", "path" }
+	method "hide" {
+		c_call "GitError" "git_revwalk_hide" { "Commit *", "commit" }
 	},
-	method "add" {
-		c_call "GitError"  "git_index_add" { "const char *", "path", "int", "stage" }
+	method "next" {
+		c_call "Commit *" "git_revwalk_next" {}
 	},
-	method "remove" {
-		c_call "GitError"  "git_index_remove" { "int", "position" }
+	method "sorting" {
+		c_call "GitError" "git_revwalk_sorting" { "unsigned int", "sort_mode" }
 	},
-	method "insert" {
-		c_call "GitError"  "git_index_insert" { "IndexEntry *", "source_entry" }
-	},
-	method "get" {
-		c_call "IndexEntry *"  "git_index_get" { "int", "n" }
-	},
-	method "entrycount" {
-		c_call "unsigned int"  "git_index_entrycount" {}
+	method "repository" {
+		c_call "Repository *" "git_revwalk_repository" {}
 	},
 }
 

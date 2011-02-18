@@ -18,12 +18,10 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
-typedef git_repository Repository;
-
-]]
-
 object "Repository" {
+	c_source [[
+typedef git_repository Repository;
+]],
 	constructor "open" {
 		var_in{"const char *", "path"},
 		var_out{"GitError", "err"},

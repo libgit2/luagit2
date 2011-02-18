@@ -18,11 +18,10 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
-typedef git_tree_entry TreeEntry;
-]]
-
 object "TreeEntry" {
+	c_source [[
+typedef git_tree_entry TreeEntry;
+]],
 	method "name" {
 		c_call "const char *" "git_tree_entry_name" {}
 	},

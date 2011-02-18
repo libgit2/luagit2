@@ -18,50 +18,39 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
-typedef git_tag Tag;
-]]
-
-object "Tag" {
-	extends "Object",
-	constructor "new" {
-		var_in{"Repository *", "repo"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_tag_new(&(${this}), ${repo});
+object "OID" {
+	c_source [[
+typedef git_oid OID;
+]],
+	userdata_type = 'simple',
+	constructor "str" {
+    var_in{"const char *", "hex"},
+    var_out{"GitError", "err"},
+    c_source [[
+  ${err} = git_oid_mkstr(&(${this}), ${hex});
 ]],
 	},
-	constructor "lookup" {
-		var_in{"Repository *", "repo"},
-		var_in{"OID", "id"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_tag_lookup(&(${this}), ${repo}, &(${id}));
+	constructor "raw" {
+    var_in{"const unsigned char *", "raw"},
+    c_source [[
+  git_oid_mkraw(&(${this}), ${raw});
 ]],
 	},
-	method "target" {
-		c_call "const Object *" "git_tag_target" {}
+	method "__str__" {
+		var_out{"const char *", "ret"},
+    c_source [[
+	char buf[GIT_OID_HEXSZ+1];
+  git_oid_fmt(buf, &(${this}));
+	buf[GIT_OID_HEXSZ] = 0;
+	${ret} = buf;
+]],
 	},
-	method "set_target" {
-		c_call "void" "git_tag_set_target" { "Object *", "target" }
-	},
-	method "name" {
-		c_call "const char *" "git_tag_name" {}
-	},
-	method "set_name" {
-		c_call "void" "git_tag_set_name" { "const char *", "name" }
-	},
-	method "tagger" {
-		c_call "const Signature *" "git_tag_tagger" {}
-	},
-	method "set_tagger" {
-		c_call "void" "git_tag_set_tagger" { "const Signature *", "tagger" }
-	},
-	method "message" {
-		c_call "const char *" "git_tag_message" {}
-	},
-	method "set_message" {
-		c_call "void" "git_tag_set_message" { "const char *", "message" }
+	method "__eq__" {
+    var_in{"OID", "id"},
+		var_out{"int", "ret"},
+    c_source [[
+  ${ret} = git_oid_cmp(&(${this}), &(${id}));
+]],
 	},
 }
 

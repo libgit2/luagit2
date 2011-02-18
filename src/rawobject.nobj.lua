@@ -18,7 +18,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
+object "RawObject" {
+	c_source [[
 typedef struct RawObject {
 	git_rawobj git;
 	int ref;
@@ -54,11 +55,20 @@ static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, git_rawobj *
 	}
 }
 
-]]
-
-object "RawObject" {
+]],
 	userdata_type = 'embed',
 	default = 'NULL',
+	constructor "new" {
+		var_in{"const char *", "type"},
+		var_in{"const char *", "data"},
+		c_source [[
+	RawObject raw; /* temp. storage, this gets copied. */
+	${this} = &(raw);
+	raw.git.type = git_object_string2type(${type});
+	raw.ref = LUA_REFNIL;
+	RawObject_set_data_and_ref(L, &raw, ${data}, ${data}_len, ${data::idx});
+]],
+	},
 	constructor "header" {
 		var_in{"const char *", "type"},
 		var_in{"size_t", "len"},
@@ -69,17 +79,6 @@ object "RawObject" {
 	raw.git.len = ${len};
 	raw.git.type = git_object_string2type(${type});
 	raw.ref = LUA_REFNIL;
-]],
-	},
-	constructor "new" {
-		var_in{"const char *", "type"},
-		var_in{"const char *", "data"},
-		c_source [[
-	RawObject raw; /* temp. storage, this gets copied. */
-	${this} = &(raw);
-	raw.git.type = git_object_string2type(${type});
-	raw.ref = LUA_REFNIL;
-	RawObject_set_data_and_ref(L, &raw, ${data}, ${data}_len, ${data::idx});
 ]],
 	},
 	destructor "close" {

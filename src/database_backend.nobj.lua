@@ -18,7 +18,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
+object "DatabaseBackend" {
+	c_source [[
 //typedef struct RawObject RawObject;
 #include <git2/odb_backend.h>
 
@@ -161,9 +162,7 @@ static void database_backend_free_cb(git_odb_backend *backend)
 	DatabaseBackend_unref(lua_backend);
 }
 
-]]
-
-object "DatabaseBackend" {
+]],
 	constructor {
 		var_in{"lua_State *", "L"},
 		c_source [[

@@ -18,17 +18,16 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-c_source [[
-typedef git_blob Blob;
-]]
-
-object "Blob" {
+object "Commit" {
+	c_source [[
+typedef git_commit Commit;
+]],
 	extends "Object",
 	constructor "new" {
 		var_in{"Repository *", "repo"},
 		var_out{"GitError", "err"},
 		c_source [[
-	${err} = git_blob_new(&(${this}), ${repo});
+	${err} = git_commit_new(&(${this}), ${repo});
 ]],
 	},
 	constructor "lookup" {
@@ -36,37 +35,47 @@ object "Blob" {
 		var_in{"OID", "id"},
 		var_out{"GitError", "err"},
 		c_source [[
-	${err} = git_blob_lookup(&(${this}), ${repo}, &(${id}));
+	${err} = git_commit_lookup(&(${this}), ${repo}, &(${id}));
 ]],
 	},
-	c_function "writefile" {
-		var_in{"Repository *", "repo"},
-		var_in{"const char *", "path"},
-		var_out{"OID", "written_id"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_blob_writefile(&(${written_id}), ${repo}, ${path});
-]],
+	method "message" {
+		c_call "const char *"  "git_commit_message" {}
 	},
-	method "set_rawcontent_fromfile" {
-		c_call "GitError"  "git_blob_set_rawcontent_fromfile" { "const char *", "filename" }
+	method "message_short" {
+		c_call "const char *"  "git_commit_message_short" {}
 	},
-	method "set_rawcontent" {
-		var_in{"const char *", "buffer"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_blob_set_rawcontent(${this}, ${buffer}, ${buffer}_len);
-]]
+	method "set_message" {
+		c_call "void"  "git_commit_set_message" { "const char *", "message" }
 	},
-	method "rawcontent" {
-		var_out{"const char *", "buffer", has_length = true},
-		c_source [[
-	${buffer} = git_blob_rawcontent(${this});
-	${buffer}_len = git_blob_rawsize(${this});
-]]
+	method "time" {
+		c_call "time_t"  "git_commit_time" {}
 	},
-	method "rawsize" {
-		c_call "int"  "git_blob_rawsize" {}
+	method "committer" {
+		c_call "const Signature *"  "git_commit_committer" {}
+	},
+	method "set_committer" {
+		c_call "void"  "git_commit_set_committer" { "const Signature *", "sig" }
+	},
+	method "author" {
+		c_call "const Signature *"  "git_commit_author" {}
+	},
+	method "set_author" {
+		c_call "void"  "git_commit_set_author" { "const Signature *", "sig" }
+	},
+	method "tree" {
+		c_call "const Tree *"  "git_commit_tree" {}
+	},
+	method "set_tree" {
+		c_call "void"  "git_commit_set_tree" { "Tree *", "tree" }
+	},
+	method "parentcount" {
+		c_call "unsigned int"  "git_commit_parentcount" {}
+	},
+	method "parent" {
+		c_call "Commit *"  "git_commit_parent" { "unsigned int", "n" }
+	},
+	method "add_parent" {
+		c_call "GitError"  "git_commit_add_parent" { "Commit *", "parent" }
 	},
 }
 
