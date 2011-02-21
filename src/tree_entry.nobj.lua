@@ -23,31 +23,27 @@ object "TreeEntry" {
 typedef git_tree_entry TreeEntry;
 ]],
 	method "name" {
-		c_call "const char *" "git_tree_entry_name" {}
+		c_method_call "const char *" "git_tree_entry_name" {}
 	},
 	method "set_name" {
-		c_call "void" "git_tree_entry_set_name" {"const char *", "name"}
+		c_method_call "void" "git_tree_entry_set_name" {"const char *", "name"}
 	},
 	method "attributes" {
-		c_call "unsigned int" "git_tree_entry_attributes" {}
+		c_method_call "unsigned int" "git_tree_entry_attributes" {}
 	},
 	method "set_attributes" {
-		c_call "void" "git_tree_entry_set_attributes" {"int", "attr"}
+		c_method_call "void" "git_tree_entry_set_attributes" {"int", "attr"}
 	},
 	method "id" {
 		var_out{"OID", "id"},
 		c_source "${id} = *(git_tree_entry_id(${this}));"
 	},
 	method "set_id" {
-		var_in{"OID", "id"},
-		c_source "git_tree_entry_set_id(${this}, &(${id}));"
+		c_method_call "void" "git_tree_entry_set_id" { "OID", "&id" }
 	},
 	method "object" {
-		var_out{"Object *", "obj"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_tree_entry_2object(&(${obj}), ${this});
-]]
+		c_call {"GitError", "err"} "git_tree_entry_2object"
+			{ "Object *", "&obj>1", "TreeEntry *", "this" }
 	},
 }
 

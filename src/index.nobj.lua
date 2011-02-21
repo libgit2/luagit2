@@ -23,45 +23,39 @@ object "Index" {
 typedef git_index Index;
 ]],
 	constructor "bare" {
-		var_in{"const char *", "index_path"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_index_open_bare(&(${this}), ${index_path});
-]],
+		c_call {"GitError", "err"} "git_index_open_bare"
+			{ "Index *", "&this", "const char *", "index_path" },
 	},
 	constructor "inrepo" {
-		var_in{"Repository *", "repo"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_index_open_inrepo(&(${this}), ${repo});
-]],
+		c_call {"GitError", "err"} "git_index_open_inrepo"
+			{ "Index *", "&this", "Repository *", "repo" },
 	},
 	destructor {
-		c_call "void"  "git_index_free" {}
+		c_method_call "void"  "git_index_free" {}
 	},
 	method "clear" {
-		c_call "void"  "git_index_clear" {}
+		c_method_call "void"  "git_index_clear" {}
 	},
 	method "read" {
-		c_call "GitError"  "git_index_read" {}
+		c_method_call "GitError"  "git_index_read" {}
 	},
 	method "find" {
-		c_call "int"  "git_index_find" { "const char *", "path" }
+		c_method_call "int"  "git_index_find" { "const char *", "path" }
 	},
 	method "add" {
-		c_call "GitError"  "git_index_add" { "const char *", "path", "int", "stage" }
+		c_method_call "GitError"  "git_index_add" { "const char *", "path", "int", "stage" }
 	},
 	method "remove" {
-		c_call "GitError"  "git_index_remove" { "int", "position" }
+		c_method_call "GitError"  "git_index_remove" { "int", "position" }
 	},
 	method "insert" {
-		c_call "GitError"  "git_index_insert" { "IndexEntry *", "source_entry" }
+		c_method_call "GitError"  "git_index_insert" { "IndexEntry *", "source_entry" }
 	},
 	method "get" {
-		c_call "IndexEntry *"  "git_index_get" { "int", "n" }
+		c_method_call "IndexEntry *"  "git_index_get" { "int", "n" }
 	},
 	method "entrycount" {
-		c_call "unsigned int"  "git_index_entrycount" {}
+		c_method_call "unsigned int"  "git_index_entrycount" {}
 	},
 }
 

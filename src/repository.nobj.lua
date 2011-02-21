@@ -23,21 +23,13 @@ object "Repository" {
 typedef git_repository Repository;
 ]],
 	constructor "open" {
-		var_in{"const char *", "path"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_repository_open(&(${this}), ${path});
-]],
+		c_call { "GitError", "err" } "git_repository_open"
+			{ "Repository *", "&this>1", "const char *", "path" },
 	},
 	constructor "open2" {
-		var_in{"const char *", "dir"},
-		var_in{"const char *", "object_directory"},
-		var_in{"const char *", "index_file"},
-		var_in{"const char *", "work_tree"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_repository_open2(&(${this}), ${dir}, ${object_directory}, ${index_file}, ${work_tree});
-]],
+		c_call { "GitError", "err" } "git_repository_open2"
+			{ "Repository *", "&this>1", "const char *", "dir", "const char *", "object_directory",
+				"const char *", "index_file", "const char *", "work_tree" },
 	},
 	constructor "open_no_backend" {
 		var_in{"const char *", "dir"},
@@ -55,46 +47,31 @@ typedef git_repository Repository;
 ]],
 	},
 	constructor "init" {
-		var_in{"const char *", "path"},
-		var_in{"bool", "is_bare"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_repository_init(&(${this}), ${path}, ${is_bare});
-]],
+		c_call { "GitError", "err" } "git_repository_init"
+			{ "Repository *", "&this>1", "const char *", "path", "bool", "is_bare" },
 	},
 	destructor {
-		c_call "void"  "git_repository_free" {}
+		c_method_call "void"  "git_repository_free" {}
 	},
 	method "database" {
-		c_call "Database *" "git_repository_database" {}
+		c_method_call "Database *" "git_repository_database" {}
 	},
 	method "index" {
-		c_call "Index *" "git_repository_index" {}
+		c_method_call "Index *" "git_repository_index" {}
 	},
 	method "lookup" {
-		var_in{"OID", "id"},
-		var_in{"const char *", "type"},
-		var_out{"Object *", "obj"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_repository_lookup(&(${obj}), ${this}, &(${id}), git_object_string2type(${type}));
-]],
+		c_call { "int", "(otype)" } "git_object_string2type" { "const char *", "type<3" },
+		c_call { "GitError", "err" } "git_repository_lookup"
+			{ "Object *", "&obj>1", "Repository *", "this<1", "OID", "&id<2", "int", "otype" },
 	},
 	method "newobject" {
-		var_in{"const char *", "type"},
-		var_out{"Object *", "obj"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_repository_newobject(&(${obj}), ${this}, git_object_string2type(${type}));
-]],
+		c_call { "int", "(otype)" } "git_object_string2type" { "const char *", "type<2" },
+		c_call { "GitError", "err" } "git_repository_newobject"
+			{ "Object *", "&obj>1", "Repository *", "this<1", "int", "otype" },
 	},
 	method "blob_writefile" {
-		var_in{"const char *", "path"},
-		var_out{"OID", "written_id"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_blob_writefile(&(${written_id}), ${this}, ${path});
-]],
+		c_call { "GitError", "err" } "git_blob_writefile"
+			{ "OID", "&written_id>1", "Repository *", "this<1", "const char *", "path" },
 	},
 }
 

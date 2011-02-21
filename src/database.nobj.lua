@@ -23,20 +23,14 @@ object "Database" {
 typedef git_odb Database;
 ]],
 	constructor "new" {
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_odb_new(&(${this}));
-]],
+		c_call {"GitError", "err"} "git_odb_new" { "Database *", "&this" },
 	},
 	constructor "open" {
-		var_in{"const char *", "object_dir"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_odb_open(&(${this}), ${object_dir});
-]],
+		c_call {"GitError", "err"} "git_odb_open"
+			{ "Database *", "&this", "const char *", "object_dir" },
 	},
 	destructor "close" {
-		c_call "void"  "git_odb_close" {}
+		c_method_call "void"  "git_odb_close" {}
 	},
 	method "add_backend" {
 		var_in{"DatabaseBackend *", "backend"},
@@ -85,11 +79,7 @@ typedef git_odb Database;
 ]],
 	},
 	method "exists" {
-		var_in{"OID", "id"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_odb_exists(${this}, &(${id}));
-]],
+		c_method_call { "GitError", "err" } "git_odb_exists" { "OID", "&id" }
 	},
 }
 

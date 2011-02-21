@@ -24,58 +24,50 @@ typedef git_commit Commit;
 ]],
 	extends "Object",
 	constructor "new" {
-		var_in{"Repository *", "repo"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_commit_new(&(${this}), ${repo});
-]],
+		c_call {"GitError", "err"} "git_commit_new" { "Commit *", "&this", "Repository *", "repo" },
 	},
 	constructor "lookup" {
-		var_in{"Repository *", "repo"},
-		var_in{"OID", "id"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_commit_lookup(&(${this}), ${repo}, &(${id}));
-]],
+		c_call {"GitError", "err"} "git_commit_lookup"
+			{ "Commit *", "&this", "Repository *", "repo", "OID", "&id" },
 	},
 	method "message" {
-		c_call "const char *"  "git_commit_message" {}
+		c_method_call "const char *"  "git_commit_message" {}
 	},
 	method "message_short" {
-		c_call "const char *"  "git_commit_message_short" {}
+		c_method_call "const char *"  "git_commit_message_short" {}
 	},
 	method "set_message" {
-		c_call "void"  "git_commit_set_message" { "const char *", "message" }
+		c_method_call "void"  "git_commit_set_message" { "const char *", "message" }
 	},
 	method "time" {
-		c_call "time_t"  "git_commit_time" {}
+		c_method_call "time_t"  "git_commit_time" {}
 	},
 	method "committer" {
-		c_call "const Signature *"  "git_commit_committer" {}
+		c_method_call "const Signature *"  "git_commit_committer" {}
 	},
 	method "set_committer" {
-		c_call "void"  "git_commit_set_committer" { "const Signature *", "sig" }
+		c_method_call "void"  "git_commit_set_committer" { "const Signature *", "sig" }
 	},
 	method "author" {
-		c_call "const Signature *"  "git_commit_author" {}
+		c_method_call "const Signature *"  "git_commit_author" {}
 	},
 	method "set_author" {
-		c_call "void"  "git_commit_set_author" { "const Signature *", "sig" }
+		c_method_call "void"  "git_commit_set_author" { "const Signature *", "sig" }
 	},
 	method "tree" {
-		c_call "const Tree *"  "git_commit_tree" {}
+		c_method_call "const Tree *"  "git_commit_tree" {}
 	},
 	method "set_tree" {
-		c_call "void"  "git_commit_set_tree" { "Tree *", "tree" }
+		c_method_call "void"  "git_commit_set_tree" { "Tree *", "tree" }
 	},
 	method "parentcount" {
-		c_call "unsigned int"  "git_commit_parentcount" {}
+		c_method_call "unsigned int"  "git_commit_parentcount" {}
 	},
 	method "parent" {
-		c_call "Commit *"  "git_commit_parent" { "unsigned int", "n" }
+		c_method_call "Commit *"  "git_commit_parent" { "unsigned int", "n" }
 	},
 	method "add_parent" {
-		c_call "GitError"  "git_commit_add_parent" { "Commit *", "parent" }
+		c_method_call "GitError"  "git_commit_add_parent" { "Commit *", "parent" }
 	},
 }
 

@@ -25,7 +25,7 @@ build	= {
 	type = "builtin",
 	modules = {
 		git2 = {
-			sources = { "pre_generated-git2.nobj.c" },
+			sources = { "src/pre_generated-git2.nobj.c" },
 			libraries = { "git2" },
 		}
 	}

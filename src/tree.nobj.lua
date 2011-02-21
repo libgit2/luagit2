@@ -24,43 +24,31 @@ typedef git_tree Tree;
 ]],
 	extends "Object",
 	constructor "new" {
-		var_in{"Repository *", "repo"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_tree_new(&(${this}), ${repo});
-]],
+		c_call { "GitError", "err" } "git_tree_new"
+			{ "Tree *", "&this>1", "Repository *", "repo" },
 	},
 	constructor "lookup" {
-		var_in{"Repository *", "repo"},
-		var_in{"OID", "id"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_tree_lookup(&(${this}), ${repo}, &(${id}));
-]],
+		c_call { "GitError", "err" } "git_tree_lookup"
+			{ "Tree *", "&this>1", "Repository *", "repo", "OID", "&id" },
 	},
 	method "entrycount" {
-		c_call "size_t"  "git_tree_entrycount" {}
+		c_method_call "size_t"  "git_tree_entrycount" {}
 	},
 	method "entry_byname" {
-		c_call "TreeEntry *"  "git_tree_entry_byname" { "const char *", "filename" }
+		c_method_call "TreeEntry *"  "git_tree_entry_byname" { "const char *", "filename" }
 	},
 	method "entry_byindex" {
-		c_call "TreeEntry *"  "git_tree_entry_byindex" { "int", "index" }
+		c_method_call "TreeEntry *"  "git_tree_entry_byindex" { "int", "index" }
 	},
 	method "add_entry" {
-		var_in{"const OID", "id"},
-		var_in{"const char *", "filename"},
-		var_in{"int", "attributes"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_tree_add_entry(${this}, &(${id}), ${filename}, ${attributes});
-]],
+		c_method_call { "GitError", "err" } "git_tree_add_entry"
+			{ "const OID", "&id", "const char *", "filename", "int", "attributes" },
 	},
 	method "remove_entry_byname" {
-		c_call "GitError"  "git_tree_remove_entry_byname" { "const char *", "filename" }
+		c_method_call "GitError"  "git_tree_remove_entry_byname" { "const char *", "filename" }
 	},
 	method "remove_entry_byindex" {
-		c_call "GitError"  "git_tree_remove_entry_byindex" { "int", "index" }
+		c_method_call "GitError"  "git_tree_remove_entry_byindex" { "int", "index" }
 	},
 }
 

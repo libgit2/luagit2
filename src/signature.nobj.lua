@@ -27,7 +27,7 @@ typedef git_signature Signature;
 			{ "const char *", "name", "const char *", "email", "time_t", "time", "int", "offset" },
 	},
 	destructor {
-		c_call "void" "git_signature_free" {},
+		c_method_call "void" "git_signature_free" {},
 	},
 	method "name" {
 		var_out{"const char *", "name"},

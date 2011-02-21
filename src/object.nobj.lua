@@ -32,10 +32,10 @@ typedef git_object Object;
 		},
 	},
 	destructor {
-		c_call "void"  "git_object_free" {}
+		c_method_call "void" "git_object_free" {}
 	},
 	method "write" {
-		c_call "GitError"  "git_object_write" {}
+		c_method_call "GitError" "git_object_write" {}
 	},
 	method "id" {
 		var_out{ "OID", "id" },
@@ -48,7 +48,7 @@ typedef git_object Object;
 		c_source "${type} = git_object_type2string(git_object_type(${this}));"
 	},
 	method "owner" {
-		c_call "Repository *"  "git_object_owner" {}
+		c_method_call "Repository *" "git_object_owner" {}
 	},
 }
 

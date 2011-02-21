@@ -23,37 +23,36 @@ object "RevWalk" {
 typedef git_revwalk RevWalk;
 ]],
 	extends "Object",
-	const "SORT_NONE"        { 0x00 },
-	const "SORT_TOPOLOGICAL" { 0x01 },
-	const "SORT_TIME"        { 0x02 },
-	const "SORT_REVERSE"     { 0x04 },
+	constants {
+		SORT_NONE					= 0x00,
+		SORT_TOPOLOGICAL	= 0x01,
+		SORT_TIME					= 0x02,
+		SORT_REVERSE			= 0x04,
+	},
 	constructor "new" {
-		var_in{"Repository *", "repo"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_revwalk_new(&(${this}), ${repo});
-]],
+		c_call { "GitError", "err" } "git_revwalk_new"
+			{ "RevWalk *", "&this>1", "Repository *", "repo" },
 	},
 	destructor {
-		c_call "void" "git_revwalk_free" {}
+		c_method_call "void" "git_revwalk_free" {}
 	},
 	method "reset" {
-		c_call "void" "git_revwalk_reset" {}
+		c_method_call "void" "git_revwalk_reset" {}
 	},
 	method "push" {
-		c_call "GitError" "git_revwalk_push" { "Commit *", "commit" }
+		c_method_call "GitError" "git_revwalk_push" { "Commit *", "commit" }
 	},
 	method "hide" {
-		c_call "GitError" "git_revwalk_hide" { "Commit *", "commit" }
+		c_method_call "GitError" "git_revwalk_hide" { "Commit *", "commit" }
 	},
 	method "next" {
-		c_call "Commit *" "git_revwalk_next" {}
+		c_method_call "Commit *" "git_revwalk_next" {}
 	},
 	method "sorting" {
-		c_call "GitError" "git_revwalk_sorting" { "unsigned int", "sort_mode" }
+		c_method_call "GitError" "git_revwalk_sorting" { "unsigned int", "sort_mode" }
 	},
 	method "repository" {
-		c_call "Repository *" "git_revwalk_repository" {}
+		c_method_call "Repository *" "git_revwalk_repository" {}
 	},
 }
 

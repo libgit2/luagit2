@@ -66,7 +66,7 @@ static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, git_rawobj *
 	${this} = &(raw);
 	raw.git.type = git_object_string2type(${type});
 	raw.ref = LUA_REFNIL;
-	RawObject_set_data_and_ref(L, &raw, ${data}, ${data}_len, ${data::idx});
+	RawObject_set_data_and_ref(L, &raw, ${data}, ${data_len}, ${data::idx});
 ]],
 	},
 	constructor "header" {
@@ -89,19 +89,16 @@ static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, git_rawobj *
 ]],
 	},
 	method "data" {
-		var_out{"const char *", "data", has_length = true},
+		var_out{"<any>", "data" },
 		c_source [[
 	/* push Lua string. */
-	// TODO: add support to directly push Lua values.
-	//lua_rawgeti(L, LUA_REGISTRYINDEX, ${this}->ref);
-	${data} = ${this}->git.data;
-	${data}_len = ${this}->git.len;
+	lua_rawgeti(L, LUA_REGISTRYINDEX, ${this}->ref);
 ]],
 	},
 	method "set_data" {
 		var_in{"const char *", "data"},
 		c_source [[
-	RawObject_set_data_and_ref(L, ${this}, ${data}, ${data}_len, ${data::idx});
+	RawObject_set_data_and_ref(L, ${this}, ${data}, ${data_len}, ${data::idx});
 ]],
 	},
 	method "len" {

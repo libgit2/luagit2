@@ -24,17 +24,11 @@ typedef git_oid OID;
 ]],
 	userdata_type = 'simple',
 	constructor "str" {
-    var_in{"const char *", "hex"},
-    var_out{"GitError", "err"},
-    c_source [[
-  ${err} = git_oid_mkstr(&(${this}), ${hex});
-]],
+		c_call {"GitError", "err"} "git_oid_mkstr"
+			{ "OID", "&this", "const char *", "hex" },
 	},
 	constructor "raw" {
-    var_in{"const unsigned char *", "raw"},
-    c_source [[
-  git_oid_mkraw(&(${this}), ${raw});
-]],
+		c_call "void" "git_oid_mkraw" { "OID", "&this", "const unsigned char *", "raw" },
 	},
 	method "__str__" {
 		var_out{"const char *", "ret"},
@@ -46,11 +40,7 @@ typedef git_oid OID;
 ]],
 	},
 	method "__eq__" {
-    var_in{"OID", "id"},
-		var_out{"int", "ret"},
-    c_source [[
-  ${ret} = git_oid_cmp(&(${this}), &(${id}));
-]],
+		c_call {"int", "ret"} "git_oid_cmp" { "OID", "&this", "OID", "&id" },
 	},
 }
 

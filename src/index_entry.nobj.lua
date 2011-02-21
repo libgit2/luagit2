@@ -22,11 +22,13 @@ object "IndexEntry" {
 	c_source [[
 typedef git_index_entry IndexEntry;
 ]],
-	const "NAMEMASK" { 0x0fff },
-	const "STAGEMASK" { 0x3000 },
-	const "EXTENDED" { 0x4000 },
-	const "VALID" { 0x8000 },
-	const "STAGESHIFT" { 12 },
+	constants {
+		NAMEMASK		= 0x0fff,
+		STAGEMASK		= 0x3000,
+		EXTENDED		= 0x4000,
+		VALID				= 0x8000,
+		STAGESHIFT  = 12,
+	},
 	constructor {
 		c_source [[
 	${this} = calloc(1, sizeof(IndexEntry));
@@ -154,7 +156,7 @@ typedef git_index_entry IndexEntry;
 	if(${this}->path != NULL) {
 		free(${this}->path);
 	}
-	${this}->path = strndup(${val}, ${val}_len);
+	${this}->path = strndup(${val}, ${val_len});
 ]]
 	},
 }
