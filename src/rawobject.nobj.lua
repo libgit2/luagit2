@@ -55,6 +55,12 @@ static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, git_rawobj *
 	}
 }
 
+static void RawObject_close(lua_State *L, RawObject *raw) {
+	luaL_unref(L, LUA_REGISTRYINDEX, raw->ref);
+	raw->ref = LUA_REFNIL;
+	raw->git.data = NULL;
+}
+
 ]],
 	userdata_type = 'embed',
 	default = 'NULL',
@@ -81,11 +87,14 @@ static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, git_rawobj *
 	raw.ref = LUA_REFNIL;
 ]],
 	},
-	destructor "close" {
+	destructor {
 		c_source [[
-	luaL_unref(L, LUA_REGISTRYINDEX, ${this}->ref);
-	${this}->ref = LUA_REFNIL;
-	${this}->git.data = NULL;
+	RawObject_close(L, ${this});
+]],
+	},
+	method "close" {
+		c_source [[
+	RawObject_close(L, ${this});
 ]],
 	},
 	method "data" {

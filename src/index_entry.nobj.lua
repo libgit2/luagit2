@@ -156,7 +156,9 @@ typedef git_index_entry IndexEntry;
 	if(${this}->path != NULL) {
 		free(${this}->path);
 	}
-	${this}->path = strndup(${val}, ${val_len});
+	${this}->path = malloc(${val_len});
+	strncpy(${this}->path, ${val}, ${val_len});
+	${this}->path[${val_len}] = 0;
 ]]
 	},
 }

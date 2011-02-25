@@ -21,13 +21,25 @@
 
 
 
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
+#ifdef _MSC_VER
+
+/* define some types that we need. */
+typedef __int32 int32_t;
+typedef unsigned __int32 uint32_t;
+
+#define FUNC_UNUSED
+
+#else
+
+#include <stdint.h>
+
 #define FUNC_UNUSED __attribute__((unused))
+
+#endif
 
 #if defined(__GNUC__) && (__GNUC__ >= 4)
 #define assert_obj_type(type, obj) \
@@ -127,6 +139,13 @@ typedef struct obj_udata {
 
 /* use static pointer as key to weak userdata table. */
 static char *obj_udata_weak_ref_key = "obj_udata_weak_ref_key";
+
+#if LUAJIT_FFI
+typedef struct ffi_export_symbol {
+	const char *name;
+	void       *sym;
+} ffi_export_symbol;
+#endif
 
 
 #define obj_type_id_Repository 0
@@ -393,6 +412,7 @@ static FUNC_UNUSED void *obj_udata_luadelete(lua_State *L, int _index, obj_type 
 }
 
 static FUNC_UNUSED void obj_udata_luapush(lua_State *L, void *obj, obj_type *type, int flags) {
+	obj_udata *ud;
 	/* convert NULL's into Lua nil's. */
 	if(obj == NULL) {
 		lua_pushnil(L);
@@ -403,7 +423,7 @@ static FUNC_UNUSED void obj_udata_luapush(lua_State *L, void *obj, obj_type *typ
 		(type->dcaster)(&obj, &type);
 	}
 	/* create new userdata. */
-	obj_udata *ud = (obj_udata *)lua_newuserdata(L, sizeof(obj_udata));
+	ud = (obj_udata *)lua_newuserdata(L, sizeof(obj_udata));
 	ud->obj = obj;
 	ud->flags = flags;
 	/* get obj_type metatable. */
@@ -522,6 +542,9 @@ static FUNC_UNUSED void * obj_simple_udata_luadelete(lua_State *L, int _index, o
 	obj = obj_simple_udata_luacheck(L, _index, type);
 #endif
 	*flags = OBJ_UDATA_FLAG_OWN;
+	/* clear the metatable to invalidate userdata. */
+	lua_pushnil(L);
+	lua_setmetatable(L, _index);
 	return obj;
 }
 
@@ -617,7 +640,7 @@ static void obj_type_register_package(lua_State *L, const reg_sub_module *type_r
 	lua_pop(L, 1);  /* drop package table */
 }
 
-static void obj_type_register(lua_State *L, const reg_sub_module *type_reg) {
+static void obj_type_register(lua_State *L, const reg_sub_module *type_reg, int priv_table) {
 	const luaL_reg *reg_list;
 	obj_type *type = type_reg->type;
 	const obj_base *base = type_reg->bases;
@@ -660,6 +683,13 @@ static void obj_type_register(lua_State *L, const reg_sub_module *type_reg) {
 	lua_pushvalue(L, -2); /* dup metatable. */
 	lua_rawset(L, LUA_REGISTRYINDEX);    /* REGISTRY[type] = metatable */
 
+#if LUAJIT_FFI
+	/* add metatable to 'priv_table' */
+	lua_pushstring(L, type->name);
+	lua_pushvalue(L, -2); /* dup metatable. */
+	lua_rawset(L, priv_table);    /* priv_table["<object_name>"] = metatable */
+#endif
+
 	luaL_register(L, NULL, type_reg->metas); /* fill metatable */
 
 	/* add obj_bases to metatable. */
@@ -690,14 +720,45 @@ static FUNC_UNUSED int lua_checktype_ref(lua_State *L, int _index, int _type) {
 }
 
 #if LUAJIT_FFI
-static int nobj_try_loading_ffi(lua_State *L, const char *ffi_init_code) {
+static int nobj_udata_new_ffi(lua_State *L) {
+	size_t size = luaL_checkinteger(L, 1);
+	void *ud;
+	luaL_checktype(L, 2, LUA_TTABLE);
+	lua_settop(L, 2);
+	/* create userdata. */
+	ud = lua_newuserdata(L, size);
+	lua_replace(L, 1);
+	/* set userdata's metatable. */
+	lua_setmetatable(L, 1);
+	return 1;
+}
+
+static int nobj_try_loading_ffi(lua_State *L, const char *ffi_mod_name,
+		const char *ffi_init_code, const ffi_export_symbol *ffi_exports, int priv_table)
+{
 	int err;
 
-	err = luaL_loadstring(L, ffi_init_code);
-
-	lua_pushvalue(L, -2); /* dup C module's table. */
-	err = lua_pcall(L, 1, 0, 0);
+	/* export symbols to priv_table. */
+	while(ffi_exports->name != NULL) {
+		lua_pushstring(L, ffi_exports->name);
+		lua_pushlightuserdata(L, ffi_exports->sym);
+		lua_settable(L, priv_table);
+		ffi_exports++;
+	}
+	err = luaL_loadbuffer(L, ffi_init_code, strlen(ffi_init_code), ffi_mod_name);
+	if(0 == err) {
+		lua_pushvalue(L, -2); /* dup C module's table. */
+		lua_pushvalue(L, priv_table); /* move priv_table to top of stack. */
+		lua_remove(L, priv_table);
+		lua_pushcfunction(L, nobj_udata_new_ffi);
+		err = lua_pcall(L, 3, 0, 0);
+	}
 	if(err) {
+		const char *msg = "<err not a string>";
+		if(lua_isstring(L, -1)) {
+			msg = lua_tostring(L, -1);
+		}
+		printf("Failed to install FFI-based bindings: %s\n", msg);
 		lua_pop(L, 1); /* pop error message. */
 	}
 	return err;
@@ -742,6 +803,12 @@ static void RawObject_from_git_rawobj(lua_State *L, RawObject *raw, git_rawobj *
 	if(cleanup && git->data != NULL) {
 		git_rawobj_close(git);
 	}
+}
+
+static void RawObject_close(lua_State *L, RawObject *raw) {
+	luaL_unref(L, LUA_REGISTRYINDEX, raw->ref);
+	raw->ref = LUA_REFNIL;
+	raw->git.data = NULL;
 }
 
 
@@ -849,7 +916,7 @@ static int database_backend_write_cb(git_oid *oid, git_odb_backend *backend, git
 	lua_rawgeti(L, LUA_REGISTRYINDEX, lua_backend->write);
 
 	/* convert git_rawobj to RawObject */
-	RawObject_from_git_rawobj(L, &raw, obj, false);
+	RawObject_from_git_rawobj(L, &raw, obj, 0);
 	/* push RawObject onto stack. */
 	obj_type_RawObject_push(L, &raw, 0);
 
@@ -954,12 +1021,11 @@ static int Repository__open2__meth(lua_State *L) {
   return 2;
 }
 
-/* method: open_no_backend */
-static int Repository__open_no_backend__meth(lua_State *L) {
+/* method: open3 */
+static int Repository__open3__meth(lua_State *L) {
   size_t dir_len_idx1;
   const char * dir_idx1 = luaL_checklstring(L,1,&(dir_len_idx1));
-  size_t object_directory_len_idx2;
-  const char * object_directory_idx2 = luaL_checklstring(L,2,&(object_directory_len_idx2));
+  Database * object_database_idx2 = obj_type_Database_check(L,2);
   size_t index_file_len_idx3;
   const char * index_file_idx3 = luaL_checklstring(L,3,&(index_file_len_idx3));
   size_t work_tree_len_idx4;
@@ -967,13 +1033,7 @@ static int Repository__open_no_backend__meth(lua_State *L) {
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Repository * this_idx1;
   GitError err_idx2 = GIT_SUCCESS;
-#ifdef HAVE_git_repository_open_no_backend
-	err_idx2 = git_repository_open_no_backend(&(this_idx1), dir_idx1, object_directory_idx2, index_file_idx3, work_tree_idx4);
-#else
-	luaL_error(L, "Your version of LibGit2 doesn't have 'git_repository_open_no_backend'");
-#endif
-
-
+  err_idx2 = git_repository_open3(&(this_idx1), dir_idx1, object_database_idx2, index_file_idx3, work_tree_idx4);
   if(!(GIT_SUCCESS != err_idx2)) {
     obj_type_Repository_push(L, this_idx1, this_flags_idx1);
   } else {
@@ -987,7 +1047,7 @@ static int Repository__open_no_backend__meth(lua_State *L) {
 static int Repository__init__meth(lua_State *L) {
   size_t path_len_idx1;
   const char * path_idx1 = luaL_checklstring(L,1,&(path_len_idx1));
-  bool is_bare_idx2 = lua_toboolean(L,2);
+  unsigned int is_bare_idx2 = luaL_checkinteger(L,2);
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Repository * this_idx1;
   GitError err_idx2 = GIT_SUCCESS;
@@ -1022,10 +1082,16 @@ static int Repository__database__meth(lua_State *L) {
 /* method: index */
 static int Repository__index__meth(lua_State *L) {
   Repository * this_idx1 = obj_type_Repository_check(L,1);
-  Index * rc_git_repository_index_idx1;
-  rc_git_repository_index_idx1 = git_repository_index(this_idx1);
-  obj_type_Index_push(L, rc_git_repository_index_idx1, 0);
-  return 1;
+  Index * index_idx1;
+  GitError err_idx2 = GIT_SUCCESS;
+  err_idx2 = git_repository_index(&(index_idx1), this_idx1);
+  if(!(GIT_SUCCESS != err_idx2)) {
+    obj_type_Index_push(L, index_idx1, 0);
+  } else {
+    lua_pushnil(L);
+  }
+  error_code__GitError__push(L, err_idx2);
+  return 2;
 }
 
 /* method: lookup */
@@ -1120,14 +1186,20 @@ static int RawObject__header__meth(lua_State *L) {
   return 1;
 }
 
-/* method: close */
-static int RawObject__close__meth(lua_State *L) {
+/* method: delete */
+static int RawObject__delete__meth(lua_State *L) {
   int this_flags_idx1 = 0;
   RawObject * this_idx1 = obj_type_RawObject_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
-	luaL_unref(L, LUA_REGISTRYINDEX, this_idx1->ref);
-	this_idx1->ref = LUA_REFNIL;
-	this_idx1->git.data = NULL;
+	RawObject_close(L, this_idx1);
+
+  return 0;
+}
+
+/* method: close */
+static int RawObject__close__meth(lua_State *L) {
+  RawObject * this_idx1 = obj_type_RawObject_check(L,1);
+	RawObject_close(L, this_idx1);
 
   return 0;
 }
@@ -1291,8 +1363,28 @@ static int Database__close__meth(lua_State *L) {
 static int Database__add_backend__meth(lua_State *L) {
   Database * this_idx1 = obj_type_Database_check(L,1);
   DatabaseBackend * backend_idx2 = obj_type_DatabaseBackend_check(L,2);
+  int priority_idx3 = luaL_checkinteger(L,3);
   GitError err_idx1 = GIT_SUCCESS;
-	err_idx1 = git_odb_add_backend(this_idx1, &(backend_idx2->backend));
+	err_idx1 = git_odb_add_backend(this_idx1, &(backend_idx2->backend), priority_idx3);
+	DatabaseBackend_ref(backend_idx2);
+
+  /* check for error. */
+  if((GIT_SUCCESS != err_idx1)) {
+    lua_pushboolean(L, 0);
+      error_code__GitError__push(L, err_idx1);
+  } else {
+    lua_pushboolean(L, 1);
+  }
+  return 2;
+}
+
+/* method: add_alternate */
+static int Database__add_alternate__meth(lua_State *L) {
+  Database * this_idx1 = obj_type_Database_check(L,1);
+  DatabaseBackend * backend_idx2 = obj_type_DatabaseBackend_check(L,2);
+  int priority_idx3 = luaL_checkinteger(L,3);
+  GitError err_idx1 = GIT_SUCCESS;
+	err_idx1 = git_odb_add_alternate(this_idx1, &(backend_idx2->backend), priority_idx3);
 	DatabaseBackend_ref(backend_idx2);
 
   /* check for error. */
@@ -1316,7 +1408,7 @@ static int Database__read__meth(lua_State *L) {
 	err_idx2 = git_odb_read(&(git), this_idx1, &(id_idx2));
 	if(err_idx2 == GIT_SUCCESS) {
 		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &git, true);
+		RawObject_from_git_rawobj(L, &raw, &git, 1);
 		obj_idx1 = &(raw);
 	}
 
@@ -1340,7 +1432,7 @@ static int Database__read_header__meth(lua_State *L) {
 	err_idx2 = git_odb_read_header(&(git), this_idx1, &(id_idx2));
 	if(err_idx2 == GIT_SUCCESS) {
 		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &git, true);
+		RawObject_from_git_rawobj(L, &raw, &git, 1);
 		obj_idx1 = &(raw);
 	}
 
@@ -1392,7 +1484,6 @@ static int DatabaseBackend__new__meth(lua_State *L) {
   DatabaseBackend * this_idx1;
 	int idx;
 	int ref;
-	int priority = luaL_optinteger(L, 2, 0);
 
 	luaL_checktype(L, 1, LUA_TTABLE);
 	lua_settop(L, 1);
@@ -1412,8 +1503,6 @@ static int DatabaseBackend__new__meth(lua_State *L) {
 	REF_CB(exists)
 	REF_CB(free)
 #undef REF_CB
-
-	this_idx1->backend.priority = priority;
 
   obj_type_DatabaseBackend_push(L, this_idx1, this_flags_idx1);
   return 1;
@@ -1814,7 +1903,9 @@ static int IndexEntry__set_path__meth(lua_State *L) {
 	if(this_idx1->path != NULL) {
 		free(this_idx1->path);
 	}
-	this_idx1->path = strndup(val_idx2, val_len_idx2);
+	this_idx1->path = malloc(val_len_idx2);
+	strncpy(this_idx1->path, val_idx2, val_len_idx2);
+	this_idx1->path[val_len_idx2] = 0;
 
   return 0;
 }
@@ -2284,15 +2375,15 @@ static int Tree__add_entry__meth(lua_State *L) {
   size_t filename_len_idx3;
   const char * filename_idx3 = luaL_checklstring(L,3,&(filename_len_idx3));
   int attributes_idx4 = luaL_checkinteger(L,4);
-  GitError err_idx1 = GIT_SUCCESS;
-  err_idx1 = git_tree_add_entry(this_idx1, &(id_idx2), filename_idx3, attributes_idx4);
-  /* check for error. */
-  if((GIT_SUCCESS != err_idx1)) {
-    lua_pushboolean(L, 0);
-      error_code__GitError__push(L, err_idx1);
+  TreeEntry * entry_out_idx1;
+  GitError err_idx2 = GIT_SUCCESS;
+  err_idx2 = git_tree_add_entry(&(entry_out_idx1), this_idx1, &(id_idx2), filename_idx3, attributes_idx4);
+  if(!(GIT_SUCCESS != err_idx2)) {
+    obj_type_TreeEntry_push(L, entry_out_idx1, 0);
   } else {
-    lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
+  error_code__GitError__push(L, err_idx2);
   return 2;
 }
 
@@ -2566,10 +2657,16 @@ static int RevWalk__hide__meth(lua_State *L) {
 /* method: next */
 static int RevWalk__next__meth(lua_State *L) {
   RevWalk * this_idx1 = obj_type_RevWalk_check(L,1);
-  Commit * rc_git_revwalk_next_idx1;
-  rc_git_revwalk_next_idx1 = git_revwalk_next(this_idx1);
-  obj_type_Commit_push(L, rc_git_revwalk_next_idx1, 0);
-  return 1;
+  Commit * commit_idx1;
+  GitError rc_git_revwalk_next_idx2 = GIT_SUCCESS;
+  rc_git_revwalk_next_idx2 = git_revwalk_next(&(commit_idx1), this_idx1);
+  if(!(GIT_SUCCESS != rc_git_revwalk_next_idx2)) {
+    obj_type_Commit_push(L, commit_idx1, 0);
+  } else {
+    lua_pushnil(L);
+  }
+  error_code__GitError__push(L, rc_git_revwalk_next_idx2);
+  return 2;
 }
 
 /* method: sorting */
@@ -2602,7 +2699,7 @@ static int RevWalk__repository__meth(lua_State *L) {
 static const luaL_reg obj_Repository_pub_funcs[] = {
   {"open", Repository__open__meth},
   {"open2", Repository__open2__meth},
-  {"open_no_backend", Repository__open_no_backend__meth},
+  {"open3", Repository__open3__meth},
   {"init", Repository__init__meth},
   {NULL, NULL}
 };
@@ -2653,7 +2750,7 @@ static const luaL_reg obj_RawObject_methods[] = {
 };
 
 static const luaL_reg obj_RawObject_metas[] = {
-  {"__gc", RawObject__close__meth},
+  {"__gc", RawObject__delete__meth},
   {"__tostring", obj_simple_udata_default_tostring},
   {"__eq", obj_simple_udata_default_equal},
   {NULL, NULL}
@@ -2708,6 +2805,7 @@ static const luaL_reg obj_Database_pub_funcs[] = {
 static const luaL_reg obj_Database_methods[] = {
   {"close", Database__close__meth},
   {"add_backend", Database__add_backend__meth},
+  {"add_alternate", Database__add_alternate__meth},
   {"read", Database__read__meth},
   {"read_header", Database__read_header__meth},
   {"write", Database__write__meth},
@@ -3241,14 +3339,22 @@ static void create_object_instance_cache(lua_State *L) {
 int luaopen_git2(lua_State *L) {
 	const reg_sub_module *reg = reg_sub_modules;
 	const luaL_Reg *submodules = submodule_libs;
+	int priv_table = -1;
+
+#if LUAJIT_FFI
+	/* private table to hold reference to object metatables. */
+	lua_newtable(L);
+	priv_table = lua_gettop(L);
+#endif
+
+	/* create object cache. */
+	create_object_instance_cache(L);
+
 	/* module table. */
 	luaL_register(L, "git2", git2_function);
 
 	/* register module constants. */
 	obj_type_register_constants(L, git2_constants, -1);
-
-	/* create object cache. */
-	create_object_instance_cache(L);
 
 	for(; submodules->func != NULL ; submodules++) {
 		lua_pushcfunction(L, submodules->func);
@@ -3265,11 +3371,12 @@ int luaopen_git2(lua_State *L) {
 		lua_pushvalue(L, -1);                 /* dup value. */
 		lua_setglobal(L, reg->type->name);    /* global: <object_name> = <object public API> */
 #endif
-		obj_type_register(L, reg);
+		obj_type_register(L, reg, priv_table);
 	}
 
 #if LUAJIT_FFI
-	nobj_try_loading_ffi(L, git2_ffi_lua_code);
+	nobj_try_loading_ffi(L, "git2", git2_ffi_lua_code,
+		git2_ffi_export, priv_table);
 #endif
 	return 1;
 }

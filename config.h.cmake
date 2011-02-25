@@ -11,7 +11,4 @@
 #ifndef __LUA_GIT2_CONFIG_H__
 #define __LUA_GIT2_CONFIG_H__
 
-/* libgit2 feature support */
-#cmakedefine HAVE_git_repository_open_no_backend
-
 #endif /* __LUA_GIT2_CONFIG_H__ */

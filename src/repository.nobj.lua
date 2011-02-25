@@ -31,24 +31,14 @@ typedef git_repository Repository;
 			{ "Repository *", "&this>1", "const char *", "dir", "const char *", "object_directory",
 				"const char *", "index_file", "const char *", "work_tree" },
 	},
-	constructor "open_no_backend" {
-		var_in{"const char *", "dir"},
-		var_in{"const char *", "object_directory"},
-		var_in{"const char *", "index_file"},
-		var_in{"const char *", "work_tree"},
-		var_out{"GitError", "err"},
-		c_source [[
-#ifdef HAVE_git_repository_open_no_backend
-	${err} = git_repository_open_no_backend(&(${this}), ${dir}, ${object_directory}, ${index_file}, ${work_tree});
-#else
-	luaL_error(L, "Your version of LibGit2 doesn't have 'git_repository_open_no_backend'");
-#endif
-
-]],
+	constructor "open3" {
+		c_call { "GitError", "err" } "git_repository_open3"
+			{ "Repository *", "&this>1", "const char *", "dir", "Database *", "object_database",
+				"const char *", "index_file", "const char *", "work_tree" },
 	},
 	constructor "init" {
 		c_call { "GitError", "err" } "git_repository_init"
-			{ "Repository *", "&this>1", "const char *", "path", "bool", "is_bare" },
+			{ "Repository *", "&this>1", "const char *", "path", "unsigned int", "is_bare" },
 	},
 	destructor {
 		c_method_call "void"  "git_repository_free" {}
@@ -57,7 +47,8 @@ typedef git_repository Repository;
 		c_method_call "Database *" "git_repository_database" {}
 	},
 	method "index" {
-		c_method_call "Index *" "git_repository_index" {}
+		c_call { "GitError", "err" } "git_repository_index"
+			{ "Index *", "&index>1", "Repository *", "this" },
 	},
 	method "lookup" {
 		c_call { "int", "(otype)" } "git_object_string2type" { "const char *", "type<3" },

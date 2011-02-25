@@ -46,7 +46,7 @@ typedef git_revwalk RevWalk;
 		c_method_call "GitError" "git_revwalk_hide" { "Commit *", "commit" }
 	},
 	method "next" {
-		c_method_call "Commit *" "git_revwalk_next" {}
+		c_call "GitError" "git_revwalk_next" { "Commit *", "&commit>1", "RevWalk *", "this<1" }
 	},
 	method "sorting" {
 		c_method_call "GitError" "git_revwalk_sorting" { "unsigned int", "sort_mode" }

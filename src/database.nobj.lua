@@ -34,9 +34,19 @@ typedef git_odb Database;
 	},
 	method "add_backend" {
 		var_in{"DatabaseBackend *", "backend"},
+		var_in{"int", "priority"},
 		var_out{"GitError", "err"},
 		c_source [[
-	${err} = git_odb_add_backend(${this}, &(${backend}->backend));
+	${err} = git_odb_add_backend(${this}, &(${backend}->backend), ${priority});
+	DatabaseBackend_ref(${backend});
+]],
+	},
+	method "add_alternate" {
+		var_in{"DatabaseBackend *", "backend"},
+		var_in{"int", "priority"},
+		var_out{"GitError", "err"},
+		c_source [[
+	${err} = git_odb_add_alternate(${this}, &(${backend}->backend), ${priority});
 	DatabaseBackend_ref(${backend});
 ]],
 	},
@@ -50,7 +60,7 @@ typedef git_odb Database;
 	${err} = git_odb_read(&(git), ${this}, &(${id}));
 	if(${err} == GIT_SUCCESS) {
 		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &git, true);
+		RawObject_from_git_rawobj(L, &raw, &git, 1);
 		${obj} = &(raw);
 	}
 ]],
@@ -65,7 +75,7 @@ typedef git_odb Database;
 	${err} = git_odb_read_header(&(git), ${this}, &(${id}));
 	if(${err} == GIT_SUCCESS) {
 		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &git, true);
+		RawObject_from_git_rawobj(L, &raw, &git, 1);
 		${obj} = &(raw);
 	}
 ]],

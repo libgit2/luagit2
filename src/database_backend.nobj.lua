@@ -120,7 +120,7 @@ static int database_backend_write_cb(git_oid *oid, git_odb_backend *backend, git
 	lua_rawgeti(L, LUA_REGISTRYINDEX, lua_backend->write);
 
 	/* convert git_rawobj to RawObject */
-	RawObject_from_git_rawobj(L, &raw, obj, false);
+	RawObject_from_git_rawobj(L, &raw, obj, 0);
 	/* push RawObject onto stack. */
 	obj_type_RawObject_push(L, &raw, 0);
 
@@ -168,7 +168,6 @@ static void database_backend_free_cb(git_odb_backend *backend)
 		c_source [[
 	int idx;
 	int ref;
-	int priority = luaL_optinteger(L, 2, 0);
 
 	luaL_checktype(L, 1, LUA_TTABLE);
 	lua_settop(L, 1);
@@ -188,8 +187,6 @@ static void database_backend_free_cb(git_odb_backend *backend)
 	REF_CB(exists)
 	REF_CB(free)
 #undef REF_CB
-
-	${this}->backend.priority = priority;
 ]]
 	},
 	destructor {
