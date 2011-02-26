@@ -394,13 +394,7 @@ static FUNC_UNUSED void *obj_udata_luacheck(lua_State *L, int _index, obj_type *
 
 static FUNC_UNUSED void *obj_udata_luadelete(lua_State *L, int _index, obj_type *type, int *flags) {
 	void *obj;
-#if OBJ_DATA_HIDDEN_METATABLE
-	obj_udata *ud = obj_udata_toobj(L, _index);
-	(void)type;
-	obj = ud->obj;
-#else
 	obj_udata *ud = obj_udata_luacheck_internal(L, _index, &(obj), type);
-#endif
 	*flags = ud->flags;
 	/* null userdata. */
 	ud->obj = NULL;
@@ -535,12 +529,7 @@ static FUNC_UNUSED void * obj_simple_udata_luacheck(lua_State *L, int _index, ob
 
 static FUNC_UNUSED void * obj_simple_udata_luadelete(lua_State *L, int _index, obj_type *type, int *flags) {
 	void *obj;
-#if OBJ_DATA_HIDDEN_METATABLE
-	obj = obj_simple_udata_toobj(L, _index);
-	(void)type;
-#else
 	obj = obj_simple_udata_luacheck(L, _index, type);
-#endif
 	*flags = OBJ_UDATA_FLAG_OWN;
 	/* clear the metatable to invalidate userdata. */
 	lua_pushnil(L);
