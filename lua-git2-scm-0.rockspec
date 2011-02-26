@@ -3,12 +3,12 @@
 package	= 'lua-git2'
 version	= 'scm-0'
 source	= {
-	url	= 'git://github.com/Neopallium/luagit2.git'
+	url	= 'git://github.com/libgit2/luagit2.git'
 }
 description	= {
 	summary	= "LibGit2 bindings for Lua.",
 	detailed	= '',
-	homepage	= 'https://github.com/Neopallium/luagit2',
+	homepage	= 'https://github.com/libgit2/luagit2',
 	license	= 'MIT',
 	maintainer = "Robert G. Jakabosky",
 }

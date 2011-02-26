@@ -8,7 +8,7 @@ Installing
 
 ### Install lua-git2:
 
-	curl -O "https://github.com/Neopallium/luagit2/raw/master/lua-git2-scm-0.rockspec"
+	curl -O "https://github.com/libgit2/luagit2/raw/master/lua-git2-scm-0.rockspec"
 	
 	luarocks install lua-git2-scm-0.rockspec
 
