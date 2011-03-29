@@ -27,15 +27,19 @@
 
 #ifdef _MSC_VER
 
-/* define some types that we need. */
+/* define some standard types missing on Windows. */
 typedef __int32 int32_t;
+typedef __int64 int64_t;
 typedef unsigned __int32 uint32_t;
+typedef unsigned __int64 uint64_t;
+typedef int bool;
 
 #define FUNC_UNUSED
 
 #else
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define FUNC_UNUSED __attribute__((unused))
 
@@ -150,123 +154,123 @@ typedef struct ffi_export_symbol {
 
 #define obj_type_id_Repository 0
 #define obj_type_Repository_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_Repository))
+	obj_udata_luacheck(L, _index, &(obj_type_Repository))
 #define obj_type_Repository_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_Repository), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_Repository), flags)
 #define obj_type_Repository_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Repository), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Repository), flags)
 
 #define obj_type_id_RawObject 1
 #define obj_type_RawObject_check(L, _index) \
-  (RawObject *)obj_simple_udata_luacheck(L, _index, &(obj_type_RawObject))
+	(RawObject *)obj_simple_udata_luacheck(L, _index, &(obj_type_RawObject))
 #define obj_type_RawObject_delete(L, _index, flags) \
-  (RawObject *)obj_simple_udata_luadelete(L, _index, &(obj_type_RawObject), flags)
+	(RawObject *)obj_simple_udata_luadelete(L, _index, &(obj_type_RawObject), flags)
 #define obj_type_RawObject_push(L, obj, flags) \
-  obj_simple_udata_luapush(L, obj, sizeof(RawObject), &(obj_type_RawObject))
+	obj_simple_udata_luapush(L, obj, sizeof(RawObject), &(obj_type_RawObject))
 
 #define obj_type_id_OID 2
 #define obj_type_OID_check(L, _index) \
-  *((OID *)obj_simple_udata_luacheck(L, _index, &(obj_type_OID)))
+	*((OID *)obj_simple_udata_luacheck(L, _index, &(obj_type_OID)))
 #define obj_type_OID_delete(L, _index, flags) \
-  *((OID *)obj_simple_udata_luadelete(L, _index, &(obj_type_OID), flags))
+	*((OID *)obj_simple_udata_luadelete(L, _index, &(obj_type_OID), flags))
 #define obj_type_OID_push(L, obj, flags) \
-  obj_simple_udata_luapush(L, &(obj), sizeof(OID), &(obj_type_OID))
+	obj_simple_udata_luapush(L, &(obj), sizeof(OID), &(obj_type_OID))
 
 #define obj_type_id_Database 3
 #define obj_type_Database_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_Database))
+	obj_udata_luacheck(L, _index, &(obj_type_Database))
 #define obj_type_Database_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_Database), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_Database), flags)
 #define obj_type_Database_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Database), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Database), flags)
 
 #define obj_type_id_DatabaseBackend 4
 #define obj_type_DatabaseBackend_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_DatabaseBackend))
+	obj_udata_luacheck(L, _index, &(obj_type_DatabaseBackend))
 #define obj_type_DatabaseBackend_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_DatabaseBackend), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_DatabaseBackend), flags)
 #define obj_type_DatabaseBackend_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_DatabaseBackend), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_DatabaseBackend), flags)
 
 #define obj_type_id_Index 5
 #define obj_type_Index_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_Index))
+	obj_udata_luacheck(L, _index, &(obj_type_Index))
 #define obj_type_Index_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_Index), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_Index), flags)
 #define obj_type_Index_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Index), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Index), flags)
 
 #define obj_type_id_IndexEntry 6
 #define obj_type_IndexEntry_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_IndexEntry))
+	obj_udata_luacheck(L, _index, &(obj_type_IndexEntry))
 #define obj_type_IndexEntry_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_IndexEntry), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_IndexEntry), flags)
 #define obj_type_IndexEntry_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_IndexEntry), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_IndexEntry), flags)
 
 #define obj_type_id_Object 7
 #define obj_type_Object_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_Object))
+	obj_udata_luacheck(L, _index, &(obj_type_Object))
 #define obj_type_Object_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_Object), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_Object), flags)
 #define obj_type_Object_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Object), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Object), flags)
 
 #define obj_type_id_Blob 8
 #define obj_type_Blob_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_Blob))
+	obj_udata_luacheck(L, _index, &(obj_type_Blob))
 #define obj_type_Blob_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_Blob), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_Blob), flags)
 #define obj_type_Blob_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Blob), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Blob), flags)
 
 #define obj_type_id_Signature 9
 #define obj_type_Signature_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_Signature))
+	obj_udata_luacheck(L, _index, &(obj_type_Signature))
 #define obj_type_Signature_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_Signature), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_Signature), flags)
 #define obj_type_Signature_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Signature), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Signature), flags)
 
 #define obj_type_id_Commit 10
 #define obj_type_Commit_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_Commit))
+	obj_udata_luacheck(L, _index, &(obj_type_Commit))
 #define obj_type_Commit_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_Commit), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_Commit), flags)
 #define obj_type_Commit_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Commit), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Commit), flags)
 
 #define obj_type_id_Tree 11
 #define obj_type_Tree_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_Tree))
+	obj_udata_luacheck(L, _index, &(obj_type_Tree))
 #define obj_type_Tree_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_Tree), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_Tree), flags)
 #define obj_type_Tree_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Tree), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Tree), flags)
 
 #define obj_type_id_TreeEntry 12
 #define obj_type_TreeEntry_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_TreeEntry))
+	obj_udata_luacheck(L, _index, &(obj_type_TreeEntry))
 #define obj_type_TreeEntry_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_TreeEntry), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_TreeEntry), flags)
 #define obj_type_TreeEntry_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_TreeEntry), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_TreeEntry), flags)
 
 #define obj_type_id_Tag 13
 #define obj_type_Tag_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_Tag))
+	obj_udata_luacheck(L, _index, &(obj_type_Tag))
 #define obj_type_Tag_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_Tag), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_Tag), flags)
 #define obj_type_Tag_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Tag), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_Tag), flags)
 
 #define obj_type_id_RevWalk 14
 #define obj_type_RevWalk_check(L, _index) \
-  obj_udata_luacheck(L, _index, &(obj_type_RevWalk))
+	obj_udata_luacheck(L, _index, &(obj_type_RevWalk))
 #define obj_type_RevWalk_delete(L, _index, flags) \
-  obj_udata_luadelete(L, _index, &(obj_type_RevWalk), flags)
+	obj_udata_luadelete_weak(L, _index, &(obj_type_RevWalk), flags)
 #define obj_type_RevWalk_push(L, obj, flags) \
-  obj_udata_luapush_weak(L, (void *)obj, &(obj_type_RevWalk), flags)
+	obj_udata_luapush_weak(L, (void *)obj, &(obj_type_RevWalk), flags)
 
 
 
@@ -424,6 +428,26 @@ static FUNC_UNUSED void obj_udata_luapush(lua_State *L, void *obj, obj_type *typ
 	lua_pushlightuserdata(L, type);
 	lua_rawget(L, LUA_REGISTRYINDEX); /* type's metatable. */
 	lua_setmetatable(L, -2);
+}
+
+static FUNC_UNUSED void *obj_udata_luadelete_weak(lua_State *L, int _index, obj_type *type, int *flags) {
+	void *obj;
+	obj_udata *ud = obj_udata_luacheck_internal(L, _index, &(obj), type);
+	*flags = ud->flags;
+	/* null userdata. */
+	ud->obj = NULL;
+	ud->flags = 0;
+	/* clear the metatable to invalidate userdata. */
+	lua_pushnil(L);
+	lua_setmetatable(L, _index);
+	/* get objects weak table. */
+	lua_pushlightuserdata(L, obj_udata_weak_ref_key);
+	lua_rawget(L, LUA_REGISTRYINDEX); /* weak ref table. */
+	/* remove object from weak table. */
+	lua_pushlightuserdata(L, obj);
+	lua_pushnil(L);
+	lua_rawset(L, -3);
+	return obj;
 }
 
 static FUNC_UNUSED void obj_udata_luapush_weak(lua_State *L, void *obj, obj_type *type, int flags) {
@@ -615,7 +639,6 @@ static void obj_type_register_constants(lua_State *L, const obj_const *constants
 }
 
 static void obj_type_register_package(lua_State *L, const reg_sub_module *type_reg) {
-	obj_type *type = type_reg->type;
 	const luaL_reg *reg_list = type_reg->pub_funcs;
 
 	/* create public functions table. */
@@ -635,7 +658,8 @@ static void obj_type_register(lua_State *L, const reg_sub_module *type_reg, int 
 	const obj_base *base = type_reg->bases;
 
 	if(type_reg->is_package == 1) {
-		return obj_type_register_package(L, type_reg);
+		obj_type_register_package(L, type_reg);
+		return;
 	}
 
 	/* create public functions table. */
@@ -1363,6 +1387,7 @@ static int Database__add_backend__meth(lua_State *L) {
       error_code__GitError__push(L, err_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -1382,6 +1407,7 @@ static int Database__add_alternate__meth(lua_State *L) {
       error_code__GitError__push(L, err_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -1463,6 +1489,7 @@ static int Database__exists__meth(lua_State *L) {
       error_code__GitError__push(L, err_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -1567,6 +1594,7 @@ static int Index__read__meth(lua_State *L) {
       error_code__GitError__push(L, rc_git_index_read_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -1596,6 +1624,7 @@ static int Index__add__meth(lua_State *L) {
       error_code__GitError__push(L, rc_git_index_add_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -1612,6 +1641,7 @@ static int Index__remove__meth(lua_State *L) {
       error_code__GitError__push(L, rc_git_index_remove_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -1628,6 +1658,7 @@ static int Index__insert__meth(lua_State *L) {
       error_code__GitError__push(L, rc_git_index_insert_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -1932,6 +1963,7 @@ static int Object__write__meth(lua_State *L) {
       error_code__GitError__push(L, rc_git_object_write_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -2044,6 +2076,7 @@ static int Blob__set_rawcontent_fromfile__meth(lua_State *L) {
       error_code__GitError__push(L, err_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -2061,6 +2094,7 @@ static int Blob__set_rawcontent__meth(lua_State *L) {
       error_code__GitError__push(L, err_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -2290,6 +2324,7 @@ static int Commit__add_parent__meth(lua_State *L) {
       error_code__GitError__push(L, rc_git_commit_add_parent_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -2389,6 +2424,7 @@ static int Tree__remove_entry_byname__meth(lua_State *L) {
       error_code__GitError__push(L, rc_git_tree_remove_entry_byname_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -2405,6 +2441,7 @@ static int Tree__remove_entry_byindex__meth(lua_State *L) {
       error_code__GitError__push(L, rc_git_tree_remove_entry_byindex_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -2623,6 +2660,7 @@ static int RevWalk__push__meth(lua_State *L) {
       error_code__GitError__push(L, rc_git_revwalk_push_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -2639,6 +2677,7 @@ static int RevWalk__hide__meth(lua_State *L) {
       error_code__GitError__push(L, rc_git_revwalk_hide_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -2670,6 +2709,7 @@ static int RevWalk__sorting__meth(lua_State *L) {
       error_code__GitError__push(L, rc_git_revwalk_sorting_idx1);
   } else {
     lua_pushboolean(L, 1);
+    lua_pushnil(L);
   }
   return 2;
 }
@@ -3325,7 +3365,7 @@ static void create_object_instance_cache(lua_State *L) {
 	lua_rawset(L, LUA_REGISTRYINDEX);  /* create reference to weak table. */
 }
 
-int luaopen_git2(lua_State *L) {
+LUALIB_API int luaopen_git2(lua_State *L) {
 	const reg_sub_module *reg = reg_sub_modules;
 	const luaL_Reg *submodules = submodule_libs;
 	int priv_table = -1;
