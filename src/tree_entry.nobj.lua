@@ -25,25 +25,16 @@ typedef git_tree_entry TreeEntry;
 	method "name" {
 		c_method_call "const char *" "git_tree_entry_name" {}
 	},
-	method "set_name" {
-		c_method_call "void" "git_tree_entry_set_name" {"const char *", "name"}
-	},
 	method "attributes" {
 		c_method_call "unsigned int" "git_tree_entry_attributes" {}
-	},
-	method "set_attributes" {
-		c_method_call "void" "git_tree_entry_set_attributes" {"int", "attr"}
 	},
 	method "id" {
 		var_out{"OID", "id"},
 		c_source "${id} = *(git_tree_entry_id(${this}));"
 	},
-	method "set_id" {
-		c_method_call "void" "git_tree_entry_set_id" { "OID", "&id" }
-	},
 	method "object" {
-		c_call {"GitError", "err"} "git_tree_entry_2object"
-			{ "Object *", "&obj>1", "TreeEntry *", "this" }
+		c_call "GitError" "git_tree_entry_2object"
+			{ "Object *", "&obj>1", "Repository *", "repo", "TreeEntry *", "this" }
 	},
 }
 

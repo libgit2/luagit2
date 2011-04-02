@@ -1,4 +1,4 @@
--- Copyright (c) 2010 by Robert G. Jakabosky <bobby@sharedrealm.com>
+-- Copyright (c) 2011 by Robert G. Jakabosky <bobby@sharedrealm.com>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -18,30 +18,33 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-object "Blob" {
+object "OdbObject" {
 	c_source [[
-typedef git_blob Blob;
+typedef git_odb_object OdbObject;
 ]],
-	extends "Object",
-	constructor "lookup" {
-		c_call { "GitError", "err" } "git_blob_lookup"
-			{ "Blob *", "&this", "Repository *", "repo", "OID", "&id" },
+	destructor "close" {
+		c_method_call "void" "git_odb_object_close" {},
 	},
-	c_function "fromfile" {
-		c_call { "GitError", "err>2" } "git_blob_create_fromfile"
-			{ "OID", "&written_id>1", "Repository *", "repo", "const char *", "path" },
+	method "data" {
+		c_method_call { "const char *", "data" } "git_odb_object_data" {},
+		c_method_call { "size_t", "#data" } "git_odb_object_size" {},
 	},
-	c_function "frombuffer" {
-		c_call { "GitError", "err" } "git_blob_create_frombuffer"
-			{ "OID", "&written_id>1", "Repository *", "repo",
-				"const char *", "buffer", "size_t", "#buffer" },
+	method "size" {
+		c_method_call "size_t" "git_odb_object_size" {},
 	},
-	method "rawcontent" {
-		c_method_call { "const char *", "buff" } "git_blob_rawcontent" {},
-		c_method_call { "size_t", "#buff" } "git_blob_rawsize" {},
+	method "type" {
+		c_method_call { "git_otype", "(otype)" } "git_odb_object_type" {},
+		c_call { "const char *", "type" } "git_object_type2string" { "git_otype", "otype" },
 	},
-	method "rawsize" {
-		c_method_call "int"  "git_blob_rawsize" {}
+	method "id" {
+		c_method_call { "OID", "*id" } "git_odb_object_id" {},
+	},
+	method "hash" {
+		c_method_call { "const void *", "(data)" } "git_odb_object_data" {},
+		c_method_call { "size_t", "(size)" } "git_odb_object_size" {},
+		c_method_call { "git_otype", "(otype)" } "git_odb_object_type" {},
+		c_call { "GitError", "err>2" } "git_odb_hash"
+			{ "OID", "&id>1", "const void *", "data", "size_t", "size", "git_otype", "otype" },
 	},
 }
 

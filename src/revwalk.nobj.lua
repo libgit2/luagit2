@@ -22,7 +22,6 @@ object "RevWalk" {
 	c_source [[
 typedef git_revwalk RevWalk;
 ]],
-	extends "Object",
 	constants {
 		SORT_NONE					= 0x00,
 		SORT_TOPOLOGICAL	= 0x01,
@@ -33,23 +32,23 @@ typedef git_revwalk RevWalk;
 		c_call { "GitError", "err" } "git_revwalk_new"
 			{ "RevWalk *", "&this>1", "Repository *", "repo" },
 	},
-	destructor {
+	destructor "close" {
 		c_method_call "void" "git_revwalk_free" {}
 	},
 	method "reset" {
 		c_method_call "void" "git_revwalk_reset" {}
 	},
 	method "push" {
-		c_method_call "GitError" "git_revwalk_push" { "Commit *", "commit" }
+		c_method_call "GitError" "git_revwalk_push" { "OID", "&id" }
 	},
 	method "hide" {
-		c_method_call "GitError" "git_revwalk_hide" { "Commit *", "commit" }
+		c_method_call "GitError" "git_revwalk_hide" { "OID", "&id" }
 	},
 	method "next" {
-		c_call "GitError" "git_revwalk_next" { "Commit *", "&commit>1", "RevWalk *", "this<1" }
+		c_call "GitError" "git_revwalk_next" { "OID", "&id>1", "RevWalk *", "this<1" }
 	},
 	method "sorting" {
-		c_method_call "GitError" "git_revwalk_sorting" { "unsigned int", "sort_mode" }
+		c_method_call "void" "git_revwalk_sorting" { "unsigned int", "sort_mode" }
 	},
 	method "repository" {
 		c_method_call "Repository *" "git_revwalk_repository" {}

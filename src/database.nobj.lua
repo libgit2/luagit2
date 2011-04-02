@@ -32,6 +32,7 @@ typedef git_odb Database;
 	destructor "close" {
 		c_method_call "void"  "git_odb_close" {}
 	},
+	--[=[
 	method "add_backend" {
 		var_in{"DatabaseBackend *", "backend"},
 		var_in{"int", "priority"},
@@ -50,43 +51,21 @@ typedef git_odb Database;
 	DatabaseBackend_ref(${backend});
 ]],
 	},
+	--]=]
 	method "read" {
-		var_in{"OID", "id"},
-		var_out{"RawObject *", "obj"},
-		var_out{"GitError", "err"},
-		c_source [[
-	RawObject raw;
-	git_rawobj git;
-	${err} = git_odb_read(&(git), ${this}, &(${id}));
-	if(${err} == GIT_SUCCESS) {
-		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &git, 1);
-		${obj} = &(raw);
-	}
-]],
+		c_call "GitError" "git_odb_read"
+			{ "OdbObject *", "&out>1", "Database *", "this", "OID", "&id"},
 	},
 	method "read_header" {
-		var_in{"OID", "id"},
-		var_out{"RawObject *", "obj"},
-		var_out{"GitError", "err"},
-		c_source [[
-	RawObject raw;
-	git_rawobj git;
-	${err} = git_odb_read_header(&(git), ${this}, &(${id}));
-	if(${err} == GIT_SUCCESS) {
-		/* convert git_rawobj to RawObject */
-		RawObject_from_git_rawobj(L, &raw, &git, 1);
-		${obj} = &(raw);
-	}
-]],
+		c_call { "GitError", "err>3" } "git_odb_read_header"
+			{ "size_t", "&size>1", "git_otype", "&(otype)", "Database *", "this", "OID", "&id"},
+		c_call { "const char *", "type>2" } "git_object_type2string" { "git_otype", "otype" },
 	},
 	method "write" {
-		var_in{"RawObject *", "obj"},
-		var_out{"OID", "id"},
-		var_out{"GitError", "err"},
-		c_source [[
-	${err} = git_odb_write(&(${id}), ${this}, &(${obj}->git));
-]],
+		c_call { "git_otype", "(otype)" } "git_object_string2type" { "const char *", "type<4" },
+		c_call "GitError" "git_odb_write"
+			{ "OID", "&id<2", "Database *", "this<1", "const char *", "data", "size_t", "#data",
+			  "git_otype", "otype"},
 	},
 	method "exists" {
 		c_method_call { "GitError", "err" } "git_odb_exists" { "OID", "&id" }

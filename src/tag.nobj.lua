@@ -23,37 +23,21 @@ object "Tag" {
 typedef git_tag Tag;
 ]],
 	extends "Object",
-	constructor "new" {
-		c_call { "GitError", "err" } "git_tag_new"
-			{ "Tag *", "&this>1", "Repository *", "repo" },
-	},
 	constructor "lookup" {
 		c_call { "GitError", "err" } "git_tag_lookup"
 			{ "Tag *", "&this>1", "Repository *", "repo", "OID", "&id" },
 	},
 	method "target" {
-		c_method_call "const Object *" "git_tag_target" {}
-	},
-	method "set_target" {
-		c_method_call "void" "git_tag_set_target" { "Object *", "target" }
+		c_call "GitError" "git_tag_target" { "Object *", "&out>1", "Tag *", "this" }
 	},
 	method "name" {
 		c_method_call "const char *" "git_tag_name" {}
 	},
-	method "set_name" {
-		c_method_call "void" "git_tag_set_name" { "const char *", "name" }
-	},
 	method "tagger" {
 		c_method_call "const Signature *" "git_tag_tagger" {}
 	},
-	method "set_tagger" {
-		c_method_call "void" "git_tag_set_tagger" { "const Signature *", "tagger" }
-	},
 	method "message" {
 		c_method_call "const char *" "git_tag_message" {}
-	},
-	method "set_message" {
-		c_method_call "void" "git_tag_set_message" { "const char *", "message" }
 	},
 }
 

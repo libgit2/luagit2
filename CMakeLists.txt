@@ -46,6 +46,17 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${CMAKE_CURRENT_BINARY_DIR}
                     ${LUA_INCLUDE_DIR})
 
+#
+# Setup CMAKE_C_FLAGS* and CMAKE_CXX_FLAGS*
+#
+if(CMAKE_COMPILER_IS_GNUCC)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pipe -Wall -Wextra -Wshadow -W -pedantic -std=gnu99 -fgnu89-inline")
+	set(CMAKE_C_FLAGS_RELEASE        "${CMAKE_C_FLAGS_RELEASE}     -O3 -march=native -g")
+	set(CMAKE_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}       -O0 -g")
+	set(CMAKE_C_FLAGS_PROFILE        "${CMAKE_C_FLAGS_PROFILE}     -O2 -g -DNDEBUG")
+	set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_WITHDEBINFO} -O2 -g")
+endif(CMAKE_COMPILER_IS_GNUCC)
+
 ## LuaGit2
 set(LUA_GIT2_SRC
 	git2.nobj.lua

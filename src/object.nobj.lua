@@ -19,6 +19,7 @@
 -- THE SOFTWARE.
 
 object "Object" {
+	basetype "git_otype" "integer",
 	c_source [[
 typedef git_object Object;
 ]],
@@ -29,23 +30,18 @@ typedef git_object Object;
 		GIT_OBJ_BLOB = "Blob",
 		GIT_OBJ_COMMIT = "Commit",
 		GIT_OBJ_TREE = "Tree",
+		GIT_OBJ_TAG = "Tag",
 		},
 	},
-	destructor {
-		c_method_call "void" "git_object_free" {}
-	},
-	method "write" {
-		c_method_call "GitError" "git_object_write" {}
+	destructor "close" {
+		c_method_call "void" "git_object_close" {}
 	},
 	method "id" {
-		var_out{ "OID", "id" },
-		c_source [[
-	${id} = *(git_object_id(${this}));
-]]
+		c_method_call { "OID", "*id" } "git_object_id" {},
 	},
 	method "type" {
-		var_out{"const char *", "type"},
-		c_source "${type} = git_object_type2string(git_object_type(${this}));"
+		c_method_call { "git_otype", "(otype)" } "git_object_type" {},
+		c_call { "const char *", "type" } "git_object_type2string" { "git_otype", "otype" },
 	},
 	method "owner" {
 		c_method_call "Repository *" "git_object_owner" {}

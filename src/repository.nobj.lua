@@ -50,19 +50,5 @@ typedef git_repository Repository;
 		c_call { "GitError", "err" } "git_repository_index"
 			{ "Index *", "&index>1", "Repository *", "this" },
 	},
-	method "lookup" {
-		c_call { "int", "(otype)" } "git_object_string2type" { "const char *", "type<3" },
-		c_call { "GitError", "err" } "git_repository_lookup"
-			{ "Object *", "&obj>1", "Repository *", "this<1", "OID", "&id<2", "int", "otype" },
-	},
-	method "newobject" {
-		c_call { "int", "(otype)" } "git_object_string2type" { "const char *", "type<2" },
-		c_call { "GitError", "err" } "git_repository_newobject"
-			{ "Object *", "&obj>1", "Repository *", "this<1", "int", "otype" },
-	},
-	method "blob_writefile" {
-		c_call { "GitError", "err" } "git_blob_writefile"
-			{ "OID", "&written_id>1", "Repository *", "this<1", "const char *", "path" },
-	},
 }
 

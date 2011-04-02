@@ -23,12 +23,48 @@ object "Commit" {
 typedef git_commit Commit;
 ]],
 	extends "Object",
-	constructor "new" {
-		c_call {"GitError", "err"} "git_commit_new" { "Commit *", "&this", "Repository *", "repo" },
-	},
 	constructor "lookup" {
 		c_call {"GitError", "err"} "git_commit_lookup"
 			{ "Commit *", "&this", "Repository *", "repo", "OID", "&id" },
+	},
+	c_function "create" {
+		var_in{ "OID", "oid" },
+		var_in{ "Repository *", "repo" },
+		var_in{ "const char *", "update_ref" },
+		var_in{ "Signature *", "author" },
+		var_in{ "Signature *", "committer" },
+		var_in{ "const char *", "message" },
+		var_in{ "Tree *", "tree" },
+		var_in{ "Commit *", "parent" },
+		var_out{"GitError", "err"},
+		c_source "pre" [[
+	int parent_count = 0;
+	const git_oid **p_oids;
+	int n;
+]],
+		c_source[[
+	/* count parents. */
+	parent_count = lua_gettop(L) - ${parent::idx} + 1;
+	/* valid parents.  The first parent commit is already validated. */
+	for(n = 1; n < parent_count; n++) {
+		obj_type_Commit_check(L, ${parent::idx} + n);
+	}
+	/* now it is safe to allocate oid array. */
+	p_oids = malloc(parent_count * sizeof(git_oid *));
+
+	/* copy oids from all parents into oid array. */
+	p_oids[0] = git_object_id((git_object *)${parent});
+	for(n = 1; n < parent_count; n++) {
+		${parent} = obj_type_Commit_check(L, ${parent::idx} + n);
+		p_oids[n] = git_object_id((git_object *)${parent});
+	}
+
+	${err} = git_commit_create(&(${oid}), ${repo}, ${update_ref},
+		${author}, ${committer}, ${message}, git_object_id((git_object *)${tree}),
+		parent_count, p_oids);
+	/* free parent oid array. */
+	free(p_oids);
+]]
 	},
 	method "message" {
 		c_method_call "const char *"  "git_commit_message" {}
@@ -36,38 +72,27 @@ typedef git_commit Commit;
 	method "message_short" {
 		c_method_call "const char *"  "git_commit_message_short" {}
 	},
-	method "set_message" {
-		c_method_call "void"  "git_commit_set_message" { "const char *", "message" }
-	},
 	method "time" {
 		c_method_call "time_t"  "git_commit_time" {}
+	},
+	method "time_offset" {
+		c_method_call "int"  "git_commit_time_offset" {}
 	},
 	method "committer" {
 		c_method_call "const Signature *"  "git_commit_committer" {}
 	},
-	method "set_committer" {
-		c_method_call "void"  "git_commit_set_committer" { "const Signature *", "sig" }
-	},
 	method "author" {
 		c_method_call "const Signature *"  "git_commit_author" {}
 	},
-	method "set_author" {
-		c_method_call "void"  "git_commit_set_author" { "const Signature *", "sig" }
-	},
 	method "tree" {
-		c_method_call "const Tree *"  "git_commit_tree" {}
-	},
-	method "set_tree" {
-		c_method_call "void"  "git_commit_set_tree" { "Tree *", "tree" }
+		c_call "GitError" "git_commit_tree" { "Tree *", "&tree>1", "Commit *", "this" }
 	},
 	method "parentcount" {
 		c_method_call "unsigned int"  "git_commit_parentcount" {}
 	},
 	method "parent" {
-		c_method_call "Commit *"  "git_commit_parent" { "unsigned int", "n" }
-	},
-	method "add_parent" {
-		c_method_call "GitError"  "git_commit_add_parent" { "Commit *", "parent" }
+		c_call "GitError" "git_commit_parent"
+			{ "Commit *", "&parent>1", "Commit *", "this", "unsigned int", "n" }
 	},
 }
 

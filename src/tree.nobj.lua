@@ -23,10 +23,6 @@ object "Tree" {
 typedef git_tree Tree;
 ]],
 	extends "Object",
-	constructor "new" {
-		c_call { "GitError", "err" } "git_tree_new"
-			{ "Tree *", "&this>1", "Repository *", "repo" },
-	},
 	constructor "lookup" {
 		c_call { "GitError", "err" } "git_tree_lookup"
 			{ "Tree *", "&this>1", "Repository *", "repo", "OID", "&id" },
@@ -39,16 +35,6 @@ typedef git_tree Tree;
 	},
 	method "entry_byindex" {
 		c_method_call "TreeEntry *"  "git_tree_entry_byindex" { "int", "index" }
-	},
-	method "add_entry" {
-		c_call { "GitError", "err" } "git_tree_add_entry" { "TreeEntry *", "&entry_out>1",
-			"Tree *", "this<1", "const OID", "&id", "const char *", "filename", "int", "attributes" },
-	},
-	method "remove_entry_byname" {
-		c_method_call "GitError"  "git_tree_remove_entry_byname" { "const char *", "filename" }
-	},
-	method "remove_entry_byindex" {
-		c_method_call "GitError"  "git_tree_remove_entry_byindex" { "int", "index" }
 	},
 }
 

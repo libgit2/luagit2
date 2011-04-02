@@ -18,30 +18,49 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-object "Blob" {
+object "StrArray" {
+	userdata_type = "embed",
 	c_source [[
-typedef git_blob Blob;
+typedef git_strarray StrArray;
 ]],
-	extends "Object",
-	constructor "lookup" {
-		c_call { "GitError", "err" } "git_blob_lookup"
-			{ "Blob *", "&this", "Repository *", "repo", "OID", "&id" },
+	constructor "new" {
+		c_source[[
+	StrArray array;
+	array.strings = NULL;
+	array.count = 0;
+	${this} = &array;
+]]
 	},
-	c_function "fromfile" {
-		c_call { "GitError", "err>2" } "git_blob_create_fromfile"
-			{ "OID", "&written_id>1", "Repository *", "repo", "const char *", "path" },
+	destructor "free" {
+		c_source[[
+	if(${this}->strings != 0) {
+		git_strarray_free(${this});
+		${this}->strings = NULL;
+	}
+]]
 	},
-	c_function "frombuffer" {
-		c_call { "GitError", "err" } "git_blob_create_frombuffer"
-			{ "OID", "&written_id>1", "Repository *", "repo",
-				"const char *", "buffer", "size_t", "#buffer" },
+	field "size_t" "count" { "ro" },
+	method "str" {
+		var_in{ "size_t", "n" },
+		var_out{ "const char *", "str" },
+		c_source[[
+	if(${n} < ${this}->count) {
+		${str} = ${this}->strings[${n}];
+	}
+]],
 	},
-	method "rawcontent" {
-		c_method_call { "const char *", "buff" } "git_blob_rawcontent" {},
-		c_method_call { "size_t", "#buff" } "git_blob_rawsize" {},
-	},
-	method "rawsize" {
-		c_method_call "int"  "git_blob_rawsize" {}
-	},
+	method "get_array" {
+		var_out{ "<any>", "array" },
+		c_source "pre" [[
+	size_t n;
+]],
+		c_source[[
+	lua_createtable(L, ${this}->count, 0);
+	for(n = 0; n < ${this}->count; n++) {
+		lua_pushstring(L, ${this}->strings[n]);
+		lua_rawseti(L, -2, n+1);
+	}
+]]
+	}
 }
 
