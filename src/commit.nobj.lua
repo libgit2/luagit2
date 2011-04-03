@@ -85,7 +85,7 @@ typedef git_commit Commit;
 		c_method_call "const Signature *"  "git_commit_author" {}
 	},
 	method "tree" {
-		c_call "GitError" "git_commit_tree" { "Tree *", "&tree>1", "Commit *", "this" }
+		c_call "GitError" "git_commit_tree" { "!Tree *", "&tree>1", "Commit *", "this" }
 	},
 	method "parentcount" {
 		c_method_call "unsigned int"  "git_commit_parentcount" {}

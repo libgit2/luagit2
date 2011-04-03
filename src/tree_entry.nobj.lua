@@ -34,7 +34,7 @@ typedef git_tree_entry TreeEntry;
 	},
 	method "object" {
 		c_call "GitError" "git_tree_entry_2object"
-			{ "Object *", "&obj>1", "Repository *", "repo", "TreeEntry *", "this" }
+			{ "!Object *", "&obj>1", "Repository *", "repo", "TreeEntry *", "this" }
 	},
 }
 

@@ -39,12 +39,5 @@ typedef git_odb_object OdbObject;
 	method "id" {
 		c_method_call { "OID", "*id" } "git_odb_object_id" {},
 	},
-	method "hash" {
-		c_method_call { "const void *", "(data)" } "git_odb_object_data" {},
-		c_method_call { "size_t", "(size)" } "git_odb_object_size" {},
-		c_method_call { "git_otype", "(otype)" } "git_odb_object_type" {},
-		c_call { "GitError", "err>2" } "git_odb_hash"
-			{ "OID", "&id>1", "const void *", "data", "size_t", "size", "git_otype", "otype" },
-	},
 }
 

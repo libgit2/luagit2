@@ -54,7 +54,7 @@ typedef git_odb Database;
 	--]=]
 	method "read" {
 		c_call "GitError" "git_odb_read"
-			{ "OdbObject *", "&out>1", "Database *", "this", "OID", "&id"},
+			{ "!OdbObject *", "&out>1", "Database *", "this", "OID", "&id"},
 	},
 	method "read_header" {
 		c_call { "GitError", "err>3" } "git_odb_read_header"
@@ -62,9 +62,9 @@ typedef git_odb Database;
 		c_call { "const char *", "type>2" } "git_object_type2string" { "git_otype", "otype" },
 	},
 	method "write" {
-		c_call { "git_otype", "(otype)" } "git_object_string2type" { "const char *", "type<4" },
+		c_call { "git_otype", "(otype)" } "git_object_string2type" { "const char *", "type<3" },
 		c_call "GitError" "git_odb_write"
-			{ "OID", "&id<2", "Database *", "this<1", "const char *", "data", "size_t", "#data",
+			{ "OID", "&id>1", "Database *", "this<1", "const char *", "data<2", "size_t", "#data",
 			  "git_otype", "otype"},
 	},
 	method "exists" {

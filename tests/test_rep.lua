@@ -23,46 +23,43 @@ print("dump OID interface")
 print(dbg_dump(oid))
 print('convert OID value to string = <' .. tostring(oid) .. '>')
 
-print('test writing to the object database:')
-local raw_obj = git2.RawObject('blob',"any ol content will do")
-print()
-print("dump RawObject interface")
-print(dbg_dump(raw_obj))
-local function dump_rawobj(obj)
-	print('dump RawObject:', obj)
-	if obj == nil then
-		return
-	end
-	print('hash = ', obj:hash())
-	print('data = "' .. tostring(obj:data()) .. '"')
-	print('len = ', obj:len())
-	print('type = ', obj:type())
-end
-print()
-print("dump RawObject info:")
-dump_rawobj(raw_obj)
-
-print()
-print("test closing of RawObject:")
-raw_obj:close()
-dump_rawobj(raw_obj)
-
-print()
-print("test setting data of RawObject:")
-raw_obj:set_data("any ol content will do")
-dump_rawobj(raw_obj)
-
 local db = rep:database()
 print("dump Database interface")
 print(dbg_dump(db))
 
 print()
-print("test writing RawObject to database:")
-local oid, err = db:write(raw_obj)
+print('test writing to the object database:')
+local oid, err = db:write("any ol content will do", 'blob')
 print(oid, err)
 
+print("read written object out of the database.")
+local odb_obj = db:read(oid)
 print()
-print("test reading RawObjects from database:")
+print("dump OdbObject interface")
+print(dbg_dump(odb_obj))
+local function dump_odb_obj(obj)
+	-- check obj type
+	if obj == nil or not tostring(obj):match('^OdbObject: ') then
+		print('dump invalid OdbObject: ', obj)
+		return
+	end
+	print('dump OdbObject:', obj)
+	print('oid = ', obj:id())
+	print('data = "' .. tostring(obj:data()) .. '"')
+	print('size = ', obj:size())
+	print('type = ', obj:type())
+end
+print()
+print("dump OdbObject info:")
+dump_odb_obj(odb_obj)
+
+print()
+print("test closing of OdbObject:")
+odb_obj:close()
+dump_odb_obj(odb_obj)
+
+print()
+print("test reading OdbObjects from database:")
 local object_ids = {
 	{'tree', "31f3d5703ce27f0b63c3eb0d829abdc95b51deae"},
 	{'commit', "d5a93c463d4cca0068750eb6af7b4b54eea8599b"},
@@ -71,21 +68,18 @@ local object_ids = {
 }
 for _,obj in ipairs(object_ids) do
 	local oid = git2.OID.str(obj[2])
-	local raw_obj, err = db:read(oid)
+	local odb_obj, err = db:read(oid)
 	print()
-	print(raw_obj, err)
-	dump_rawobj(raw_obj)
+	print(odb_obj, err)
+	dump_odb_obj(odb_obj)
 end
 
 
 local commit_id = git2.OID.str("d5a93c463d4cca0068750eb6af7b4b54eea8599b")
 print()
 print("test parsing a commit object: ", commit_id)
-local commit2, err = rep:lookup(commit_id, 'commit')
-print(commit2, err)
 local commit1, err = git2.Commit.lookup(rep, commit_id)
 print(commit1, err)
-assert(commit1 == commit2)
 print("dump Commit interface")
 print(dbg_dump(commit1))
 local function dump_signature(pre, sig)
@@ -106,7 +100,7 @@ local function dump_tree_entry(entry)
 	print('tree_entry.id = ', entry:id())
 	print('tree_entry.name = ', entry:name())
 	print('tree_entry.attributes = ', string.format('0x%08X', entry:attributes()))
-	local obj = entry:object()
+	local obj = entry:object(rep)
 	print('tree_entry.object = ', obj)
 	if obj:type() == 'blob' then
 		dump_blob(obj)
@@ -187,14 +181,14 @@ print(dbg_dump(revwalk))
 print('sorting:', revwalk:sorting(revwalk.SORT_TOPOLOGICAL + revwalk.SORT_REVERSE))
 local head_id = git2.OID.str("5c697d74eb692d650799ca1b0a10254d7130953d")
 local head = assert(git2.Commit.lookup(rep, head_id))
-print('push:', revwalk:push(head))
+print('push:', revwalk:push(head_id))
 assert(revwalk:repository() == rep)
 
-local commit = revwalk:next()
-while (commit ~= nil) do
-	dump_commit(commit)
+local commit_oid = revwalk:next()
+while (commit_oid ~= nil) do
+	dump_commit(assert(git2.Commit.lookup(rep, commit_oid)))
 	-- get next commit
-	commit = revwalk:next()
+	commit_oid = revwalk:next()
 end
 
 local tag_id = git2.OID.str('82dfe36284d77b608ccc9d96e0ffa5782cb7c835')
@@ -218,7 +212,6 @@ revwalk = nil
 head = nil
 commit = nil
 commit1 = nil
-commit2 = nil
 index = nil
 rep = nil
 db = nil

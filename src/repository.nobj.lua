@@ -48,7 +48,7 @@ typedef git_repository Repository;
 	},
 	method "index" {
 		c_call { "GitError", "err" } "git_repository_index"
-			{ "Index *", "&index>1", "Repository *", "this" },
+			{ "!Index *", "&index>1", "Repository *", "this" },
 	},
 }
 
