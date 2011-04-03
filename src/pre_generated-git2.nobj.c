@@ -1005,11 +1005,12 @@ static int Repository__database__meth(lua_State *L) {
 /* method: index */
 static int Repository__index__meth(lua_State *L) {
   Repository * this_idx1 = obj_type_Repository_check(L,1);
+  int index_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Index * index_idx1;
   GitError err_idx2 = GIT_SUCCESS;
   err_idx2 = git_repository_index(&(index_idx1), this_idx1);
   if(!(GIT_SUCCESS != err_idx2)) {
-    obj_type_Index_push(L, index_idx1, 0);
+    obj_type_Index_push(L, index_idx1, index_flags_idx1);
   } else {
     lua_pushnil(L);
   }
@@ -1064,27 +1065,6 @@ static int OdbObject__id__meth(lua_State *L) {
   id_idx1 = *git_odb_object_id(this_idx1);
   obj_type_OID_push(L, id_idx1, 0);
   return 1;
-}
-
-/* method: hash */
-static int OdbObject__hash__meth(lua_State *L) {
-  OdbObject * this_idx1 = obj_type_OdbObject_check(L,1);
-  OID id_idx1;
-  GitError err_idx2 = GIT_SUCCESS;
-  git_otype otype_idx3;
-  size_t size_idx4 = 0;
-  const void * data_idx5 = NULL;
-  data_idx5 = git_odb_object_data(this_idx1);
-  size_idx4 = git_odb_object_size(this_idx1);
-  otype_idx3 = git_odb_object_type(this_idx1);
-  err_idx2 = git_odb_hash(&(id_idx1), data_idx5, size_idx4, otype_idx3);
-  if(!(GIT_SUCCESS != err_idx2)) {
-    obj_type_OID_push(L, id_idx1, 0);
-  } else {
-    lua_pushnil(L);
-  }
-  error_code__GitError__push(L, err_idx2);
-  return 2;
 }
 
 /* method: str */
@@ -1183,11 +1163,12 @@ static int Database__close__meth(lua_State *L) {
 static int Database__read__meth(lua_State *L) {
   Database * this_idx1 = obj_type_Database_check(L,1);
   OID id_idx2 = obj_type_OID_check(L,2);
+  int out_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   OdbObject * out_idx1;
   GitError rc_git_odb_read_idx2 = GIT_SUCCESS;
   rc_git_odb_read_idx2 = git_odb_read(&(out_idx1), this_idx1, &(id_idx2));
   if(!(GIT_SUCCESS != rc_git_odb_read_idx2)) {
-    obj_type_OdbObject_push(L, out_idx1, 0);
+    obj_type_OdbObject_push(L, out_idx1, out_flags_idx1);
   } else {
     lua_pushnil(L);
   }
@@ -1222,17 +1203,22 @@ static int Database__read_header__meth(lua_State *L) {
 /* method: write */
 static int Database__write__meth(lua_State *L) {
   Database * this_idx1 = obj_type_Database_check(L,1);
-  OID id_idx2 = obj_type_OID_check(L,2);
-  size_t data_len_idx3;
-  const char * data_idx3 = luaL_checklstring(L,3,&(data_len_idx3));
-  size_t type_len_idx4;
-  const char * type_idx4 = luaL_checklstring(L,4,&(type_len_idx4));
-  git_otype otype_idx1;
+  size_t data_len_idx2;
+  const char * data_idx2 = luaL_checklstring(L,2,&(data_len_idx2));
+  size_t type_len_idx3;
+  const char * type_idx3 = luaL_checklstring(L,3,&(type_len_idx3));
+  OID id_idx1;
   GitError rc_git_odb_write_idx2 = GIT_SUCCESS;
-  otype_idx1 = git_object_string2type(type_idx4);
-  rc_git_odb_write_idx2 = git_odb_write(&(id_idx2), this_idx1, data_idx3, data_len_idx3, otype_idx1);
+  git_otype otype_idx3;
+  otype_idx3 = git_object_string2type(type_idx3);
+  rc_git_odb_write_idx2 = git_odb_write(&(id_idx1), this_idx1, data_idx2, data_len_idx2, otype_idx3);
+  if(!(GIT_SUCCESS != rc_git_odb_write_idx2)) {
+    obj_type_OID_push(L, id_idx1, 0);
+  } else {
+    lua_pushnil(L);
+  }
   error_code__GitError__push(L, rc_git_odb_write_idx2);
-  return 1;
+  return 2;
 }
 
 /* method: exists */
@@ -1954,11 +1940,12 @@ static int Commit__author__meth(lua_State *L) {
 /* method: tree */
 static int Commit__tree__meth(lua_State *L) {
   Commit * this_idx1 = obj_type_Commit_check(L,1);
+  int tree_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Tree * tree_idx1;
   GitError rc_git_commit_tree_idx2 = GIT_SUCCESS;
   rc_git_commit_tree_idx2 = git_commit_tree(&(tree_idx1), this_idx1);
   if(!(GIT_SUCCESS != rc_git_commit_tree_idx2)) {
-    obj_type_Tree_push(L, tree_idx1, 0);
+    obj_type_Tree_push(L, tree_idx1, tree_flags_idx1);
   } else {
     lua_pushnil(L);
   }
@@ -2069,11 +2056,12 @@ id_idx1 = *(git_tree_entry_id(this_idx1));
 static int TreeEntry__object__meth(lua_State *L) {
   TreeEntry * this_idx1 = obj_type_TreeEntry_check(L,1);
   Repository * repo_idx2 = obj_type_Repository_check(L,2);
+  int obj_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Object * obj_idx1;
   GitError rc_git_tree_entry_2object_idx2 = GIT_SUCCESS;
   rc_git_tree_entry_2object_idx2 = git_tree_entry_2object(&(obj_idx1), repo_idx2, this_idx1);
   if(!(GIT_SUCCESS != rc_git_tree_entry_2object_idx2)) {
-    obj_type_Object_push(L, obj_idx1, 0);
+    obj_type_Object_push(L, obj_idx1, obj_flags_idx1);
   } else {
     lua_pushnil(L);
   }
@@ -2506,7 +2494,6 @@ static const luaL_reg obj_OdbObject_methods[] = {
   {"size", OdbObject__size__meth},
   {"type", OdbObject__type__meth},
   {"id", OdbObject__id__meth},
-  {"hash", OdbObject__hash__meth},
   {NULL, NULL}
 };
 
