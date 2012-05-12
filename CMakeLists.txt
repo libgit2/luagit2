@@ -36,12 +36,6 @@ set(COMMON_LIBS "${COMMON_LIBS};${GIT2_LIBRARIES}")
 ## LuaNativeObjects
 include(LuaNativeObjects)
 
-## generate config.h
-configure_file(${CMAKE_SOURCE_DIR}/config.h.cmake
-				${CMAKE_SOURCE_DIR}/build/config.h)
-
-set(COMMON_CFLAGS "${COMMON_CFLAGS} -include ${CMAKE_SOURCE_DIR}/build/config.h")
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${CMAKE_CURRENT_BINARY_DIR}
                     ${LUA_INCLUDE_DIR})
