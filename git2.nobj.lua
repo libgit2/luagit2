@@ -64,7 +64,7 @@ subfiles {
 "src/oid.nobj.lua",
 "src/oid_shorten.nobj.lua",
 "src/odb.nobj.lua",
---"src/database_backend.nobj.lua",
+"src/odb_backend.nobj.lua",
 "src/index.nobj.lua",
 "src/index_entry.nobj.lua",
 "src/index_entry_unmerged.nobj.lua",

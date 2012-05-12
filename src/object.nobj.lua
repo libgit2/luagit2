@@ -46,5 +46,11 @@ typedef git_object Object;
 	method "owner" {
 		c_method_call "Repository *" "git_object_owner" {}
 	},
+	c_function "type2string" {
+		c_call "const char *" "git_object_type2string" { "git_otype", "otype" },
+	},
+	c_function "string2type" {
+		c_call "git_otype" "git_object_string2type" { "const char *", "str" },
+	},
 }
 

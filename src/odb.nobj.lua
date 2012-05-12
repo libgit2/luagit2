@@ -32,7 +32,6 @@ typedef git_odb ODB;
 	destructor "free" {
 		c_method_call "void"  "git_odb_free" {}
 	},
-	--[=[
 	method "add_backend" {
 		var_in{"ODBBackend *", "backend"},
 		var_in{"int", "priority"},
@@ -51,7 +50,6 @@ typedef git_odb ODB;
 	ODBBackend_ref(${backend});
 ]],
 	},
-	--]=]
 	method "read" {
 		c_call "GitError" "git_odb_read"
 			{ "!OdbObject *", "&out>1", "ODB *", "this", "OID", "&id"},

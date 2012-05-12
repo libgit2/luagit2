@@ -7,24 +7,23 @@ if ( build_dir ) then
     package.cpath = build_dir .. "?.so;" .. package.cpath
 end
 
-require"git2"
+local git2 = require"git2"
 require"utils"
 
 print(dump(git2))
-local function dump_rawobj(obj)
-	print('dump RawObject:', obj)
+local function dump_obj(obj)
+	print('dump OdbObject:', obj)
 	if obj == nil then
 		return
 	end
-	print('hash = ', obj:hash())
-	print('data = "' .. tostring(obj:data()) .. '"')
-	print('len = ', obj:len())
+	print('id = ', obj:id())
 	print('type = ', obj:type())
 end
 
--- create database
-local db = assert(git2.Database.new())
-print("dump Database interface")
+-- create odb
+local db = assert(git2.ODB.new())
+print("=============================================== new db=", db)
+print("dump ODB interface")
 print(dbg_dump(db))
 
 -- create backend
@@ -40,62 +39,67 @@ local function get_obj(oid)
 end
 local cbs = {
 on_read = function(oid)
-	local raw_obj = nil
 	print("------------------- read callback:", oid)
-	raw_obj = get_obj(oid)
-	if not raw_obj then
+	local obj = get_obj(oid)
+	if not obj then
 		return nil, git2.ENOTFOUND
 	end
-	return raw_obj, git2.SUCCESS
+	return obj.data, obj.otype
+end,
+on_read_prefix = function(short_oid, len)
+	print("------------------- read_prefix callback:", oid)
+	local obj = get_obj(short_oid)
+	if not obj then
+		if len ~= git2.OID.HEXSZ then
+			return nil, git2.ENOTIMPLEMENTED
+		end
+		return nil, git2.ENOTFOUND
+	end
+	return obj.data, obj.otype, short_oid
 end,
 on_read_header = function(oid)
-	local raw_obj = nil
 	print("------------------- read_header callback:", oid)
-	raw_obj = get_obj(oid)
-	if not raw_obj then
+	local obj = get_obj(oid)
+	if not obj then
 		return nil, git2.ENOTFOUND
 	end
-	return raw_obj, git2.SUCCESS
+	return obj.len, obj.otype
 end,
-on_write = function(raw_obj)
-	local oid = raw_obj:hash()
-	print("------------------- write callback:", raw_obj)
+on_write = function(data, otype)
+	local oid = git2.ODB.hash(data, git2.Object.string2type(otype))
+	print("------------------- write callback:", data, otype)
 	if not oid then
 		return nil, -1
 	end
 	-- convert oid to string.
 	local oid_str = tostring(oid)
 	-- put raw object in cache
-	obj_cache[oid_str] = raw_obj
-	return oid, git2.SUCCESS
+	obj_cache[oid_str] = { data = data, len = #data, otype = otype}
+	return oid
 end,
 on_exists = function(oid)
-	local raw_obj = nil
 	print("------------------- exists callback:", oid)
-	raw_obj = get_obj(oid)
-	if not raw_obj then
-		return raw_obj, git2.ENOTFOUND
+	local obj = get_obj(oid)
+	if not obj then
+		return false
 	end
-	return git2.SUCCESS
+	return true
 end,
 on_free = function()
 	print("------------------- free callback:")
 end,
 }
 
-local backend = git2.DatabaseBackend(cbs)
+local backend = git2.ODBBackend(cbs)
 
 print('add backend:', assert(db:add_backend(backend, 0)))
 
-print('create test blob:')
-local raw_obj = git2.RawObject.new('blob',"any ol content will do")
-
-print("test writing RawObject to database:")
-local oid, err = db:write(raw_obj)
+print("test writing test blob to odb:")
+local oid, err = db:write("any ol content will do", 'blob')
 print('write:', oid, err)
 
 print()
-print("test reading RawObjects from database:")
+print("test reading RawObjects from odb:")
 local object_ids = {
 	{'tree', "31f3d5703ce27f0b63c3eb0d829abdc95b51deae"},
 	{'commit', "d5a93c463d4cca0068750eb6af7b4b54eea8599b"},
@@ -103,10 +107,10 @@ local object_ids = {
 	{'blob', "275a4019807c7bb7bc80c0ca8903bf84345e1bdf"},
 }
 for _,obj in ipairs(object_ids) do
-	local oid = git2.OID.str(obj[2])
-	local raw_obj, err = db:read(oid)
-	print('read', raw_obj, err)
-	dump_rawobj(raw_obj)
+	local oid = git2.OID.hex(obj[2])
+	local obj, err = db:read(oid)
+	print('read', obj, err)
+	dump_obj(obj)
 	print()
 end
 
@@ -119,9 +123,10 @@ if not status then
 else
 	print("Created repository with no backends from git repository:", git_path)
 end
-db = rep:database()
-backend = git2.DatabaseBackend(cbs)
-print("add backend repository's database:", assert(db:add_backend(backend, 0)))
+db = rep:odb()
+print("=============================================== repo db=", db)
+backend = git2.ODBBackend(cbs)
+print("add backend repository's odb:", assert(db:add_backend(backend, 0)))
 
 print()
 print("try reading objects from repository:")
@@ -132,7 +137,7 @@ local object_ids = {
 	{'blob', "275a4019807c7bb7bc80c0ca8903bf84345e1bdf"},
 }
 for _,obj in ipairs(object_ids) do
-	local oid = git2.OID.str(obj[2])
+	local oid = git2.OID.hex(obj[2])
 	local obj, err = rep:lookup(oid, obj[1])
 	print('read', obj, err)
 	print()
@@ -140,6 +145,7 @@ end
 
 db = nil
 backend = nil
+obj_cache = nil
 
 collectgarbage"collect"
 collectgarbage"collect"
