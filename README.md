@@ -8,9 +8,7 @@ Installing
 
 ### Install lua-git2:
 
-	curl -O "https://raw.github.com/libgit2/luagit2/master/lua-git2-scm-0.rockspec"
-	
-	luarocks install lua-git2-scm-0.rockspec
+	luarocks install https://raw.github.com/libgit2/luagit2/master/lua-git2-scm-0.rockspec
 
 
 To re-generating the bindings
