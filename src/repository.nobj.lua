@@ -66,7 +66,6 @@ typedef git_repository Repository;
 	method "set_workdir" {
 		c_method_call "GitError" "git_repository_set_workdir" { "const char *", "workdir"}
 	},
-	--[[ TODO:
 	method "config" {
 		c_call { "GitError", "err" } "git_repository_config"
 			{ "!Config *", "&config>1", "Repository *", "this" },
@@ -74,7 +73,6 @@ typedef git_repository Repository;
 	method "set_config" {
 		c_method_call "void" "git_repository_set_config" { "Config *", "config"}
 	},
-	--]]
 	method "odb" {
 		c_call { "GitError", "err" } "git_repository_odb"
 			{ "!ODB *", "&odb>1", "Repository *", "this" },

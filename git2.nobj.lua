@@ -60,6 +60,7 @@ subfiles {
 "src/strarray.nobj.lua",
 "src/error.nobj.lua",
 "src/repository.nobj.lua",
+"src/config.nobj.lua",
 "src/odb_object.nobj.lua",
 "src/oid.nobj.lua",
 "src/oid_shorten.nobj.lua",
