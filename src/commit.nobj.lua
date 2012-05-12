@@ -33,13 +33,14 @@ typedef git_commit Commit;
 		var_in{ "const char *", "update_ref" },
 		var_in{ "Signature *", "author" },
 		var_in{ "Signature *", "committer" },
+		var_in{ "const char *", "message_encoding" },
 		var_in{ "const char *", "message" },
 		var_in{ "Tree *", "tree" },
 		var_in{ "Commit *", "parent" },
 		var_out{"GitError", "err"},
 		c_source "pre" [[
 	int parent_count = 0;
-	const git_oid **p_oids;
+	const git_commit **parents;
 	int n;
 ]],
 		c_source[[
@@ -50,30 +51,32 @@ typedef git_commit Commit;
 		obj_type_Commit_check(L, ${parent::idx} + n);
 	}
 	/* now it is safe to allocate oid array. */
-	p_oids = malloc(parent_count * sizeof(git_oid *));
+	parents = malloc(parent_count * sizeof(git_commit *));
 
 	/* copy oids from all parents into oid array. */
-	p_oids[0] = git_object_id((git_object *)${parent});
+	parents[0] = ${parent};
 	for(n = 1; n < parent_count; n++) {
-		${parent} = obj_type_Commit_check(L, ${parent::idx} + n);
-		p_oids[n] = git_object_id((git_object *)${parent});
+		parents[n] = obj_type_Commit_check(L, ${parent::idx} + n);
 	}
 
 	${err} = git_commit_create(&(${oid}), ${repo}, ${update_ref},
-		${author}, ${committer}, ${message}, git_object_id((git_object *)${tree}),
-		parent_count, p_oids);
+		${author}, ${committer}, ${message_encoding}, ${message},
+		${tree}, parent_count, parents);
 	/* free parent oid array. */
-	free(p_oids);
+	free(parents);
 ]]
+	},
+	method "id" {
+		c_method_call { "OID", "*id" }  "git_commit_id" {}
+	},
+	method "message_encoding" {
+		c_method_call "const char *"  "git_commit_message_encoding" {}
 	},
 	method "message" {
 		c_method_call "const char *"  "git_commit_message" {}
 	},
-	method "message_short" {
-		c_method_call "const char *"  "git_commit_message_short" {}
-	},
 	method "time" {
-		c_method_call "time_t"  "git_commit_time" {}
+		c_method_call "git_time_t"  "git_commit_time" {}
 	},
 	method "time_offset" {
 		c_method_call "int"  "git_commit_time_offset" {}

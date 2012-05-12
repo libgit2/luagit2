@@ -7,7 +7,7 @@ if ( build_dir ) then
     package.cpath = build_dir .. "?.so;" .. package.cpath
 end
 
-require"git2"
+local git2 = require"git2"
 require"utils"
 
 print("dump git2 interface")
@@ -18,12 +18,12 @@ local rep = assert(git2.Repository(git_path))
 print("dump Repository interface")
 print(dbg_dump(rep))
 
-local oid = git2.OID.str("d5a93c463d4cca0068750eb6af7b4b54eea8599b")
+local oid = git2.OID.hex("d5a93c463d4cca0068750eb6af7b4b54eea8599b")
 print("dump OID interface")
 print(dbg_dump(oid))
 print('convert OID value to string = <' .. tostring(oid) .. '>')
 
-local db = rep:database()
+local db = rep:odb()
 print("dump Database interface")
 print(dbg_dump(db))
 
@@ -55,7 +55,7 @@ dump_odb_obj(odb_obj)
 
 print()
 print("test closing of OdbObject:")
-odb_obj:close()
+odb_obj:free()
 dump_odb_obj(odb_obj)
 
 print()
@@ -67,7 +67,7 @@ local object_ids = {
 	{'blob', "275a4019807c7bb7bc80c0ca8903bf84345e1bdf"},
 }
 for _,obj in ipairs(object_ids) do
-	local oid = git2.OID.str(obj[2])
+	local oid = git2.OID.hex(obj[2])
 	local odb_obj, err = db:read(oid)
 	print()
 	print(odb_obj, err)
@@ -75,7 +75,7 @@ for _,obj in ipairs(object_ids) do
 end
 
 
-local commit_id = git2.OID.str("d5a93c463d4cca0068750eb6af7b4b54eea8599b")
+local commit_id = git2.OID.hex("d5a93c463d4cca0068750eb6af7b4b54eea8599b")
 print()
 print("test parsing a commit object: ", commit_id)
 local commit1, err = git2.Commit.lookup(rep, commit_id)
@@ -123,8 +123,8 @@ local function dump_commit(commit)
 	if commit == nil then
 		return
 	end
+	print('message_encoding = ', commit:message_encoding())
 	print('message = ', commit:message())
-	print('message_short = ', commit:message_short())
 	print('time = ', commit:time())
 	print('tree = ', commit:tree())
 	dump_tree(commit:tree())
@@ -155,7 +155,7 @@ local function dump_index_entry(entry)
 	print(' idx.entry.uid = ', entry:uid())
 	print(' idx.entry.gid = ', entry:gid())
 	print(' idx.entry.file_size = ', entry:file_size())
-	print(' idx.entry.id = ', entry:id())
+	print(' idx.entry.oid = ', entry:oid())
 	print(' idx.entry.flags = ', string.format('0x%08X', entry:flags()))
 	print(' idx.entry.flags_extended = ', string.format('0x%08X', entry:flags_extended()))
 	print(' idx.entry.path = ', entry:path())
@@ -179,7 +179,7 @@ local revwalk = git2.RevWalk(rep)
 print("dump RevWalk interface")
 print(dbg_dump(revwalk))
 print('sorting:', revwalk:sorting(revwalk.SORT_TOPOLOGICAL + revwalk.SORT_REVERSE))
-local head_id = git2.OID.str("5c697d74eb692d650799ca1b0a10254d7130953d")
+local head_id = git2.OID.hex("5c697d74eb692d650799ca1b0a10254d7130953d")
 local head = assert(git2.Commit.lookup(rep, head_id))
 print('push:', revwalk:push(head_id))
 assert(revwalk:repository() == rep)
@@ -191,7 +191,7 @@ while (commit_oid ~= nil) do
 	commit_oid = revwalk:next()
 end
 
-local tag_id = git2.OID.str('82dfe36284d77b608ccc9d96e0ffa5782cb7c835')
+local tag_id = git2.OID.hex('82dfe36284d77b608ccc9d96e0ffa5782cb7c835')
 local tag = git2.Tag.lookup(rep, tag_id)
 print("dump Tag interface")
 print(dbg_dump(tag))

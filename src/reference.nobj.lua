@@ -53,7 +53,7 @@ typedef git_reference Reference;
 		c_method_call "Repository *" "git_reference_owner" {}
 	},
 	method "rename" {
-		c_method_call "GitError" "git_reference_rename" { "const char *", "new_name" }
+		c_method_call "GitError" "git_reference_rename" { "const char *", "new_name", "bool", "force" }
 	},
 	method "delete" {
 		c_method_call "GitError" "git_reference_delete" {}
@@ -71,7 +71,7 @@ typedef git_reference Reference;
 ]],
 		c_source[[
 	/* push this onto stack now, just encase there is a out-of-memory error. */
-	${array} = obj_type_StrArray_push(L, &tmp_array, OBJ_UDATA_FLAG_OWN);
+	${array} = obj_type_StrArray_push(L, &tmp_array);
 	${err} = git_reference_listall(${array}, ${repo}, ${list_flags});
 	if(${err} == GIT_SUCCESS) {
 		return 1; /* array is already on the stack. */

@@ -18,57 +18,69 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-object "Database" {
+object "ODB" {
 	c_source [[
-typedef git_odb Database;
+typedef git_odb ODB;
 ]],
 	constructor "new" {
-		c_call {"GitError", "err"} "git_odb_new" { "Database *", "&this" },
+		c_call {"GitError", "err"} "git_odb_new" { "ODB *", "&this" },
 	},
 	constructor "open" {
 		c_call {"GitError", "err"} "git_odb_open"
-			{ "Database *", "&this", "const char *", "object_dir" },
+			{ "ODB *", "&this", "const char *", "object_dir" },
 	},
-	destructor "close" {
-		c_method_call "void"  "git_odb_close" {}
+	destructor "free" {
+		c_method_call "void"  "git_odb_free" {}
 	},
 	--[=[
 	method "add_backend" {
-		var_in{"DatabaseBackend *", "backend"},
+		var_in{"ODBBackend *", "backend"},
 		var_in{"int", "priority"},
 		var_out{"GitError", "err"},
 		c_source [[
 	${err} = git_odb_add_backend(${this}, &(${backend}->backend), ${priority});
-	DatabaseBackend_ref(${backend});
+	ODBBackend_ref(${backend});
 ]],
 	},
 	method "add_alternate" {
-		var_in{"DatabaseBackend *", "backend"},
+		var_in{"ODBBackend *", "backend"},
 		var_in{"int", "priority"},
 		var_out{"GitError", "err"},
 		c_source [[
 	${err} = git_odb_add_alternate(${this}, &(${backend}->backend), ${priority});
-	DatabaseBackend_ref(${backend});
+	ODBBackend_ref(${backend});
 ]],
 	},
 	--]=]
 	method "read" {
 		c_call "GitError" "git_odb_read"
-			{ "!OdbObject *", "&out>1", "Database *", "this", "OID", "&id"},
+			{ "!OdbObject *", "&out>1", "ODB *", "this", "OID", "&id"},
+	},
+	method "read_prefix" {
+		c_call "GitError" "git_odb_read_prefix"
+			{ "!OdbObject *", "&out>1", "ODB *", "this", "OID", "&short_id", "unsigned int", "len"},
 	},
 	method "read_header" {
 		c_call { "GitError", "err>3" } "git_odb_read_header"
-			{ "size_t", "&size>1", "git_otype", "&(otype)", "Database *", "this", "OID", "&id"},
+			{ "size_t", "&len_p>1", "git_otype", "&(otype)", "ODB *", "this", "OID", "&id"},
 		c_call { "const char *", "type>2" } "git_object_type2string" { "git_otype", "otype" },
+	},
+	method "exists" {
+		c_method_call { "GitError", "err" } "git_odb_exists" { "OID", "&id" }
 	},
 	method "write" {
 		c_call { "git_otype", "(otype)" } "git_object_string2type" { "const char *", "type<3" },
 		c_call "GitError" "git_odb_write"
-			{ "OID", "&id>1", "Database *", "this<1", "const char *", "data<2", "size_t", "#data",
+			{ "OID", "&id>1", "ODB *", "this<1", "const char *", "data<2", "size_t", "#data",
 			  "git_otype", "otype"},
 	},
-	method "exists" {
-		c_method_call { "GitError", "err" } "git_odb_exists" { "OID", "&id" }
+	c_function "hash" {
+		c_call { "GitError", "err" } "git_odb_hash"
+			{ "OID", "&id>1", "const char *", "data", "size_t", "#data", "git_otype", "otype"}
+	},
+	c_function "hashfile" {
+		c_call { "GitError", "err" } "git_odb_hashfile"
+			{ "OID", "&id>1", "const char *", "path", "git_otype", "otype"}
 	},
 }
 

@@ -22,9 +22,13 @@ object "Signature" {
 	c_source [[
 typedef git_signature Signature;
 ]],
-	constructor {
-		c_call "Signature *" "git_signature_new"
-			{ "const char *", "name", "const char *", "email", "time_t", "time", "int", "offset" },
+	constructor "new" {
+		c_call "GitError" "git_signature_new"
+			{ "Signature *", "&this>1", "const char *", "name", "const char *", "email", "git_time_t", "time", "int", "offset" },
+	},
+	constructor "now" {
+		c_call "GitError" "git_signature_now"
+			{ "Signature *", "&this>1", "const char *", "name", "const char *", "email" },
 	},
 	destructor {
 		c_method_call "void" "git_signature_free" {},
@@ -38,7 +42,7 @@ typedef git_signature Signature;
 		c_source "${email} = ${this}->email;",
 	},
 	method "when" {
-		var_out{"time_t", "time"},
+		var_out{"git_time_t", "time"},
 		var_out{"int", "offset"},
 		c_source "${time} = ${this}->when.time; ${offset} = ${this}->when.offset;",
 	},

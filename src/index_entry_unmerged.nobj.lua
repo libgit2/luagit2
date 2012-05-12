@@ -18,33 +18,33 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-object "Object" {
-	basetype "git_otype" "integer",
+object "IndexEntryUnmerged" {
 	c_source [[
-typedef git_object Object;
+typedef git_index_entry_unmerged IndexEntryUnmerged;
 ]],
-	dyn_caster {
-		caster_type = "switch",
-		value_function = "git_object_type",
-		value_map = {
-		GIT_OBJ_BLOB = "Blob",
-		GIT_OBJ_COMMIT = "Commit",
-		GIT_OBJ_TREE = "Tree",
-		GIT_OBJ_TAG = "Tag",
-		},
+	method "mode" {
+		var_in{"int", "idx"},
+		var_out{"unsigned int", "mode"},
+		c_source [[
+	if(${idx} < 0 || ${idx} >=3) {
+		return luaL_argerror(L, ${idx::idx}, "Index out-of-bounds (0-2)");
+	}
+	${mode} = ${this}->mode[${idx}];
+]]
 	},
-	destructor "free" {
-		c_method_call "void" "git_object_free" {}
+	method "oid" {
+		var_in{"int", "idx"},
+		var_out{"OID", "oid"},
+		c_source [[
+	if(${idx} < 0 || ${idx} >=3) {
+		return luaL_argerror(L, ${idx::idx}, "Index out-of-bounds (0-2)");
+	}
+	${oid} = ${this}->oid[${idx}];
+]]
 	},
-	method "id" {
-		c_method_call { "OID", "*id" } "git_object_id" {},
-	},
-	method "type" {
-		c_method_call { "git_otype", "(otype)" } "git_object_type" {},
-		c_call { "const char *", "type" } "git_object_type2string" { "git_otype", "otype" },
-	},
-	method "owner" {
-		c_method_call "Repository *" "git_object_owner" {}
+	method "path" {
+		var_out{"const char *", "ret"},
+		c_source "${ret} = ${this}->path;"
 	},
 }
 

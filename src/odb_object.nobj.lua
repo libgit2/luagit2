@@ -22,8 +22,11 @@ object "OdbObject" {
 	c_source [[
 typedef git_odb_object OdbObject;
 ]],
-	destructor "close" {
-		c_method_call "void" "git_odb_object_close" {},
+	destructor "free" {
+		c_method_call "void" "git_odb_object_free" {},
+	},
+	method "id" {
+		c_method_call { "OID", "*id" } "git_odb_object_id" {},
 	},
 	method "data" {
 		c_method_call { "const char *", "data" } "git_odb_object_data" {},
@@ -35,9 +38,6 @@ typedef git_odb_object OdbObject;
 	method "type" {
 		c_method_call { "git_otype", "(otype)" } "git_odb_object_type" {},
 		c_call { "const char *", "type" } "git_object_type2string" { "git_otype", "otype" },
-	},
-	method "id" {
-		c_method_call { "OID", "*id" } "git_odb_object_id" {},
 	},
 }
 

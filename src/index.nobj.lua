@@ -23,12 +23,8 @@ object "Index" {
 typedef git_index Index;
 ]],
 	constructor "bare" {
-		c_call {"GitError", "err"} "git_index_open_bare"
+		c_call {"GitError", "err"} "git_index_open"
 			{ "Index *", "&this", "const char *", "index_path" },
-	},
-	constructor "inrepo" {
-		c_call {"GitError", "err"} "git_index_open_inrepo"
-			{ "Index *", "&this", "Repository *", "repo" },
 	},
 	destructor {
 		c_method_call "void"  "git_index_free" {}
@@ -39,23 +35,47 @@ typedef git_index Index;
 	method "read" {
 		c_method_call "GitError"  "git_index_read" {}
 	},
+	method "write" {
+		c_method_call "GitError"  "git_index_write" {}
+	},
 	method "find" {
 		c_method_call "int"  "git_index_find" { "const char *", "path" }
+	},
+	method "uniq" {
+		c_method_call "void"  "git_index_uniq" {}
 	},
 	method "add" {
 		c_method_call "GitError"  "git_index_add" { "const char *", "path", "int", "stage" }
 	},
+	method "add2" {
+		c_method_call "GitError"  "git_index_add2" { "IndexEntry *", "source_entry" }
+	},
+	method "append" {
+		c_method_call "GitError"  "git_index_append" { "const char *", "path", "int", "stage" }
+	},
+	method "append2" {
+		c_method_call "GitError"  "git_index_append2" { "IndexEntry *", "source_entry" }
+	},
 	method "remove" {
 		c_method_call "GitError"  "git_index_remove" { "int", "position" }
-	},
-	method "insert" {
-		c_method_call "GitError"  "git_index_insert" { "IndexEntry *", "source_entry" }
 	},
 	method "get" {
 		c_method_call "IndexEntry *"  "git_index_get" { "int", "n" }
 	},
 	method "entrycount" {
 		c_method_call "unsigned int"  "git_index_entrycount" {}
+	},
+	method "entrycount_unmerged" {
+		c_method_call "unsigned int"  "git_index_entrycount_unmerged" {}
+	},
+	method "get_unmerged_bypath" {
+		c_method_call "const IndexEntryUnmerged *"  "git_index_get_unmerged_bypath" { "const char *", "path" }
+	},
+	method "get_unmerged_byindex" {
+		c_method_call "const IndexEntryUnmerged *"  "git_index_get_unmerged_byindex" { "int", "n" }
+	},
+	method "read_tree" {
+		c_method_call "GitError"  "git_index_read_tree" { "Tree *", "tree" }
 	},
 }
 

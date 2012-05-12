@@ -31,10 +31,10 @@ typedef git_tree Tree;
 		c_method_call "size_t"  "git_tree_entrycount" {}
 	},
 	method "entry_byname" {
-		c_method_call "TreeEntry *"  "git_tree_entry_byname" { "const char *", "filename" }
+		c_method_call "const TreeEntry *"  "git_tree_entry_byname" { "const char *", "filename" }
 	},
 	method "entry_byindex" {
-		c_method_call "TreeEntry *"  "git_tree_entry_byindex" { "int", "index" }
+		c_method_call "const TreeEntry *"  "git_tree_entry_byindex" { "int", "index" }
 	},
 }
 

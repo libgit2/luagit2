@@ -26,16 +26,14 @@ typedef git_repository Repository;
 		c_call { "GitError", "err" } "git_repository_open"
 			{ "Repository *", "&this>1", "const char *", "path" },
 	},
-	constructor "open2" {
-		c_call { "GitError", "err" } "git_repository_open2"
-			{ "Repository *", "&this>1", "const char *", "dir", "const char *", "object_directory",
-				"const char *", "index_file", "const char *", "work_tree" },
+	--[=[
+	constructor "discover" {
+		c_source[[
+	]],
+		c_call { "GitError", "err" } "git_repository_open"
+			{ "Repository *", "&this>1", "const char *", "path" },
 	},
-	constructor "open3" {
-		c_call { "GitError", "err" } "git_repository_open3"
-			{ "Repository *", "&this>1", "const char *", "dir", "Database *", "object_database",
-				"const char *", "index_file", "const char *", "work_tree" },
-	},
+	--]=]
 	constructor "init" {
 		c_call { "GitError", "err" } "git_repository_init"
 			{ "Repository *", "&this>1", "const char *", "path", "unsigned int", "is_bare" },
@@ -43,12 +41,53 @@ typedef git_repository Repository;
 	destructor {
 		c_method_call "void"  "git_repository_free" {}
 	},
-	method "database" {
-		c_method_call "Database *" "git_repository_database" {}
+	method "head" {
+		c_call { "GitError", "err" } "git_repository_head"
+			{ "!Reference *", "&head>1", "Repository *", "this" },
+	},
+	method "head_detached" {
+		c_method_call "bool" "git_repository_head_detached" {}
+	},
+	method "head_orphan" {
+		c_method_call "bool" "git_repository_head_orphan" {}
+	},
+	method "is_empty" {
+		c_method_call "bool" "git_repository_is_empty" {}
+	},
+	method "is_bare" {
+		c_method_call "bool" "git_repository_is_bare" {}
+	},
+	method "path" {
+		c_method_call "const char *" "git_repository_path" {}
+	},
+	method "workdir" {
+		c_method_call "const char *" "git_repository_workdir" {}
+	},
+	method "set_workdir" {
+		c_method_call "GitError" "git_repository_set_workdir" { "const char *", "workdir"}
+	},
+	--[[ TODO:
+	method "config" {
+		c_call { "GitError", "err" } "git_repository_config"
+			{ "!Config *", "&config>1", "Repository *", "this" },
+	},
+	method "set_config" {
+		c_method_call "void" "git_repository_set_config" { "Config *", "config"}
+	},
+	--]]
+	method "odb" {
+		c_call { "GitError", "err" } "git_repository_odb"
+			{ "!ODB *", "&odb>1", "Repository *", "this" },
+	},
+	method "set_odb" {
+		c_method_call "void" "git_repository_set_odb" { "ODB *", "odb"}
 	},
 	method "index" {
 		c_call { "GitError", "err" } "git_repository_index"
 			{ "!Index *", "&index>1", "Repository *", "this" },
+	},
+	method "set_index" {
+		c_method_call "void" "git_repository_set_index" { "Index *", "index"}
 	},
 }
 

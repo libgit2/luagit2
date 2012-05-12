@@ -1,4 +1,6 @@
 
+basetype "git_time_t"  "integer" "0"
+
 c_module "git2" {
 -- module settings.
 use_globals = false,
@@ -33,6 +35,15 @@ EREVWALKOVER          = "GIT_EREVWALKOVER",
 EINVALIDREFSTATE      = "GIT_EINVALIDREFSTATE",
 ENOTIMPLEMENTED       = "GIT_ENOTIMPLEMENTED",
 EEXISTS               = "GIT_EEXISTS",
+EOVERFLOW             = "GIT_EOVERFLOW",
+ENOTNUM               = "GIT_ENOTNUM",
+ESTREAM               = "GIT_ESTREAM",
+EINVALIDARGS          = "GIT_EINVALIDARGS",
+EOBJCORRUPTED         = "GIT_EOBJCORRUPTED",
+EAMBIGUOUSOIDPREFIX   = "GIT_EAMBIGUOUSOIDPREFIX",
+EPASSTHROUGH          = "GIT_EPASSTHROUGH",
+ENOMATCH              = "GIT_ENOMATCH",
+ESHORTBUFFER          = "GIT_ESHORTBUFFER",
 },
 
 -- reference types
@@ -51,10 +62,12 @@ subfiles {
 "src/repository.nobj.lua",
 "src/odb_object.nobj.lua",
 "src/oid.nobj.lua",
-"src/database.nobj.lua",
+"src/oid_shorten.nobj.lua",
+"src/odb.nobj.lua",
 --"src/database_backend.nobj.lua",
 "src/index.nobj.lua",
 "src/index_entry.nobj.lua",
+"src/index_entry_unmerged.nobj.lua",
 "src/object.nobj.lua",
 "src/blob.nobj.lua",
 "src/signature.nobj.lua",

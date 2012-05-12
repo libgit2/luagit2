@@ -1,4 +1,4 @@
--- Copyright (c) 2010 by Robert G. Jakabosky <bobby@sharedrealm.com>
+-- Copyright (c) 2012 by Robert G. Jakabosky <bobby@sharedrealm.com>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -18,33 +18,24 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-object "Object" {
-	basetype "git_otype" "integer",
+object "OID_Shorten" {
 	c_source [[
-typedef git_object Object;
+typedef git_oid_shorten OID_Shorten;
 ]],
-	dyn_caster {
-		caster_type = "switch",
-		value_function = "git_object_type",
-		value_map = {
-		GIT_OBJ_BLOB = "Blob",
-		GIT_OBJ_COMMIT = "Commit",
-		GIT_OBJ_TREE = "Tree",
-		GIT_OBJ_TAG = "Tag",
-		},
+	constructor "new" {
+		c_call "OID_Shorten *" "git_oid_shorten_new" { "size_t", "min_length" },
 	},
-	destructor "free" {
-		c_method_call "void" "git_object_free" {}
+	destructor {
+		c_method_call "void"  "git_oid_shorten_free" {}
 	},
-	method "id" {
-		c_method_call { "OID", "*id" } "git_object_id" {},
-	},
-	method "type" {
-		c_method_call { "git_otype", "(otype)" } "git_object_type" {},
-		c_call { "const char *", "type" } "git_object_type2string" { "git_otype", "otype" },
-	},
-	method "owner" {
-		c_method_call "Repository *" "git_object_owner" {}
+	method "add" {
+		c_method_call { "GitError", "rc"} "git_oid_shorten_add" { "const char *", "text_oid" },
+		c_source[[
+		if(${rc} >= 0) {
+			lua_pushinteger(L, ${rc});
+			return 1;
+		}
+		]]
 	},
 }
 
