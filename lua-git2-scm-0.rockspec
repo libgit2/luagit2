@@ -27,6 +27,8 @@ build	= {
 		git2 = {
 			sources = { "src/pre_generated-git2.nobj.c" },
 			libraries = { "git2" },
+			incdirs = { "$(GIT2_INCDIR)" },
+			libdirs = { "$(GIT2_LIBDIR)" },
 		}
 	}
 }
