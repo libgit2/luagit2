@@ -18,6 +18,11 @@ local function dump_obj(obj)
 	end
 	print('id = ', obj:id())
 	print('type = ', obj:type())
+	local data = obj:data()
+	print('data = ', data)
+	if data then
+		print('hash = ', git2.ODB.hash(data,git2.Object.string2type(obj:type())))
+	end
 end
 
 -- create odb
@@ -93,6 +98,8 @@ end,
 local backend = git2.ODBBackend(cbs)
 
 print('add backend:', assert(db:add_backend(backend, 0)))
+backend = nil
+collectgarbage"collect"
 
 print("test writing test blob to odb:")
 local oid, err = db:write("any ol content will do", 'blob')
@@ -127,6 +134,8 @@ db = rep:odb()
 print("=============================================== repo db=", db)
 backend = git2.ODBBackend(cbs)
 print("add backend repository's odb:", assert(db:add_backend(backend, 0)))
+backend = nil
+collectgarbage"collect"
 
 print()
 print("try reading objects from repository:")
@@ -138,7 +147,8 @@ local object_ids = {
 }
 for _,obj in ipairs(object_ids) do
 	local oid = git2.OID.hex(obj[2])
-	local obj, err = rep:lookup(oid, obj[1])
+	--local obj, err = rep:lookup(oid, obj[1])
+	local obj, err = db:read(oid)
 	print('read', obj, err)
 	print()
 end

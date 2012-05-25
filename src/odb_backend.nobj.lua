@@ -40,6 +40,7 @@ static void ODBBackend_ref(ODBBackend *backend) {
 
 static void ODBBackend_unref(ODBBackend *backend) {
 	lua_State *L = backend->L;
+	assert(backend->ref_count > 0);
 	if((--backend->ref_count) == 0) {
 		luaL_unref(L, LUA_REGISTRYINDEX, backend->read);
 		luaL_unref(L, LUA_REGISTRYINDEX, backend->read_prefix);
