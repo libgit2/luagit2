@@ -19,7 +19,7 @@
 -- THE SOFTWARE.
 
 object "Reference" {
-	basetype "git_rtype"   "integer",
+	basetype "git_ref_t"   "integer",
 	c_source [[
 typedef git_reference Reference;
 ]],
@@ -40,7 +40,7 @@ typedef git_reference Reference;
 		c_method_call "GitError" "git_reference_set_target" { "const char *", "target" }
 	},
 	method "type" {
-		c_method_call "git_rtype" "git_reference_type" {}
+		c_method_call "git_ref_t" "git_reference_type" {}
 	},
 	method "name" {
 		c_method_call "const char *" "git_reference_name" {}
@@ -61,7 +61,7 @@ typedef git_reference Reference;
 	c_function "packall" {
 		c_call "GitError" "git_reference_packall" { "Repository *", "repo" }
 	},
-	c_function "listall" {
+	c_function "list" {
 		var_in{ "Repository *", "repo" },
 		var_in{ "unsigned int", "list_flags" },
 		var_out{ "StrArray *", "array" },
@@ -72,8 +72,8 @@ typedef git_reference Reference;
 		c_source[[
 	/* push this onto stack now, just encase there is a out-of-memory error. */
 	${array} = obj_type_StrArray_push(L, &tmp_array);
-	${err} = git_reference_listall(${array}, ${repo}, ${list_flags});
-	if(${err} == GIT_SUCCESS) {
+	${err} = git_reference_list(${array}, ${repo}, ${list_flags});
+	if(${err} == GIT_OK) {
 		return 1; /* array is already on the stack. */
 	} else {
 		/* there is an error remove the temp array from stack. */

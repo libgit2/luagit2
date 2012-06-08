@@ -10,40 +10,15 @@ include "git2.h",
 
 -- Error codes
 export_definitions {
-SUCCESS               = "GIT_SUCCESS",
+OK                    = "GIT_OK",
 ERROR                 = "GIT_ERROR",
-ENOTOID               = "GIT_ENOTOID",
 ENOTFOUND             = "GIT_ENOTFOUND",
-ENOMEM                = "GIT_ENOMEM",
-EOSERR                = "GIT_EOSERR",
-EOBJTYPE              = "GIT_EOBJTYPE",
-EOBJCORRUPTED         = "GIT_EOBJCORRUPTED",
-ENOTAREPO             = "GIT_ENOTAREPO",
-EINVALIDTYPE          = "GIT_EINVALIDTYPE",
-EMISSINGOBJDATA       = "GIT_EMISSINGOBJDATA",
-EPACKCORRUPTED        = "GIT_EPACKCORRUPTED",
-EFLOCKFAIL            = "GIT_EFLOCKFAIL",
-EZLIB                 = "GIT_EZLIB",
-EBUSY                 = "GIT_EBUSY",
-EBAREINDEX            = "GIT_EBAREINDEX",
-EINVALIDREFNAME       = "GIT_EINVALIDREFNAME",
-EREFCORRUPTED         = "GIT_EREFCORRUPTED",
-ETOONESTEDSYMREF      = "GIT_ETOONESTEDSYMREF",
-EPACKEDREFSCORRUPTED  = "GIT_EPACKEDREFSCORRUPTED",
-EINVALIDPATH          = "GIT_EINVALIDPATH",
-EREVWALKOVER          = "GIT_EREVWALKOVER",
-EINVALIDREFSTATE      = "GIT_EINVALIDREFSTATE",
-ENOTIMPLEMENTED       = "GIT_ENOTIMPLEMENTED",
 EEXISTS               = "GIT_EEXISTS",
-EOVERFLOW             = "GIT_EOVERFLOW",
-ENOTNUM               = "GIT_ENOTNUM",
-ESTREAM               = "GIT_ESTREAM",
-EINVALIDARGS          = "GIT_EINVALIDARGS",
-EOBJCORRUPTED         = "GIT_EOBJCORRUPTED",
-EAMBIGUOUSOIDPREFIX   = "GIT_EAMBIGUOUSOIDPREFIX",
-EPASSTHROUGH          = "GIT_EPASSTHROUGH",
-ENOMATCH              = "GIT_ENOMATCH",
-ESHORTBUFFER          = "GIT_ESHORTBUFFER",
+EAMBIGUOUS            = "GIT_EAMBIGUOUS",
+EBUFS                 = "GIT_EBUFS",
+
+PASSTHROUGH           = "GIT_PASSTHROUGH",
+REVWALKOVER           = "GIT_REVWALKOVER",
 },
 
 -- reference types
@@ -56,6 +31,22 @@ REF_HAS_PEEL = 8,
 REF_LISTALL  = 0x07, -- GIT_REF_OID|GIT_REF_SYMBOLIC|GIT_REF_PACKED,
 },
 
+c_function "version" {
+	var_out{ "<any>", "ver" },
+	c_source[[
+	int major, minor, patch;
+	git_libgit2_version(&(major), &(minor), &(patch));
+
+	/* return version as a table: { major, minor, patch } */
+	lua_createtable(L, 3, 0);
+	lua_pushinteger(L, major);
+	lua_rawseti(L, -2, 1);
+	lua_pushinteger(L, minor);
+	lua_rawseti(L, -2, 2);
+	lua_pushinteger(L, patch);
+	lua_rawseti(L, -2, 3);
+]],
+},
 subfiles {
 "src/strarray.nobj.lua",
 "src/error.nobj.lua",

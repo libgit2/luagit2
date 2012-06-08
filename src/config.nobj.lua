@@ -37,16 +37,16 @@ typedef git_config Config;
 			{ "const char *", "path", "int", "priority" },
 	},
 	method "get_int32" {
-		c_method_call { "GitError", "err"} "git_config_get_int32"
-			{ "const char *", "name", "int32_t>1", "&out" },
+		c_call { "GitError", "err"} "git_config_get_int32"
+			{ "int32_t>1", "&out", "Config *", "this", "const char *", "name", },
 	},
 	method "set_int32" {
 		c_method_call { "GitError", "err"} "git_config_set_int32"
 			{ "const char *", "name", "int32_t", "value" },
 	},
 	method "get_int64" {
-		c_method_call { "GitError", "err"} "git_config_get_int64"
-			{ "const char *", "name", "int64_t>1", "&out" },
+		c_call { "GitError", "err"} "git_config_get_int64"
+			{ "int64_t>1", "&out", "Config *", "this", "const char *", "name", },
 	},
 	method "set_int64" {
 		c_method_call { "GitError", "err"} "git_config_set_int64"
@@ -54,8 +54,8 @@ typedef git_config Config;
 	},
 	method "get_bool" {
 		var_out{"bool", "out"},
-		c_method_call { "GitError", "err"} "git_config_get_bool"
-			{ "const char *", "name", "int", "(&out_int)" },
+		c_call { "GitError", "err"} "git_config_get_bool"
+			{ "int", "(&out_int)", "Config *", "this", "const char *", "name", },
 		c_source[[
 	${out} = ${out_int};
 ]],
@@ -69,8 +69,8 @@ typedef git_config Config;
 			{ "const char *", "name", "int", "(value_int)" },
 	},
 	method "get_string" {
-		c_method_call { "GitError", "err"} "git_config_get_string"
-			{ "const char *", "name", "const char *>1", "&out" },
+		c_call { "GitError", "err"} "git_config_get_string"
+			{ "const char *>1", "&out", "Config *", "this", "const char *", "name", },
 	},
 	method "set_string" {
 		c_method_call { "GitError", "err"} "git_config_set_string"

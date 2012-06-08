@@ -81,11 +81,11 @@ static int odb_backend_read_cb(void **data_p, size_t *len_p, git_otype *type_p, 
 		data = malloc(len);
 		*data_p = data;
 		if(data == NULL) {
-			return GIT_ENOMEM;
+			return GIT_EBUFS; //GIT_ENOMEM;
 		}
 		/* copy data. */
 		memcpy(data, ldata, len);
-		err = GIT_SUCCESS;
+		err = GIT_OK;
 	} else if(lua_isnil(L, -2)) {
 		*data_p = NULL;
 		/* backend returned an error. */
@@ -93,7 +93,7 @@ static int odb_backend_read_cb(void **data_p, size_t *len_p, git_otype *type_p, 
 	} else {
 		*data_p = NULL;
 		/* bad return value from lua backend. */
-		err = GIT_EOBJTYPE;
+		err = GIT_EAMBIGUOUS; //GIT_EOBJTYPE;
 	}
 
 	return err;
@@ -104,12 +104,12 @@ static int odb_backend_read_prefix_cb(git_oid *out_oid, void **data_p, size_t *l
 	*data_p = NULL;
 	if(len >= GIT_OID_HEXSZ) {
 		int rc = odb_backend_read_cb(data_p, len_p, type_p, backend, short_oid);
-		if(rc == GIT_SUCCESS) {
+		if(rc == GIT_OK) {
 			git_oid_cpy(out_oid, short_oid);
 		}
 		return rc;
 	}
-	return GIT_ENOTIMPLEMENTED;
+	return GIT_EAMBIGUOUS; //GIT_ENOTIMPLEMENTED;
 }
 
 static int odb_backend_read_header_cb(size_t *len_p, git_otype *type_p, git_odb_backend *backend, const git_oid *oid)
@@ -137,13 +137,13 @@ static int odb_backend_read_header_cb(size_t *len_p, git_otype *type_p, git_odb_
 		} else if(arg_type == LUA_TSTRING) {
 			*type_p = git_object_string2type(lua_tostring(L, -1));
 		}
-		err = GIT_SUCCESS;
+		err = GIT_OK;
 	} else if(arg_type == LUA_TNIL) {
 		/* backend returned an error. */
 		err = lua_tointeger(L, -1);
 	} else {
 		/* bad return value from lua backend. */
-		err = GIT_EOBJTYPE;
+		err = GIT_EAMBIGUOUS; //GIT_EOBJTYPE;
 	}
 
 	return err;
@@ -167,7 +167,7 @@ static int odb_backend_write_cb(git_oid *oid, git_odb_backend *backend, const vo
 	lua_call(L, 2, 2);
 	if(!lua_isnil(L, -2)) {
 		*oid = obj_type_OID_check(L,-2);
-		err = GIT_SUCCESS;
+		err = GIT_OK;
 	} else {
 		err = lua_tointeger(L, -1);
 	}

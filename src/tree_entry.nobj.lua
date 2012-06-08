@@ -33,7 +33,7 @@ typedef git_tree_entry TreeEntry;
 		c_source "${id} = *(git_tree_entry_id(${this}));"
 	},
 	method "object" {
-		c_call "GitError" "git_tree_entry_2object"
+		c_call "GitError" "git_tree_entry_to_object"
 			{ "!Object *", "&obj>1", "Repository *", "repo", "TreeEntry *", "this" }
 	},
 }

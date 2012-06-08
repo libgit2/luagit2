@@ -20,11 +20,36 @@
 
 -- Convert Git Error codes into strings.
 error_code "GitError" "int" {
-	is_error_check = function(rec) return "(GIT_SUCCESS != ${" .. rec.name .. "})" end,
-	default = "GIT_SUCCESS",
+	is_error_check = function(rec) return "(GIT_OK != ${" .. rec.name .. "})" end,
+	default = "GIT_OK",
 	c_source [[
-	if(err != GIT_SUCCESS) {
-		err_str = git_strerror(err);
+	const git_error *giterr;
+	switch(err) {
+	case GIT_ERROR:
+		giterr = giterr_last();
+		err_str = giterr->message;
+		break;
+	case GIT_ENOTFOUND:
+		err_str = "ENOTFOUND";
+		break;
+	case GIT_EEXISTS:
+		err_str = "EEXISTS";
+		break;
+	case GIT_EAMBIGUOUS:
+		err_str = "EAMBIGUOUS";
+		break;
+	case GIT_EBUFS:
+		err_str = "EBUFS";
+		break;
+	case GIT_PASSTHROUGH:
+		err_str = "PASSTHROUGH";
+		break;
+	case GIT_REVWALKOVER:
+		err_str = "REVWALKOVER";
+		break;
+	case GIT_OK:
+	default:
+		break;
 	}
 ]],
 }
