@@ -28,7 +28,7 @@ set(COMMON_LIBS "${COMMON_LIBS};${LUA_LIBRARIES}")
 
 ## LibGit2
 include(FindPkgConfig)
-pkg_search_module(GIT2 REQUIRED libgit2)
+pkg_search_module(GIT2 REQUIRED libgit2=0.17.0)
 set(COMMON_CFLAGS "${COMMON_CFLAGS} ${GIT2_CFLAGS}")
 set(COMMON_LDFLAGS "${COMMON_LDFLAGS} ${GIT2_LDFLAGS}")
 set(COMMON_LIBS "${COMMON_LIBS};${GIT2_LIBRARIES}")
