@@ -16,7 +16,6 @@ set(USE_PRE_GENERATED_BINDINGS TRUE CACHE BOOL
 				"Set this to FALSE to re-generate bindings using LuaNativeObjects")
 
 set(COMMON_CFLAGS "${CFLAGS}")
-set(COMMON_LDFLAGS)
 set(COMMON_LIBS)
 
 ## Lua 5.1.x
@@ -25,20 +24,21 @@ if(NOT ${LUA51_FOUND})
     message(FATAL_ERROR "The FindLua51 module could not find lua :-(")
 endif()
 set(COMMON_LIBS "${COMMON_LIBS};${LUA_LIBRARIES}")
+include_directories(${LUA_INCLUDE_DIR})
 
 ## LibGit2
 include(FindPkgConfig)
 pkg_search_module(GIT2 REQUIRED libgit2=0.17.0)
-set(COMMON_CFLAGS "${COMMON_CFLAGS} ${GIT2_CFLAGS}")
-set(COMMON_LDFLAGS "${COMMON_LDFLAGS} ${GIT2_LDFLAGS}")
+add_definitions(${GIT2_CFLAGS})
+link_directories(${GIT2_LIBRARY_DIRS})
+include_directories(${GIT2_INCLUDE_DIRS})
 set(COMMON_LIBS "${COMMON_LIBS};${GIT2_LIBRARIES}")
 
 ## LuaNativeObjects
 include(LuaNativeObjects)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${CMAKE_CURRENT_BINARY_DIR}
-                    ${LUA_INCLUDE_DIR})
+                    ${CMAKE_CURRENT_BINARY_DIR})
 
 #
 # Setup CMAKE_C_FLAGS* and CMAKE_CXX_FLAGS*
