@@ -1,7 +1,7 @@
 luagit2
 =======
 
-LibGit2 bindings for Lua.
+LibGit2 bindings for Lua. [API Docs](http://libgit2.github.com/luagit2/)
 
 libgit2 version
 ---------------
