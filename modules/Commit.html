@@ -1,0 +1,661 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../luadoc.css" type="text/css" />
+	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
+</head>
+
+<body>
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+<div id="main">
+
+<div id="navigation">
+
+
+<h1>LuaDoc</h1>
+<ul>
+	
+	<li><a href="../index.html">Index</a></li>
+	
+</ul>
+
+
+<!-- Module list -->
+
+<h1>Modules</h1>
+<ul>
+
+	<li>
+		<a href="../modules/Blob.html">Blob</a>
+	</li>
+
+	<li><strong>Commit</strong></li>
+	
+	<li>
+		<a href="../modules/Config.html">Config</a>
+	</li>
+
+	<li>
+		<a href="../modules/Index.html">Index</a>
+	</li>
+
+	<li>
+		<a href="../modules/IndexEntry.html">IndexEntry</a>
+	</li>
+
+	<li>
+		<a href="../modules/IndexEntryUnmerged.html">IndexEntryUnmerged</a>
+	</li>
+
+	<li>
+		<a href="../modules/ODB.html">ODB</a>
+	</li>
+
+	<li>
+		<a href="../modules/ODBBackend.html">ODBBackend</a>
+	</li>
+
+	<li>
+		<a href="../modules/OID.html">OID</a>
+	</li>
+
+	<li>
+		<a href="../modules/OID_Shorten.html">OID_Shorten</a>
+	</li>
+
+	<li>
+		<a href="../modules/Object.html">Object</a>
+	</li>
+
+	<li>
+		<a href="../modules/OdbObject.html">OdbObject</a>
+	</li>
+
+	<li>
+		<a href="../modules/Reference.html">Reference</a>
+	</li>
+
+	<li>
+		<a href="../modules/Repository.html">Repository</a>
+	</li>
+
+	<li>
+		<a href="../modules/RevWalk.html">RevWalk</a>
+	</li>
+
+	<li>
+		<a href="../modules/Signature.html">Signature</a>
+	</li>
+
+	<li>
+		<a href="../modules/StrArray.html">StrArray</a>
+	</li>
+
+	<li>
+		<a href="../modules/Tag.html">Tag</a>
+	</li>
+
+	<li>
+		<a href="../modules/Tree.html">Tree</a>
+	</li>
+
+	<li>
+		<a href="../modules/TreeEntry.html">TreeEntry</a>
+	</li>
+
+	<li>
+		<a href="../modules/git2.html">git2</a>
+	</li>
+
+</ul>
+
+
+
+<!-- File list -->
+
+
+
+
+
+
+</div><!-- id="navigation" -->
+
+<div id="content">
+
+<h1>Module <code>Commit</code></h1>
+
+<p>Class "Commit".  Extends <a href="Object.html">Object</a><br /> <br /></p>
+
+
+
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit.create">Commit.create</a>&nbsp;(oid, repo, update_ref, author, committer, message_encoding, message, tree, parent)</td>
+	<td class="summary">module function  </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit.lookup">Commit.lookup</a>&nbsp;(repo, id)</td>
+	<td class="summary">Create a new Commit object  </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit:author">Commit:author</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit:committer">Commit:committer</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit:id">Commit:id</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit:message">Commit:message</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit:message_encoding">Commit:message_encoding</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit:parent">Commit:parent</a>&nbsp;(n)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit:parentcount">Commit:parentcount</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit:time">Commit:time</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit:time_offset">Commit:time_offset</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Commit:tree">Commit:tree</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Object:free">Object:free</a>&nbsp;()</td>
+	<td class="summary">Destroy this object.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Object:id">Object:id</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Object:owner">Object:owner</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Object:type">Object:type</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+</table>
+
+
+
+
+
+
+<br/>
+<br/>
+
+
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="Commit.create"></a><strong>Commit.create</strong>&nbsp;(oid, repo, update_ref, author, committer, message_encoding, message, tree, parent)</dt>
+<dd>
+module function 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  oid: Must be of type `OID`.
+	</li>
+	
+	<li>
+	  repo: Must be of type `Repository`.
+	</li>
+	
+	<li>
+	  update_ref: Must be of type `string`.
+	</li>
+	
+	<li>
+	  author: Must be of type `Signature`.
+	</li>
+	
+	<li>
+	  committer: Must be of type `Signature`.
+	</li>
+	
+	<li>
+	  message_encoding: Must be of type `string`.
+	</li>
+	
+	<li>
+	  message: Must be of type `string`.
+	</li>
+	
+	<li>
+	  tree: Must be of type `Tree`.
+	</li>
+	
+	<li>
+	  parent: Must be of type `Commit`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Commit.lookup"></a><strong>Commit.lookup</strong>&nbsp;(repo, id)</dt>
+<dd>
+Create a new Commit object 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  repo: Must be of type `Repository`.
+	</li>
+	
+	<li>
+	  id: Must be of type `OID`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>Commit</code> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Commit:author"></a><strong>Commit:author</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>Signature</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Commit:committer"></a><strong>Commit:committer</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>Signature</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Commit:id"></a><strong>Commit:id</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>OID</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Commit:message"></a><strong>Commit:message</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>string</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Commit:message_encoding"></a><strong>Commit:message_encoding</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>string</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Commit:parent"></a><strong>Commit:parent</strong>&nbsp;(n)</dt>
+<dd>
+object method. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  n: Must be of type `integer`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>Commit</code> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Commit:parentcount"></a><strong>Commit:parentcount</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>integer</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Commit:time"></a><strong>Commit:time</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>integer</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Commit:time_offset"></a><strong>Commit:time_offset</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>integer</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Commit:tree"></a><strong>Commit:tree</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>Tree</code> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Object:free"></a><strong>Object:free</strong>&nbsp;()</dt>
+<dd>
+Destroy this object. 
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Object:id"></a><strong>Object:id</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>OID</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Object:owner"></a><strong>Object:owner</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>Repository</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Object:type"></a><strong>Object:type</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>string</code>.
+
+
+
+</dd>
+
+
+</dl>
+
+
+
+
+
+
+</div> <!-- id="content" -->
+
+</div> <!-- id="main" -->
+
+<div id="about">
+	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+</div> <!-- id="about" -->
+
+</div> <!-- id="container" -->	
+</body>
+</html>

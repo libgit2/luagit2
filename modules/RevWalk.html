@@ -1,0 +1,428 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../luadoc.css" type="text/css" />
+	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
+</head>
+
+<body>
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+<div id="main">
+
+<div id="navigation">
+
+
+<h1>LuaDoc</h1>
+<ul>
+	
+	<li><a href="../index.html">Index</a></li>
+	
+</ul>
+
+
+<!-- Module list -->
+
+<h1>Modules</h1>
+<ul>
+
+	<li>
+		<a href="../modules/Blob.html">Blob</a>
+	</li>
+
+	<li>
+		<a href="../modules/Commit.html">Commit</a>
+	</li>
+
+	<li>
+		<a href="../modules/Config.html">Config</a>
+	</li>
+
+	<li>
+		<a href="../modules/Index.html">Index</a>
+	</li>
+
+	<li>
+		<a href="../modules/IndexEntry.html">IndexEntry</a>
+	</li>
+
+	<li>
+		<a href="../modules/IndexEntryUnmerged.html">IndexEntryUnmerged</a>
+	</li>
+
+	<li>
+		<a href="../modules/ODB.html">ODB</a>
+	</li>
+
+	<li>
+		<a href="../modules/ODBBackend.html">ODBBackend</a>
+	</li>
+
+	<li>
+		<a href="../modules/OID.html">OID</a>
+	</li>
+
+	<li>
+		<a href="../modules/OID_Shorten.html">OID_Shorten</a>
+	</li>
+
+	<li>
+		<a href="../modules/Object.html">Object</a>
+	</li>
+
+	<li>
+		<a href="../modules/OdbObject.html">OdbObject</a>
+	</li>
+
+	<li>
+		<a href="../modules/Reference.html">Reference</a>
+	</li>
+
+	<li>
+		<a href="../modules/Repository.html">Repository</a>
+	</li>
+
+	<li><strong>RevWalk</strong></li>
+	
+	<li>
+		<a href="../modules/Signature.html">Signature</a>
+	</li>
+
+	<li>
+		<a href="../modules/StrArray.html">StrArray</a>
+	</li>
+
+	<li>
+		<a href="../modules/Tag.html">Tag</a>
+	</li>
+
+	<li>
+		<a href="../modules/Tree.html">Tree</a>
+	</li>
+
+	<li>
+		<a href="../modules/TreeEntry.html">TreeEntry</a>
+	</li>
+
+	<li>
+		<a href="../modules/git2.html">git2</a>
+	</li>
+
+</ul>
+
+
+
+<!-- File list -->
+
+
+
+
+
+
+</div><!-- id="navigation" -->
+
+<div id="content">
+
+<h1>Module <code>RevWalk</code></h1>
+
+<p>Class "RevWalk".  <br /></p>
+
+
+
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk.new">RevWalk.new</a>&nbsp;(repo)</td>
+	<td class="summary">Create a new RevWalk object  </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:close">RevWalk:close</a>&nbsp;()</td>
+	<td class="summary">Destroy this object.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:hide">RevWalk:hide</a>&nbsp;(id)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:next">RevWalk:next</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:push">RevWalk:push</a>&nbsp;(id)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:repository">RevWalk:repository</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:reset">RevWalk:reset</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:sorting">RevWalk:sorting</a>&nbsp;(sort_mode)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+</table>
+
+
+
+
+
+
+<br/>
+<br/>
+
+
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="RevWalk.new"></a><strong>RevWalk.new</strong>&nbsp;(repo)</dt>
+<dd>
+Create a new RevWalk object 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  repo: Must be of type `Repository`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>RevWalk</code> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:close"></a><strong>RevWalk:close</strong>&nbsp;()</dt>
+<dd>
+Destroy this object. 
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:hide"></a><strong>RevWalk:hide</strong>&nbsp;(id)</dt>
+<dd>
+object method. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  id: Must be of type `OID`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:next"></a><strong>RevWalk:next</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>OID</code> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:push"></a><strong>RevWalk:push</strong>&nbsp;(id)</dt>
+<dd>
+object method. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  id: Must be of type `OID`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:repository"></a><strong>RevWalk:repository</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>Repository</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:reset"></a><strong>RevWalk:reset</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:sorting"></a><strong>RevWalk:sorting</strong>&nbsp;(sort_mode)</dt>
+<dd>
+object method. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  sort_mode: Must be of type `integer`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+</dl>
+
+
+
+
+
+
+</div> <!-- id="content" -->
+
+</div> <!-- id="main" -->
+
+<div id="about">
+	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+</div> <!-- id="about" -->
+
+</div> <!-- id="container" -->	
+</body>
+</html>

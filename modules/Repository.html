@@ -1,0 +1,668 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../luadoc.css" type="text/css" />
+	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
+</head>
+
+<body>
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+<div id="main">
+
+<div id="navigation">
+
+
+<h1>LuaDoc</h1>
+<ul>
+	
+	<li><a href="../index.html">Index</a></li>
+	
+</ul>
+
+
+<!-- Module list -->
+
+<h1>Modules</h1>
+<ul>
+
+	<li>
+		<a href="../modules/Blob.html">Blob</a>
+	</li>
+
+	<li>
+		<a href="../modules/Commit.html">Commit</a>
+	</li>
+
+	<li>
+		<a href="../modules/Config.html">Config</a>
+	</li>
+
+	<li>
+		<a href="../modules/Index.html">Index</a>
+	</li>
+
+	<li>
+		<a href="../modules/IndexEntry.html">IndexEntry</a>
+	</li>
+
+	<li>
+		<a href="../modules/IndexEntryUnmerged.html">IndexEntryUnmerged</a>
+	</li>
+
+	<li>
+		<a href="../modules/ODB.html">ODB</a>
+	</li>
+
+	<li>
+		<a href="../modules/ODBBackend.html">ODBBackend</a>
+	</li>
+
+	<li>
+		<a href="../modules/OID.html">OID</a>
+	</li>
+
+	<li>
+		<a href="../modules/OID_Shorten.html">OID_Shorten</a>
+	</li>
+
+	<li>
+		<a href="../modules/Object.html">Object</a>
+	</li>
+
+	<li>
+		<a href="../modules/OdbObject.html">OdbObject</a>
+	</li>
+
+	<li>
+		<a href="../modules/Reference.html">Reference</a>
+	</li>
+
+	<li><strong>Repository</strong></li>
+	
+	<li>
+		<a href="../modules/RevWalk.html">RevWalk</a>
+	</li>
+
+	<li>
+		<a href="../modules/Signature.html">Signature</a>
+	</li>
+
+	<li>
+		<a href="../modules/StrArray.html">StrArray</a>
+	</li>
+
+	<li>
+		<a href="../modules/Tag.html">Tag</a>
+	</li>
+
+	<li>
+		<a href="../modules/Tree.html">Tree</a>
+	</li>
+
+	<li>
+		<a href="../modules/TreeEntry.html">TreeEntry</a>
+	</li>
+
+	<li>
+		<a href="../modules/git2.html">git2</a>
+	</li>
+
+</ul>
+
+
+
+<!-- File list -->
+
+
+
+
+
+
+</div><!-- id="navigation" -->
+
+<div id="content">
+
+<h1>Module <code>Repository</code></h1>
+
+<p>Class "Repository".  <br /></p>
+
+
+
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository.init">Repository.init</a>&nbsp;(path, is_bare)</td>
+	<td class="summary">Create a new Repository object  </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository.open">Repository.open</a>&nbsp;(path)</td>
+	<td class="summary">Create a new Repository object  </td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:config">Repository:config</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:head">Repository:head</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:head_detached">Repository:head_detached</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:head_orphan">Repository:head_orphan</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:index">Repository:index</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:is_bare">Repository:is_bare</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:is_empty">Repository:is_empty</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:odb">Repository:odb</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:path">Repository:path</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:set_config">Repository:set_config</a>&nbsp;(config)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:set_index">Repository:set_index</a>&nbsp;(index)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:set_odb">Repository:set_odb</a>&nbsp;(odb)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:set_workdir">Repository:set_workdir</a>&nbsp;(workdir)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Repository:workdir">Repository:workdir</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+</table>
+
+
+
+
+
+
+<br/>
+<br/>
+
+
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="Repository.init"></a><strong>Repository.init</strong>&nbsp;(path, is_bare)</dt>
+<dd>
+Create a new Repository object 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  path: Must be of type `string`.
+	</li>
+	
+	<li>
+	  is_bare: Must be of type `integer`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>Repository</code> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository.open"></a><strong>Repository.open</strong>&nbsp;(path)</dt>
+<dd>
+Create a new Repository object 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  path: Must be of type `string`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>Repository</code> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:config"></a><strong>Repository:config</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>Config</code> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:head"></a><strong>Repository:head</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>Reference</code> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:head_detached"></a><strong>Repository:head_detached</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>boolean</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:head_orphan"></a><strong>Repository:head_orphan</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>boolean</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:index"></a><strong>Repository:index</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>Index</code> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:is_bare"></a><strong>Repository:is_bare</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>boolean</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:is_empty"></a><strong>Repository:is_empty</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>boolean</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:odb"></a><strong>Repository:odb</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>ODB</code> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:path"></a><strong>Repository:path</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>string</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:set_config"></a><strong>Repository:set_config</strong>&nbsp;(config)</dt>
+<dd>
+object method. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  config: Must be of type `Config`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:set_index"></a><strong>Repository:set_index</strong>&nbsp;(index)</dt>
+<dd>
+object method. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  index: Must be of type `Index`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:set_odb"></a><strong>Repository:set_odb</strong>&nbsp;(odb)</dt>
+<dd>
+object method. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  odb: Must be of type `ODB`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:set_workdir"></a><strong>Repository:set_workdir</strong>&nbsp;(workdir)</dt>
+<dd>
+object method. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  workdir: Must be of type `string`.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Repository:workdir"></a><strong>Repository:workdir</strong>&nbsp;()</dt>
+<dd>
+object method. 
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>string</code>.
+
+
+
+</dd>
+
+
+</dl>
+
+
+
+
+
+
+</div> <!-- id="content" -->
+
+</div> <!-- id="main" -->
+
+<div id="about">
+	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+</div> <!-- id="about" -->
+
+</div> <!-- id="container" -->	
+</body>
+</html>
