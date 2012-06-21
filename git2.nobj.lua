@@ -8,6 +8,10 @@ hide_meta_info = false, --true,
 
 include "git2.h",
 
+doc[[
+See <a href="http://libgit2.github.com/libgit2/#HEAD">libgit2 API docs</a>.
+]],
+
 -- Error codes
 export_definitions {
 OK                    = "GIT_OK",
@@ -71,4 +75,39 @@ subfiles {
 "src/reference.nobj.lua",
 },
 }
+
+--
+-- Load parsed libgit2 docs.
+--
+local json = require"json"
+local file = io.open("docs/libgit2.json", "r")
+local libgit2_docs = json.decode(file:read("*a"))
+file:close()
+
+local lg_funcs = libgit2_docs.functions
+
+-- Copy docs from libgit2
+reg_stage_parser("pre_gen",{
+c_call = function(self, rec, parent)
+	local func = lg_funcs[rec.cfunc]
+	if not func then return end
+	-- copy C function description
+	parent:add_record(doc(
+		'<p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/' ..
+		func.group .. '/' .. rec.cfunc .. '">' .. rec.cfunc .. '</a>:<p>' ..
+		'<p>' .. func.comments:gsub("\n\n", "<p>")
+	))
+	-- copy C arg description
+	local var_map = parent.var_map
+	local args = func.args
+	for i=1,#args do
+		local arg = args[i]
+		local name = arg.name
+		local var = var_map[name]
+		if var then
+			var.desc = arg.comment
+		end
+	end
+end,
+})
 
