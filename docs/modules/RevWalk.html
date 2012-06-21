@@ -1,0 +1,428 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../luadoc.css" type="text/css" />
+	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
+</head>
+
+<body>
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+<div id="main">
+
+<div id="navigation">
+
+
+<h1>LuaDoc</h1>
+<ul>
+	
+	<li><a href="../index.html">Index</a></li>
+	
+</ul>
+
+
+<!-- Module list -->
+
+<h1>Modules</h1>
+<ul>
+
+	<li>
+		<a href="../modules/Blob.html">Blob</a>
+	</li>
+
+	<li>
+		<a href="../modules/Commit.html">Commit</a>
+	</li>
+
+	<li>
+		<a href="../modules/Config.html">Config</a>
+	</li>
+
+	<li>
+		<a href="../modules/Index.html">Index</a>
+	</li>
+
+	<li>
+		<a href="../modules/IndexEntry.html">IndexEntry</a>
+	</li>
+
+	<li>
+		<a href="../modules/IndexEntryUnmerged.html">IndexEntryUnmerged</a>
+	</li>
+
+	<li>
+		<a href="../modules/ODB.html">ODB</a>
+	</li>
+
+	<li>
+		<a href="../modules/ODBBackend.html">ODBBackend</a>
+	</li>
+
+	<li>
+		<a href="../modules/OID.html">OID</a>
+	</li>
+
+	<li>
+		<a href="../modules/OID_Shorten.html">OID_Shorten</a>
+	</li>
+
+	<li>
+		<a href="../modules/Object.html">Object</a>
+	</li>
+
+	<li>
+		<a href="../modules/OdbObject.html">OdbObject</a>
+	</li>
+
+	<li>
+		<a href="../modules/Reference.html">Reference</a>
+	</li>
+
+	<li>
+		<a href="../modules/Repository.html">Repository</a>
+	</li>
+
+	<li><strong>RevWalk</strong></li>
+	
+	<li>
+		<a href="../modules/Signature.html">Signature</a>
+	</li>
+
+	<li>
+		<a href="../modules/StrArray.html">StrArray</a>
+	</li>
+
+	<li>
+		<a href="../modules/Tag.html">Tag</a>
+	</li>
+
+	<li>
+		<a href="../modules/Tree.html">Tree</a>
+	</li>
+
+	<li>
+		<a href="../modules/TreeEntry.html">TreeEntry</a>
+	</li>
+
+	<li>
+		<a href="../modules/git2.html">git2</a>
+	</li>
+
+</ul>
+
+
+
+<!-- File list -->
+
+
+
+
+
+
+</div><!-- id="navigation" -->
+
+<div id="content">
+
+<h1>Module <code>RevWalk</code></h1>
+
+<p>Class "RevWalk". </p>
+
+
+
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk.new">RevWalk.new</a>&nbsp;(repo)</td>
+	<td class="summary">Create a new RevWalk object.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:close">RevWalk:close</a>&nbsp;()</td>
+	<td class="summary">Destroy this object (will be called by Garbage Collector).</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:hide">RevWalk:hide</a>&nbsp;(id)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:next">RevWalk:next</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:push">RevWalk:push</a>&nbsp;(id)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:repository">RevWalk:repository</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:reset">RevWalk:reset</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#RevWalk:sorting">RevWalk:sorting</a>&nbsp;(sort_mode)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+</table>
+
+
+
+
+
+
+<br/>
+<br/>
+
+
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="RevWalk.new"></a><strong>RevWalk.new</strong>&nbsp;(repo)</dt>
+<dd>
+Create a new RevWalk object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_new">git_revwalk_new</a>:<p><p>This revision walker uses a custom memory pool and an internal commit cache, so it is relatively expensive to allocate.<p> For maximum performance, this revision walker should be reused for different walks.<p> This revision walker is *not* thread safe: it may only be used to walk a repository on a single thread; however, it is possible to have several revision walkers in several different threads walking the same repository.
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  repo: the repo to walk through.  Must be of type <a href="Repository.html">Repository</a>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><a href="RevWalk.html">RevWalk</a> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:close"></a><strong>RevWalk:close</strong>&nbsp;()</dt>
+<dd>
+Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_free">git_revwalk_free</a>:<p><p>
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:hide"></a><strong>RevWalk:hide</strong>&nbsp;(id)</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_hide">git_revwalk_hide</a>:<p><p>The given OID must belong to a commit on the walked repository.<p> The resolved commit and all its parents will be hidden from the output on the revision walk.
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  id: Must be of type <a href="OID.html">OID</a>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:next"></a><strong>RevWalk:next</strong>&nbsp;()</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_next">git_revwalk_next</a>:<p><p>The initial call to this method is *not* blocking when iterating through a repo with a time-sorting mode.<p> Iterating with Topological or inverted modes makes the initial call blocking to preprocess the commit list, but this block should be mostly unnoticeable on most repositories (topological preprocessing times at 0.3s on the git.git repo).<p> The revision walker is reset when the walk is over.
+
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><a href="OID.html">OID</a> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:push"></a><strong>RevWalk:push</strong>&nbsp;(id)</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_push">git_revwalk_push</a>:<p><p>The given OID must belong to a commit on the walked repository.<p> The given commit will be used as one of the roots when starting the revision walk. At least one commit must be pushed the repository before a walk can be started.
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  id: Must be of type <a href="OID.html">OID</a>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:repository"></a><strong>RevWalk:repository</strong>&nbsp;()</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_repository">git_revwalk_repository</a>:<p><p>
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<a href="Repository.html">Repository</a>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:reset"></a><strong>RevWalk:reset</strong>&nbsp;()</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_reset">git_revwalk_reset</a>:<p><p>This will clear all the pushed and hidden commits, and leave the walker in a blank state (just like at creation) ready to receive new commit pushes and start a new walk.<p> The revision walk is automatically reset when a walk is over.
+
+
+
+
+
+
+
+
+
+</dd>
+
+
+
+
+<dt><a name="RevWalk:sorting"></a><strong>RevWalk:sorting</strong>&nbsp;(sort_mode)</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_sorting">git_revwalk_sorting</a>:<p><p>Changing the sorting mode resets the walker.
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  sort_mode: combination of GIT_SORT_XXX flags.  Must be of type <code>integer</code>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+
+
+</dd>
+
+
+</dl>
+
+
+
+
+
+
+</div> <!-- id="content" -->
+
+</div> <!-- id="main" -->
+
+<div id="about">
+	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+</div> <!-- id="about" -->
+
+</div> <!-- id="container" -->	
+</body>
+</html>

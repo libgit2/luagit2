@@ -1,0 +1,616 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../luadoc.css" type="text/css" />
+	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
+</head>
+
+<body>
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+<div id="main">
+
+<div id="navigation">
+
+
+<h1>LuaDoc</h1>
+<ul>
+	
+	<li><a href="../index.html">Index</a></li>
+	
+</ul>
+
+
+<!-- Module list -->
+
+<h1>Modules</h1>
+<ul>
+
+	<li>
+		<a href="../modules/Blob.html">Blob</a>
+	</li>
+
+	<li>
+		<a href="../modules/Commit.html">Commit</a>
+	</li>
+
+	<li>
+		<a href="../modules/Config.html">Config</a>
+	</li>
+
+	<li>
+		<a href="../modules/Index.html">Index</a>
+	</li>
+
+	<li>
+		<a href="../modules/IndexEntry.html">IndexEntry</a>
+	</li>
+
+	<li>
+		<a href="../modules/IndexEntryUnmerged.html">IndexEntryUnmerged</a>
+	</li>
+
+	<li>
+		<a href="../modules/ODB.html">ODB</a>
+	</li>
+
+	<li>
+		<a href="../modules/ODBBackend.html">ODBBackend</a>
+	</li>
+
+	<li>
+		<a href="../modules/OID.html">OID</a>
+	</li>
+
+	<li>
+		<a href="../modules/OID_Shorten.html">OID_Shorten</a>
+	</li>
+
+	<li>
+		<a href="../modules/Object.html">Object</a>
+	</li>
+
+	<li>
+		<a href="../modules/OdbObject.html">OdbObject</a>
+	</li>
+
+	<li><strong>Reference</strong></li>
+	
+	<li>
+		<a href="../modules/Repository.html">Repository</a>
+	</li>
+
+	<li>
+		<a href="../modules/RevWalk.html">RevWalk</a>
+	</li>
+
+	<li>
+		<a href="../modules/Signature.html">Signature</a>
+	</li>
+
+	<li>
+		<a href="../modules/StrArray.html">StrArray</a>
+	</li>
+
+	<li>
+		<a href="../modules/Tag.html">Tag</a>
+	</li>
+
+	<li>
+		<a href="../modules/Tree.html">Tree</a>
+	</li>
+
+	<li>
+		<a href="../modules/TreeEntry.html">TreeEntry</a>
+	</li>
+
+	<li>
+		<a href="../modules/git2.html">git2</a>
+	</li>
+
+</ul>
+
+
+
+<!-- File list -->
+
+
+
+
+
+
+</div><!-- id="navigation" -->
+
+<div id="content">
+
+<h1>Module <code>Reference</code></h1>
+
+<p>Class "Reference". </p>
+
+
+
+
+
+<h2>Functions</h2>
+<table class="function_list">
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference.list">Reference.list</a>&nbsp;(repo, list_flags)</td>
+	<td class="summary">module function.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference.lookup">Reference.lookup</a>&nbsp;(repo, name)</td>
+	<td class="summary">Create a new Reference object.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference.packall">Reference.packall</a>&nbsp;(repo)</td>
+	<td class="summary">module function.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference:delete">Reference:delete</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference:name">Reference:name</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference:oid">Reference:oid</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference:owner">Reference:owner</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference:rename">Reference:rename</a>&nbsp;(new_name, force)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference:resolve">Reference:resolve</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference:set_oid">Reference:set_oid</a>&nbsp;(oid)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference:set_target">Reference:set_target</a>&nbsp;(target)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference:target">Reference:target</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Reference:type">Reference:type</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+</table>
+
+
+
+
+
+
+<br/>
+<br/>
+
+
+
+<h2><a name="functions"></a>Functions</h2>
+<dl class="function">
+
+
+
+<dt><a name="Reference.list"></a><strong>Reference.list</strong>&nbsp;(repo, list_flags)</dt>
+<dd>
+module function. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  repo: Must be of type <a href="Repository.html">Repository</a>.
+	</li>
+	
+	<li>
+	  list_flags: Must be of type <code>integer</code>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><a href="StrArray.html">StrArray</a> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference.lookup"></a><strong>Reference.lookup</strong>&nbsp;(repo, name)</dt>
+<dd>
+Create a new Reference object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_lookup">git_reference_lookup</a>:<p><p>The generated reference must be freed by the user.
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  repo: the repository to look up the reference.  Must be of type <a href="Repository.html">Repository</a>.
+	</li>
+	
+	<li>
+	  name: the long name for the reference (e.g. HEAD, ref/heads/master, refs/tags/v0.1.0, ...).  Must be of type <code>string</code>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><a href="Reference.html">Reference</a> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference.packall"></a><strong>Reference.packall</strong>&nbsp;(repo)</dt>
+<dd>
+module function.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_packall">git_reference_packall</a>:<p><p>This method will load into the cache all the loose references on the repository and update the `packed-refs` file with them.<p> Once the `packed-refs` file has been written properly, the loose references will be removed from disk.
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  repo: Repository where the loose refs will be packed.  Must be of type <a href="Repository.html">Repository</a>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference:delete"></a><strong>Reference:delete</strong>&nbsp;()</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_delete">git_reference_delete</a>:<p><p>This method works for both direct and symbolic references.<p> The reference will be immediately removed on disk and from memory. The given reference pointer will no longer be valid.
+
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference:name"></a><strong>Reference:name</strong>&nbsp;()</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_name">git_reference_name</a>:<p><p>
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>string</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference:oid"></a><strong>Reference:oid</strong>&nbsp;()</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_oid">git_reference_oid</a>:<p><p>Only available if the reference is direct (i.e. not symbolic)
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<a href="OID.html">OID</a>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference:owner"></a><strong>Reference:owner</strong>&nbsp;()</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_owner">git_reference_owner</a>:<p><p>
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<a href="Repository.html">Repository</a>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference:rename"></a><strong>Reference:rename</strong>&nbsp;(new_name, force)</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_rename">git_reference_rename</a>:<p><p>This method works for both direct and symbolic references. The new name will be checked for validity and may be modified into a normalized form.<p> The given git_reference will be updated in place.<p> The reference will be immediately renamed in-memory and on disk.<p> If the `force` flag is not enabled, and there's already a reference with the given name, the renaming will fail.<p> IMPORTANT: The user needs to write a proper reflog entry if the reflog is enabled for the repository. We only rename the reflog if it exists.
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  new_name: The new name for the reference.  Must be of type <code>string</code>.
+	</li>
+	
+	<li>
+	  force: Overwrite an existing reference.  Must be of type <code>boolean</code>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference:resolve"></a><strong>Reference:resolve</strong>&nbsp;()</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_resolve">git_reference_resolve</a>:<p><p>Thie method iteratively peels a symbolic reference until it resolves to a direct reference to an OID.<p> The peeled reference is returned in the `resolved_ref` argument, and must be freed manually once it's no longer needed.<p> If a direct reference is passed as an argument, a copy of that reference is returned. This copy must be manually freed too.
+
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><a href="Reference.html">Reference</a> or <code>nil</code> on error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference:set_oid"></a><strong>Reference:set_oid</strong>&nbsp;(oid)</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_set_oid">git_reference_set_oid</a>:<p><p>The reference must be a direct reference, otherwise this method will fail.<p> The reference will be automatically updated in memory and on disk.
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  oid: Must be of type <a href="OID.html">OID</a>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference:set_target"></a><strong>Reference:set_target</strong>&nbsp;(target)</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_set_target">git_reference_set_target</a>:<p><p>The reference must be a symbolic reference, otherwise this method will fail.<p> The reference will be automatically updated in memory and on disk.
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  target: The new target for the reference.  Must be of type <code>string</code>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference:target"></a><strong>Reference:target</strong>&nbsp;()</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_target">git_reference_target</a>:<p><p>Only available if the reference is symbolic
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>string</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Reference:type"></a><strong>Reference:type</strong>&nbsp;()</dt>
+<dd>
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_type">git_reference_type</a>:<p><p>Either direct (GIT_REF_OID) or symbolic (GIT_REF_SYMBOLIC)
+
+
+
+
+
+
+
+<h3>Return value:</h3>
+<code>integer</code>.
+
+
+
+</dd>
+
+
+</dl>
+
+
+
+
+
+
+</div> <!-- id="content" -->
+
+</div> <!-- id="main" -->
+
+<div id="about">
+	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+</div> <!-- id="about" -->
+
+</div> <!-- id="container" -->	
+</body>
+</html>
