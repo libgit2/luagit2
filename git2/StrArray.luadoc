@@ -4,17 +4,16 @@
 
 --- Class "StrArray".
 --
--- <br />
 module("StrArray")
 
---- Create a new StrArray object
+--- Create a new StrArray object.
 --
+-- @return <a href="StrArray.html">StrArray</a>.
 -- @name StrArray.new
--- @return <code>StrArray</code>.
 function StrArray.new()
 end
 
---- Destroy this object.
+--- Destroy this object (will be called by Garbage Collector).
 --
 -- @name StrArray:free
 function StrArray:free()
@@ -22,23 +21,23 @@ end
 
 --- object method.
 --
--- @name StrArray:str
--- @param n Must be of type `integer`.
+-- @param n Must be of type <code>integer</code>.
 -- @return <code>string</code>.
+-- @name StrArray:str
 function StrArray:str(n)
 end
 
 --- object method.
 --
--- @name StrArray:get_array
 -- @return <code>nil</code>.
+-- @name StrArray:get_array
 function StrArray:get_array()
 end
 
 --- object method.
 --
--- @name StrArray:count
 -- @return <code>integer</code>.
+-- @name StrArray:count
 function StrArray:count()
 end
 

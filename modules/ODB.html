@@ -133,7 +133,7 @@
 
 <h1>Module <code>ODB</code></h1>
 
-<p>Class "ODB".  <br /></p>
+<p>Class "ODB". </p>
 
 
 
@@ -143,23 +143,23 @@
 <table class="function_list">
 
 	<tr>
-	<td class="name" nowrap><a href="#ODB.hash">ODB.hash</a>&nbsp;(data2, otype)</td>
-	<td class="summary">module function  </td>
+	<td class="name" nowrap><a href="#ODB.hash">ODB.hash</a>&nbsp;(data, otype)</td>
+	<td class="summary">module function.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#ODB.hashfile">ODB.hashfile</a>&nbsp;(path, otype)</td>
-	<td class="summary">module function  </td>
+	<td class="summary">module function.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#ODB.new">ODB.new</a>&nbsp;()</td>
-	<td class="summary">Create a new ODB object  </td>
+	<td class="summary">Create a new ODB object.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#ODB.open">ODB.open</a>&nbsp;(object_dir)</td>
-	<td class="summary">Create a new ODB object  </td>
+	<td class="summary">Create a new ODB object.</td>
 	</tr>
 
 	<tr>
@@ -179,7 +179,7 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#ODB:free">ODB:free</a>&nbsp;()</td>
-	<td class="summary">Destroy this object.</td>
+	<td class="summary">Destroy this object (will be called by Garbage Collector).</td>
 	</tr>
 
 	<tr>
@@ -198,7 +198,7 @@
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#ODB:write">ODB:write</a>&nbsp;(data1, type)</td>
+	<td class="name" nowrap><a href="#ODB:write">ODB:write</a>&nbsp;(data, type)</td>
 	<td class="summary">object method.</td>
 	</tr>
 
@@ -219,20 +219,20 @@
 
 
 
-<dt><a name="ODB.hash"></a><strong>ODB.hash</strong>&nbsp;(data2, otype)</dt>
+<dt><a name="ODB.hash"></a><strong>ODB.hash</strong>&nbsp;(data, otype)</dt>
 <dd>
-module function 
+module function.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_hash">git_odb_hash</a>:<p><p>The resulting SHA-1 OID will the itentifier for the data buffer as if the data buffer it were to written to the ODB.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  data2: Must be of type `string`.
+	  data: data to hash.  Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  otype: Must be of type `integer`.
+	  otype: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -245,7 +245,7 @@ module function
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>OID</code> or <code>nil</code> on error.
+	<li><a href="OID.html">OID</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -260,18 +260,18 @@ module function
 
 <dt><a name="ODB.hashfile"></a><strong>ODB.hashfile</strong>&nbsp;(path, otype)</dt>
 <dd>
-module function 
+module function.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_hashfile">git_odb_hashfile</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  path: Must be of type `string`.
+	  path: file to read and determine object id for.  Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  otype: Must be of type `integer`.
+	  otype: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -284,7 +284,7 @@ module function
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>OID</code> or <code>nil</code> on error.
+	<li><a href="OID.html">OID</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -299,7 +299,7 @@ module function
 
 <dt><a name="ODB.new"></a><strong>ODB.new</strong>&nbsp;()</dt>
 <dd>
-Create a new ODB object 
+Create a new ODB object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_new">git_odb_new</a>:<p><p>Before the ODB can be used for read/writing, a custom database backend must be manually added using `git_odb_add_backend()`
 
 
 
@@ -310,7 +310,7 @@ Create a new ODB object
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>ODB</code> or <code>nil</code> on error.
+	<li><a href="ODB.html">ODB</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -325,14 +325,14 @@ Create a new ODB object
 
 <dt><a name="ODB.open"></a><strong>ODB.open</strong>&nbsp;(object_dir)</dt>
 <dd>
-Create a new ODB object 
+Create a new ODB object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_open">git_odb_open</a>:<p><p>- git_odb_backend_loose: read and write loose object files from disk, assuming `objects_dir` as the Objects folder<p>	- git_odb_backend_pack: read objects from packfiles, assuming `objects_dir` as the Objects folder which contains a 'pack/' folder with the corresponding data
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  object_dir: Must be of type `string`.
+	  object_dir: Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -345,7 +345,7 @@ Create a new ODB object
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>ODB</code> or <code>nil</code> on error.
+	<li><a href="ODB.html">ODB</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -367,11 +367,11 @@ object method.
 <ul>
 	
 	<li>
-	  backend: Must be of type `ODBBackend`.
+	  backend: Must be of type <a href="ODBBackend.html">ODBBackend</a>.
 	</li>
 	
 	<li>
-	  priority: Must be of type `integer`.
+	  priority: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -406,11 +406,11 @@ object method.
 <ul>
 	
 	<li>
-	  backend: Must be of type `ODBBackend`.
+	  backend: Must be of type <a href="ODBBackend.html">ODBBackend</a>.
 	</li>
 	
 	<li>
-	  priority: Must be of type `integer`.
+	  priority: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -438,14 +438,14 @@ object method.
 
 <dt><a name="ODB:exists"></a><strong>ODB:exists</strong>&nbsp;(id)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_exists">git_odb_exists</a>:<p><p>@return - 1, if the object was found - 0, otherwise
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  id: Must be of type `OID`.
+	  id: the object to search for..  Must be of type <a href="OID.html">OID</a>.
 	</li>
 	
 </ul>
@@ -473,7 +473,7 @@ object method.
 
 <dt><a name="ODB:free"></a><strong>ODB:free</strong>&nbsp;()</dt>
 <dd>
-Destroy this object. 
+Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_free">git_odb_free</a>:<p><p>
 
 
 
@@ -490,14 +490,14 @@ Destroy this object.
 
 <dt><a name="ODB:read"></a><strong>ODB:read</strong>&nbsp;(id)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_read">git_odb_read</a>:<p><p>This method queries all available ODB backends trying to read the given OID.<p> The returned object is reference counted and internally cached, so it should be closed by the user once it's no longer in use.<p> @return - 0 if the object was read; - GIT_ENOTFOUND if the object is not in the database.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  id: Must be of type `OID`.
+	  id: identity of the object to read..  Must be of type <a href="OID.html">OID</a>.
 	</li>
 	
 </ul>
@@ -510,7 +510,7 @@ object method.
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>OdbObject</code> or <code>nil</code> on error.
+	<li><a href="OdbObject.html">OdbObject</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -525,14 +525,14 @@ object method.
 
 <dt><a name="ODB:read_header"></a><strong>ODB:read_header</strong>&nbsp;(id)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_read_header">git_odb_read_header</a>:<p><p>The header includes the length and the type of an object.<p> Note that most backends do not support reading only the header of an object, so the whole object will be read and then the header will be returned.<p> @return - 0 if the object was read; - GIT_ENOTFOUND if the object is not in the database.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  id: Must be of type `OID`.
+	  id: identity of the object to read..  Must be of type <a href="OID.html">OID</a>.
 	</li>
 	
 </ul>
@@ -562,18 +562,18 @@ object method.
 
 <dt><a name="ODB:read_prefix"></a><strong>ODB:read_prefix</strong>&nbsp;(short_id, len)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_read_prefix">git_odb_read_prefix</a>:<p><p>This method queries all available ODB backends trying to match the 'len' first hexadecimal characters of the 'short_id'. The remaining (GIT_OID_HEXSZ-len)*4 bits of 'short_id' must be 0s. 'len' must be at least GIT_OID_MINPREFIXLEN, and the prefix must be long enough to identify a unique object in all the backends; the method will fail otherwise.<p> The returned object is reference counted and internally cached, so it should be closed by the user once it's no longer in use.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  short_id: Must be of type `OID`.
+	  short_id: a prefix of the id of the object to read..  Must be of type <a href="OID.html">OID</a>.
 	</li>
 	
 	<li>
-	  len: Must be of type `integer`.
+	  len: the length of the prefix.  Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -586,7 +586,7 @@ object method.
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>OdbObject</code> or <code>nil</code> on error.
+	<li><a href="OdbObject.html">OdbObject</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -599,20 +599,20 @@ object method.
 
 
 
-<dt><a name="ODB:write"></a><strong>ODB:write</strong>&nbsp;(data1, type)</dt>
+<dt><a name="ODB:write"></a><strong>ODB:write</strong>&nbsp;(data, type)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_write">git_odb_write</a>:<p><p>This method writes a full object straight into the ODB. For most cases, it is preferred to write objects through a write stream, which is both faster and less memory intensive, specially for big objects.<p> This method is provided for compatibility with custom backends which are not able to support streaming writes
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  data1: Must be of type `string`.
+	  data: buffer with the data to storr.  Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  type: Must be of type `string`.
+	  type: type of the data to store.  Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -625,7 +625,7 @@ object method.
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>OID</code> or <code>nil</code> on error.
+	<li><a href="OID.html">OID</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	

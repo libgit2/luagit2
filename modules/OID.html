@@ -133,7 +133,7 @@
 
 <h1>Module <code>OID</code></h1>
 
-<p>Class "OID".  <br /></p>
+<p>Class "OID". </p>
 
 
 
@@ -144,12 +144,12 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#OID.hex">OID.hex</a>&nbsp;(str)</td>
-	<td class="summary">Create a new OID object  </td>
+	<td class="summary">Create a new OID object.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#OID.raw">OID.raw</a>&nbsp;(raw)</td>
-	<td class="summary">Create a new OID object  </td>
+	<td class="summary">Create a new OID object.</td>
 	</tr>
 
 	<tr>
@@ -191,14 +191,14 @@
 
 <dt><a name="OID.hex"></a><strong>OID.hex</strong>&nbsp;(str)</dt>
 <dd>
-Create a new OID object 
+Create a new OID object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/oid/git_oid_fromstrn">git_oid_fromstrn</a>:<p><p>If N is odd, N-1 characters will be parsed instead. The remaining space in the git_oid will be set to zero.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  str: Must be of type `string`.
+	  str: input hex string of at least size `length`.  Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -211,7 +211,7 @@ Create a new OID object
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>OID</code> or <code>nil</code> on error.
+	<li><a href="OID.html">OID</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -226,14 +226,14 @@ Create a new OID object
 
 <dt><a name="OID.raw"></a><strong>OID.raw</strong>&nbsp;(raw)</dt>
 <dd>
-Create a new OID object 
+Create a new OID object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/oid/git_oid_fromraw">git_oid_fromraw</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  raw: Must be of type `string`.
+	  raw: the raw input bytes to be copied..  Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -244,7 +244,7 @@ Create a new OID object
 
 
 <h3>Return value:</h3>
-<code>OID</code>.
+<a href="OID.html">OID</a>.
 
 
 
@@ -295,14 +295,14 @@ object method.
 
 <dt><a name="OID_mt:__eq"></a><strong>OID_mt:__eq</strong>&nbsp;(id)</dt>
 <dd>
-object meta method. 
+object meta method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/oid/git_oid_cmp">git_oid_cmp</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  id: Must be of type `OID`.
+	  id: Must be of type <a href="OID.html">OID</a>.
 	</li>
 	
 </ul>

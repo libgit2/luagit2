@@ -4,29 +4,28 @@
 
 --- Class "IndexEntryUnmerged".
 --
--- <br />
 module("IndexEntryUnmerged")
 
 --- object method.
 --
--- @name IndexEntryUnmerged:mode
--- @param idx Must be of type `integer`.
+-- @param idx Must be of type <code>integer</code>.
 -- @return <code>integer</code>.
+-- @name IndexEntryUnmerged:mode
 function IndexEntryUnmerged:mode(idx)
 end
 
 --- object method.
 --
+-- @param idx Must be of type <code>integer</code>.
+-- @return <a href="OID.html">OID</a>.
 -- @name IndexEntryUnmerged:oid
--- @param idx Must be of type `integer`.
--- @return <code>OID</code>.
 function IndexEntryUnmerged:oid(idx)
 end
 
 --- object method.
 --
--- @name IndexEntryUnmerged:path
 -- @return <code>string</code>.
+-- @name IndexEntryUnmerged:path
 function IndexEntryUnmerged:path()
 end
 

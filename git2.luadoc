@@ -4,6 +4,8 @@
 
 --- Module git2.
 --
+-- See <a href="http://libgit2.github.com/libgit2/#HEAD">libgit2 API docs</a>.
+-- 
 -- <br />Class <a href="StrArray.html">StrArray</a>
 -- <br />Class <a href="Repository.html">Repository</a>
 -- <br />Class <a href="Config.html">Config</a>
@@ -26,10 +28,10 @@
 -- <br />Class <a href="Reference.html">Reference</a>
 module("git2")
 
---- module function
+--- module function.
 --
--- @name git2.version
 -- @return <code>nil</code>.
+-- @name git2.version
 function git2.version()
 end
 

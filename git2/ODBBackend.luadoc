@@ -4,13 +4,12 @@
 
 --- Class "ODBBackend".
 --
--- <br />
 module("ODBBackend")
 
---- Create a new ODBBackend object
+--- Create a new ODBBackend object.
 --
+-- @return <a href="ODBBackend.html">ODBBackend</a>.
 -- @name ODBBackend.new
--- @return <code>ODBBackend</code>.
 function ODBBackend.new()
 end
 

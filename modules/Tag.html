@@ -133,7 +133,7 @@
 
 <h1>Module <code>Tag</code></h1>
 
-<p>Class "Tag".  Extends <a href="Object.html">Object</a><br /> <br /></p>
+<p>Class "Tag".  Extends <a href="Object.html">Object</a><br /></p>
 
 
 
@@ -144,7 +144,7 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#Object:free">Object:free</a>&nbsp;()</td>
-	<td class="summary">Destroy this object.</td>
+	<td class="summary">Destroy this object (will be called by Garbage Collector).</td>
 	</tr>
 
 	<tr>
@@ -164,7 +164,7 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#Tag.lookup">Tag.lookup</a>&nbsp;(repo, id)</td>
-	<td class="summary">Create a new Tag object  </td>
+	<td class="summary">Create a new Tag object.</td>
 	</tr>
 
 	<tr>
@@ -206,7 +206,7 @@
 
 <dt><a name="Object:free"></a><strong>Object:free</strong>&nbsp;()</dt>
 <dd>
-Destroy this object. 
+Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing object; note that git_objects are owned and cached by the repository so the object may or may not be freed after this library call, depending on how agressive is the caching mechanism used by the repository.<p> IMPORTANT: It *is* necessary to call this method when you stop using an object. Failure to do so will cause a memory leak.
 
 
 
@@ -223,7 +223,7 @@ Destroy this object.
 
 <dt><a name="Object:id"></a><strong>Object:id</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
 
 
 
@@ -232,7 +232,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>OID</code>.
+<a href="OID.html">OID</a>.
 
 
 
@@ -243,7 +243,7 @@ object method.
 
 <dt><a name="Object:owner"></a><strong>Object:owner</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without affecting the object.
 
 
 
@@ -252,7 +252,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>Repository</code>.
+<a href="Repository.html">Repository</a>.
 
 
 
@@ -263,7 +263,7 @@ object method.
 
 <dt><a name="Object:type"></a><strong>Object:type</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
 
 
 
@@ -283,18 +283,18 @@ object method.
 
 <dt><a name="Tag.lookup"></a><strong>Tag.lookup</strong>&nbsp;(repo, id)</dt>
 <dd>
-Create a new Tag object 
+Create a new Tag object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tag/git_tag_lookup">git_tag_lookup</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  repo: Must be of type `Repository`.
+	  repo: the repo to use when locating the tag..  Must be of type <a href="Repository.html">Repository</a>.
 	</li>
 	
 	<li>
-	  id: Must be of type `OID`.
+	  id: identity of the tag to locate..  Must be of type <a href="OID.html">OID</a>.
 	</li>
 	
 </ul>
@@ -307,7 +307,7 @@ Create a new Tag object
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>Tag</code> or <code>nil</code> on error.
+	<li><a href="Tag.html">Tag</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -322,7 +322,7 @@ Create a new Tag object
 
 <dt><a name="Tag:message"></a><strong>Tag:message</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tag/git_tag_message">git_tag_message</a>:<p><p>
 
 
 
@@ -342,7 +342,7 @@ object method.
 
 <dt><a name="Tag:name"></a><strong>Tag:name</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tag/git_tag_name">git_tag_name</a>:<p><p>
 
 
 
@@ -362,7 +362,7 @@ object method.
 
 <dt><a name="Tag:tagger"></a><strong>Tag:tagger</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tag/git_tag_tagger">git_tag_tagger</a>:<p><p>
 
 
 
@@ -371,7 +371,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>Signature</code>.
+<a href="Signature.html">Signature</a>.
 
 
 
@@ -382,7 +382,7 @@ object method.
 
 <dt><a name="Tag:target"></a><strong>Tag:target</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tag/git_tag_target">git_tag_target</a>:<p><p>This method performs a repository lookup for the given object and returns it
 
 
 
@@ -393,7 +393,7 @@ object method.
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>Object</code> or <code>nil</code> on error.
+	<li><a href="Object.html">Object</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	

@@ -5,66 +5,81 @@
 --- Class "Tree".
 --
 -- Extends <a href="Object.html">Object</a><br />
--- <br />
 module("Tree")
 
---- Create a new Tree object
+--- Create a new Tree object.
 --
--- @name Tree.lookup
--- @param repo Must be of type `Repository`.
--- @param id Must be of type `OID`.
--- @return <code>Tree</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_lookup">git_tree_lookup</a>:<p><p>
+-- @param repo the repo to use when locating the tree..  Must be of type <a href="Repository.html">Repository</a>.
+-- @param id identity of the tree to locate..  Must be of type <a href="OID.html">OID</a>.
+-- @return <a href="Tree.html">Tree</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Tree.lookup
 function Tree.lookup(repo, id)
 end
 
 --- object method.
 --
--- @name Tree:entrycount
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_entrycount">git_tree_entrycount</a>:<p><p>
 -- @return <code>integer</code>.
+-- @name Tree:entrycount
 function Tree:entrycount()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_entry_byname">git_tree_entry_byname</a>:<p><p>
+-- @param filename the filename of the desired entry.  Must be of type <code>string</code>.
+-- @return <a href="TreeEntry.html">TreeEntry</a>.
 -- @name Tree:entry_byname
--- @param filename Must be of type `string`.
--- @return <code>TreeEntry</code>.
 function Tree:entry_byname(filename)
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_entry_byindex">git_tree_entry_byindex</a>:<p><p>
+-- @param index Must be of type <code>integer</code>.
+-- @return <a href="TreeEntry.html">TreeEntry</a>.
 -- @name Tree:entry_byindex
--- @param index Must be of type `integer`.
--- @return <code>TreeEntry</code>.
 function Tree:entry_byindex(index)
 end
 
---- Destroy this object.
+--- Destroy this object (will be called by Garbage Collector).
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing
+--  object; note that git_objects are owned and cached by the repository
+--  so the object may or may not be freed after this library call,
+--  depending on how agressive is the caching mechanism used
+--  by the repository.<p> IMPORTANT:
+--  It *is* necessary to call this method when you stop using
+--  an object. Failure to do so will cause a memory leak.
 -- @name Object:free
 function Object:free()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
+-- @return <a href="OID.html">OID</a>.
 -- @name Object:id
--- @return <code>OID</code>.
 function Object:id()
 end
 
 --- object method.
 --
--- @name Object:type
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
 -- @return <code>string</code>.
+-- @name Object:type
 function Object:type()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the
+--  returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without
+--  affecting the object.
+-- @return <a href="Repository.html">Repository</a>.
 -- @name Object:owner
--- @return <code>Repository</code>.
 function Object:owner()
 end
 

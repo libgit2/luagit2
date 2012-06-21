@@ -4,145 +4,171 @@
 
 --- Class "Index".
 --
--- <br />
 module("Index")
 
---- Create a new Index object
+--- Create a new Index object.
 --
--- @name Index.bare
--- @param index_path Must be of type `string`.
--- @return <code>Index</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_open">git_index_open</a>:<p><p>Since there is no ODB or working directory behind this index,
+--  any Index methods which rely on these (e.g. index_add) will
+--  fail with the GIT_EBAREINDEX error code.<p> If you need to access the index of an actual repository,
+--  use the `git_repository_index` wrapper.<p> The index must be freed once it's no longer in use.
+-- @param index_path the path to the index file in disk.  Must be of type <code>string</code>.
+-- @return <a href="Index.html">Index</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Index.bare
 function Index.bare(index_path)
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_clear">git_index_clear</a>:<p><p>
 -- @name Index:clear
 function Index:clear()
 end
 
 --- object method.
 --
--- @name Index:read
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_read">git_index_read</a>:<p><p>
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Index:read
 function Index:read()
 end
 
 --- object method.
 --
--- @name Index:write
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_write">git_index_write</a>:<p><p>
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Index:write
 function Index:write()
 end
 
 --- object method.
 --
--- @name Index:find
--- @param path Must be of type `string`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_find">git_index_find</a>:<p><p>
+-- @param path path to search.  Must be of type <code>string</code>.
 -- @return <code>integer</code>.
+-- @name Index:find
 function Index:find(path)
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_uniq">git_index_uniq</a>:<p><p>
 -- @name Index:uniq
 function Index:uniq()
 end
 
 --- object method.
 --
--- @name Index:add
--- @param path Must be of type `string`.
--- @param stage Must be of type `integer`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_add">git_index_add</a>:<p><p>The file `path` must be relative to the repository's
+--  working folder and must be readable.<p> This method will fail in bare index instances.<p> This forces the file to be added to the index, not looking
+--  at gitignore rules.  Those rules can be evaluated through
+--  the git_status APIs (in status.h) before calling this.
+-- @param path filename to add.  Must be of type <code>string</code>.
+-- @param stage stage for the entry.  Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Index:add
 function Index:add(path, stage)
 end
 
 --- object method.
 --
--- @name Index:add2
--- @param source_entry Must be of type `IndexEntry`.
+-- @param source_entry Must be of type <a href="IndexEntry.html">IndexEntry</a>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Index:add2
 function Index:add2(source_entry)
 end
 
 --- object method.
 --
--- @name Index:append
--- @param path Must be of type `string`.
--- @param stage Must be of type `integer`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_append">git_index_append</a>:<p><p>A new entry will always be inserted into the index;
+--  if the index already contains an entry for such
+--  path, the old entry will **not** be replaced.<p> The file `path` must be relative to the repository's
+--  working folder and must be readable.<p> This method will fail in bare index instances.
+-- @param path filename to add.  Must be of type <code>string</code>.
+-- @param stage stage for the entry.  Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Index:append
 function Index:append(path, stage)
 end
 
 --- object method.
 --
--- @name Index:append2
--- @param source_entry Must be of type `IndexEntry`.
+-- @param source_entry Must be of type <a href="IndexEntry.html">IndexEntry</a>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Index:append2
 function Index:append2(source_entry)
 end
 
 --- object method.
 --
--- @name Index:remove
--- @param position Must be of type `integer`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_remove">git_index_remove</a>:<p><p>
+-- @param position position of the entry to remove.  Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Index:remove
 function Index:remove(position)
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_get">git_index_get</a>:<p><p>This entry can be modified, and the changes will be written
+--  back to disk on the next write() call.<p> The entry should not be freed by the caller.
+-- @param n the position of the entry.  Must be of type <code>integer</code>.
+-- @return <a href="IndexEntry.html">IndexEntry</a>.
 -- @name Index:get
--- @param n Must be of type `integer`.
--- @return <code>IndexEntry</code>.
 function Index:get(n)
 end
 
 --- object method.
 --
--- @name Index:entrycount
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_entrycount">git_index_entrycount</a>:<p><p>
 -- @return <code>integer</code>.
+-- @name Index:entrycount
 function Index:entrycount()
 end
 
 --- object method.
 --
--- @name Index:entrycount_unmerged
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_entrycount_unmerged">git_index_entrycount_unmerged</a>:<p><p>
 -- @return <code>integer</code>.
+-- @name Index:entrycount_unmerged
 function Index:entrycount_unmerged()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_get_unmerged_bypath">git_index_get_unmerged_bypath</a>:<p><p>The returned entry is read-only and should not be modified
+--  of freed by the caller.
+-- @param path path to search.  Must be of type <code>string</code>.
+-- @return <a href="IndexEntryUnmerged.html">IndexEntryUnmerged</a>.
 -- @name Index:get_unmerged_bypath
--- @param path Must be of type `string`.
--- @return <code>IndexEntryUnmerged</code>.
 function Index:get_unmerged_bypath(path)
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_get_unmerged_byindex">git_index_get_unmerged_byindex</a>:<p><p>The returned entry is read-only and should not be modified
+--  of freed by the caller.
+-- @param n the position of the entry.  Must be of type <code>integer</code>.
+-- @return <a href="IndexEntryUnmerged.html">IndexEntryUnmerged</a>.
 -- @name Index:get_unmerged_byindex
--- @param n Must be of type `integer`.
--- @return <code>IndexEntryUnmerged</code>.
 function Index:get_unmerged_byindex(n)
 end
 
 --- object method.
 --
--- @name Index:read_tree
--- @param tree Must be of type `Tree`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_read_tree">git_index_read_tree</a>:<p><p>The current index contents will be replaced by the specified tree.
+-- @param tree tree to read.  Must be of type <a href="Tree.html">Tree</a>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Index:read_tree
 function Index:read_tree(tree)
 end
 

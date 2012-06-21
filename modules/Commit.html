@@ -133,7 +133,7 @@
 
 <h1>Module <code>Commit</code></h1>
 
-<p>Class "Commit".  Extends <a href="Object.html">Object</a><br /> <br /></p>
+<p>Class "Commit".  Extends <a href="Object.html">Object</a><br /></p>
 
 
 
@@ -144,12 +144,12 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#Commit.create">Commit.create</a>&nbsp;(oid, repo, update_ref, author, committer, message_encoding, message, tree, parent)</td>
-	<td class="summary">module function  </td>
+	<td class="summary">module function.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#Commit.lookup">Commit.lookup</a>&nbsp;(repo, id)</td>
-	<td class="summary">Create a new Commit object  </td>
+	<td class="summary">Create a new Commit object.</td>
 	</tr>
 
 	<tr>
@@ -204,7 +204,7 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#Object:free">Object:free</a>&nbsp;()</td>
-	<td class="summary">Destroy this object.</td>
+	<td class="summary">Destroy this object (will be called by Garbage Collector).</td>
 	</tr>
 
 	<tr>
@@ -241,46 +241,46 @@
 
 <dt><a name="Commit.create"></a><strong>Commit.create</strong>&nbsp;(oid, repo, update_ref, author, committer, message_encoding, message, tree, parent)</dt>
 <dd>
-module function 
+module function. 
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  oid: Must be of type `OID`.
+	  oid: Must be of type <a href="OID.html">OID</a>.
 	</li>
 	
 	<li>
-	  repo: Must be of type `Repository`.
+	  repo: Must be of type <a href="Repository.html">Repository</a>.
 	</li>
 	
 	<li>
-	  update_ref: Must be of type `string`.
+	  update_ref: Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  author: Must be of type `Signature`.
+	  author: Must be of type <a href="Signature.html">Signature</a>.
 	</li>
 	
 	<li>
-	  committer: Must be of type `Signature`.
+	  committer: Must be of type <a href="Signature.html">Signature</a>.
 	</li>
 	
 	<li>
-	  message_encoding: Must be of type `string`.
+	  message_encoding: Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  message: Must be of type `string`.
+	  message: Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  tree: Must be of type `Tree`.
+	  tree: Must be of type <a href="Tree.html">Tree</a>.
 	</li>
 	
 	<li>
-	  parent: Must be of type `Commit`.
+	  parent: Must be of type <a href="Commit.html">Commit</a>.
 	</li>
 	
 </ul>
@@ -308,18 +308,18 @@ module function
 
 <dt><a name="Commit.lookup"></a><strong>Commit.lookup</strong>&nbsp;(repo, id)</dt>
 <dd>
-Create a new Commit object 
+Create a new Commit object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_lookup">git_commit_lookup</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  repo: Must be of type `Repository`.
+	  repo: the repo to use when locating the commit..  Must be of type <a href="Repository.html">Repository</a>.
 	</li>
 	
 	<li>
-	  id: Must be of type `OID`.
+	  id: identity of the commit to locate. If the object is   an annotated tag it will be peeled back to the commit..  Must be of type <a href="OID.html">OID</a>.
 	</li>
 	
 </ul>
@@ -332,7 +332,7 @@ Create a new Commit object
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>Commit</code> or <code>nil</code> on error.
+	<li><a href="Commit.html">Commit</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -347,7 +347,7 @@ Create a new Commit object
 
 <dt><a name="Commit:author"></a><strong>Commit:author</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_author">git_commit_author</a>:<p><p>
 
 
 
@@ -356,7 +356,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>Signature</code>.
+<a href="Signature.html">Signature</a>.
 
 
 
@@ -367,7 +367,7 @@ object method.
 
 <dt><a name="Commit:committer"></a><strong>Commit:committer</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_committer">git_commit_committer</a>:<p><p>
 
 
 
@@ -376,7 +376,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>Signature</code>.
+<a href="Signature.html">Signature</a>.
 
 
 
@@ -387,7 +387,7 @@ object method.
 
 <dt><a name="Commit:id"></a><strong>Commit:id</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_id">git_commit_id</a>:<p><p>
 
 
 
@@ -396,7 +396,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>OID</code>.
+<a href="OID.html">OID</a>.
 
 
 
@@ -407,7 +407,7 @@ object method.
 
 <dt><a name="Commit:message"></a><strong>Commit:message</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_message">git_commit_message</a>:<p><p>
 
 
 
@@ -427,7 +427,7 @@ object method.
 
 <dt><a name="Commit:message_encoding"></a><strong>Commit:message_encoding</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_message_encoding">git_commit_message_encoding</a>:<p><p>The encoding may be NULL if the `encoding` header in the commit is missing; in that case UTF-8 is assumed.
 
 
 
@@ -447,14 +447,14 @@ object method.
 
 <dt><a name="Commit:parent"></a><strong>Commit:parent</strong>&nbsp;(n)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_parent">git_commit_parent</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  n: Must be of type `integer`.
+	  n: the position of the parent (from 0 to `parentcount`).  Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -467,7 +467,7 @@ object method.
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>Commit</code> or <code>nil</code> on error.
+	<li><a href="Commit.html">Commit</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -482,7 +482,7 @@ object method.
 
 <dt><a name="Commit:parentcount"></a><strong>Commit:parentcount</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_parentcount">git_commit_parentcount</a>:<p><p>
 
 
 
@@ -502,7 +502,7 @@ object method.
 
 <dt><a name="Commit:time"></a><strong>Commit:time</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_time">git_commit_time</a>:<p><p>
 
 
 
@@ -522,7 +522,7 @@ object method.
 
 <dt><a name="Commit:time_offset"></a><strong>Commit:time_offset</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_time_offset">git_commit_time_offset</a>:<p><p>
 
 
 
@@ -542,7 +542,7 @@ object method.
 
 <dt><a name="Commit:tree"></a><strong>Commit:tree</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_tree">git_commit_tree</a>:<p><p>
 
 
 
@@ -553,7 +553,7 @@ object method.
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>Tree</code> or <code>nil</code> on error.
+	<li><a href="Tree.html">Tree</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -568,7 +568,7 @@ object method.
 
 <dt><a name="Object:free"></a><strong>Object:free</strong>&nbsp;()</dt>
 <dd>
-Destroy this object. 
+Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing object; note that git_objects are owned and cached by the repository so the object may or may not be freed after this library call, depending on how agressive is the caching mechanism used by the repository.<p> IMPORTANT: It *is* necessary to call this method when you stop using an object. Failure to do so will cause a memory leak.
 
 
 
@@ -585,7 +585,7 @@ Destroy this object.
 
 <dt><a name="Object:id"></a><strong>Object:id</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
 
 
 
@@ -594,7 +594,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>OID</code>.
+<a href="OID.html">OID</a>.
 
 
 
@@ -605,7 +605,7 @@ object method.
 
 <dt><a name="Object:owner"></a><strong>Object:owner</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without affecting the object.
 
 
 
@@ -614,7 +614,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>Repository</code>.
+<a href="Repository.html">Repository</a>.
 
 
 
@@ -625,7 +625,7 @@ object method.
 
 <dt><a name="Object:type"></a><strong>Object:type</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
 
 
 

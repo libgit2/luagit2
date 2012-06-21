@@ -5,133 +5,156 @@
 --- Class "Commit".
 --
 -- Extends <a href="Object.html">Object</a><br />
--- <br />
 module("Commit")
 
---- Create a new Commit object
+--- Create a new Commit object.
 --
--- @name Commit.lookup
--- @param repo Must be of type `Repository`.
--- @param id Must be of type `OID`.
--- @return <code>Commit</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_lookup">git_commit_lookup</a>:<p><p>
+-- @param repo the repo to use when locating the commit..  Must be of type <a href="Repository.html">Repository</a>.
+-- @param id identity of the commit to locate. If the object is   an annotated tag it will be peeled back to the commit..  Must be of type <a href="OID.html">OID</a>.
+-- @return <a href="Commit.html">Commit</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Commit.lookup
 function Commit.lookup(repo, id)
 end
 
---- module function
+--- module function.
 --
--- @name Commit.create
--- @param oid Must be of type `OID`.
--- @param repo Must be of type `Repository`.
--- @param update_ref Must be of type `string`.
--- @param author Must be of type `Signature`.
--- @param committer Must be of type `Signature`.
--- @param message_encoding Must be of type `string`.
--- @param message Must be of type `string`.
--- @param tree Must be of type `Tree`.
--- @param parent Must be of type `Commit`.
+-- @param oid Must be of type <a href="OID.html">OID</a>.
+-- @param repo Must be of type <a href="Repository.html">Repository</a>.
+-- @param update_ref Must be of type <code>string</code>.
+-- @param author Must be of type <a href="Signature.html">Signature</a>.
+-- @param committer Must be of type <a href="Signature.html">Signature</a>.
+-- @param message_encoding Must be of type <code>string</code>.
+-- @param message Must be of type <code>string</code>.
+-- @param tree Must be of type <a href="Tree.html">Tree</a>.
+-- @param parent Must be of type <a href="Commit.html">Commit</a>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Commit.create
 function Commit.create(oid, repo, update_ref, author, committer, message_encoding, message, tree, parent)
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_id">git_commit_id</a>:<p><p>
+-- @return <a href="OID.html">OID</a>.
 -- @name Commit:id
--- @return <code>OID</code>.
 function Commit:id()
 end
 
 --- object method.
 --
--- @name Commit:message_encoding
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_message_encoding">git_commit_message_encoding</a>:<p><p>The encoding may be NULL if the `encoding` header
+--  in the commit is missing; in that case UTF-8 is assumed.
 -- @return <code>string</code>.
+-- @name Commit:message_encoding
 function Commit:message_encoding()
 end
 
 --- object method.
 --
--- @name Commit:message
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_message">git_commit_message</a>:<p><p>
 -- @return <code>string</code>.
+-- @name Commit:message
 function Commit:message()
 end
 
 --- object method.
 --
--- @name Commit:time
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_time">git_commit_time</a>:<p><p>
 -- @return <code>integer</code>.
+-- @name Commit:time
 function Commit:time()
 end
 
 --- object method.
 --
--- @name Commit:time_offset
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_time_offset">git_commit_time_offset</a>:<p><p>
 -- @return <code>integer</code>.
+-- @name Commit:time_offset
 function Commit:time_offset()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_committer">git_commit_committer</a>:<p><p>
+-- @return <a href="Signature.html">Signature</a>.
 -- @name Commit:committer
--- @return <code>Signature</code>.
 function Commit:committer()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_author">git_commit_author</a>:<p><p>
+-- @return <a href="Signature.html">Signature</a>.
 -- @name Commit:author
--- @return <code>Signature</code>.
 function Commit:author()
 end
 
 --- object method.
 --
--- @name Commit:tree
--- @return <code>Tree</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_tree">git_commit_tree</a>:<p><p>
+-- @return <a href="Tree.html">Tree</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Commit:tree
 function Commit:tree()
 end
 
 --- object method.
 --
--- @name Commit:parentcount
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_parentcount">git_commit_parentcount</a>:<p><p>
 -- @return <code>integer</code>.
+-- @name Commit:parentcount
 function Commit:parentcount()
 end
 
 --- object method.
 --
--- @name Commit:parent
--- @param n Must be of type `integer`.
--- @return <code>Commit</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/commit/git_commit_parent">git_commit_parent</a>:<p><p>
+-- @param n the position of the parent (from 0 to `parentcount`).  Must be of type <code>integer</code>.
+-- @return <a href="Commit.html">Commit</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Commit:parent
 function Commit:parent(n)
 end
 
---- Destroy this object.
+--- Destroy this object (will be called by Garbage Collector).
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing
+--  object; note that git_objects are owned and cached by the repository
+--  so the object may or may not be freed after this library call,
+--  depending on how agressive is the caching mechanism used
+--  by the repository.<p> IMPORTANT:
+--  It *is* necessary to call this method when you stop using
+--  an object. Failure to do so will cause a memory leak.
 -- @name Object:free
 function Object:free()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
+-- @return <a href="OID.html">OID</a>.
 -- @name Object:id
--- @return <code>OID</code>.
 function Object:id()
 end
 
 --- object method.
 --
--- @name Object:type
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
 -- @return <code>string</code>.
+-- @name Object:type
 function Object:type()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the
+--  returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without
+--  affecting the object.
+-- @return <a href="Repository.html">Repository</a>.
 -- @name Object:owner
--- @return <code>Repository</code>.
 function Object:owner()
 end
 

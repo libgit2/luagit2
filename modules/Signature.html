@@ -133,7 +133,7 @@
 
 <h1>Module <code>Signature</code></h1>
 
-<p>Class "Signature".  <br /></p>
+<p>Class "Signature". </p>
 
 
 
@@ -144,12 +144,12 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#Signature.new">Signature.new</a>&nbsp;(name, email, time, offset)</td>
-	<td class="summary">Create a new Signature object  </td>
+	<td class="summary">Create a new Signature object.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#Signature.now">Signature.now</a>&nbsp;(name, email)</td>
-	<td class="summary">Create a new Signature object  </td>
+	<td class="summary">Create a new Signature object.</td>
 	</tr>
 
 	<tr>
@@ -186,26 +186,26 @@
 
 <dt><a name="Signature.new"></a><strong>Signature.new</strong>&nbsp;(name, email, time, offset)</dt>
 <dd>
-Create a new Signature object 
+Create a new Signature object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/signature/git_signature_new">git_signature_new</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  name: Must be of type `string`.
+	  name: name of the person.  Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  email: Must be of type `string`.
+	  email: email of the person.  Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  time: Must be of type `integer`.
+	  time: time when the action happened.  Must be of type <code>integer</code>.
 	</li>
 	
 	<li>
-	  offset: Must be of type `integer`.
+	  offset: timezone offset in minutes for the time.  Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -218,7 +218,7 @@ Create a new Signature object
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>Signature</code> or <code>nil</code> on error.
+	<li><a href="Signature.html">Signature</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -233,18 +233,18 @@ Create a new Signature object
 
 <dt><a name="Signature.now"></a><strong>Signature.now</strong>&nbsp;(name, email)</dt>
 <dd>
-Create a new Signature object 
+Create a new Signature object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/signature/git_signature_now">git_signature_now</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  name: Must be of type `string`.
+	  name: name of the person.  Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  email: Must be of type `string`.
+	  email: email of the person.  Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -257,7 +257,7 @@ Create a new Signature object
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>Signature</code> or <code>nil</code> on error.
+	<li><a href="Signature.html">Signature</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	

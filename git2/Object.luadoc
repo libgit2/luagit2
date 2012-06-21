@@ -4,53 +4,60 @@
 
 --- Class "Object".
 --
--- <br />
--- Subclass <a href="Blob.html">Blob</a><br />
--- Subclass <a href="Commit.html">Commit</a><br />
--- Subclass <a href="Tree.html">Tree</a><br />
--- Subclass <a href="Tag.html">Tag</a><br />
 module("Object")
 
---- Destroy this object.
+--- Destroy this object (will be called by Garbage Collector).
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing
+--  object; note that git_objects are owned and cached by the repository
+--  so the object may or may not be freed after this library call,
+--  depending on how agressive is the caching mechanism used
+--  by the repository.<p> IMPORTANT:
+--  It *is* necessary to call this method when you stop using
+--  an object. Failure to do so will cause a memory leak.
 -- @name Object:free
 function Object:free()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
+-- @return <a href="OID.html">OID</a>.
 -- @name Object:id
--- @return <code>OID</code>.
 function Object:id()
 end
 
 --- object method.
 --
--- @name Object:type
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
 -- @return <code>string</code>.
+-- @name Object:type
 function Object:type()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the
+--  returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without
+--  affecting the object.
+-- @return <a href="Repository.html">Repository</a>.
 -- @name Object:owner
--- @return <code>Repository</code>.
 function Object:owner()
 end
 
---- module function
+--- module function.
 --
--- @name Object.type2string
--- @param otype Must be of type `integer`.
+-- @param otype Must be of type <code>integer</code>.
 -- @return <code>string</code>.
+-- @name Object.type2string
 function Object.type2string(otype)
 end
 
---- module function
+--- module function.
 --
--- @name Object.string2type
--- @param str Must be of type `string`.
+-- @param str Must be of type <code>string</code>.
 -- @return <code>integer</code>.
+-- @name Object.string2type
 function Object.string2type(str)
 end
 

@@ -133,7 +133,7 @@
 
 <h1>Module <code>Tree</code></h1>
 
-<p>Class "Tree".  Extends <a href="Object.html">Object</a><br /> <br /></p>
+<p>Class "Tree".  Extends <a href="Object.html">Object</a><br /></p>
 
 
 
@@ -144,7 +144,7 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#Object:free">Object:free</a>&nbsp;()</td>
-	<td class="summary">Destroy this object.</td>
+	<td class="summary">Destroy this object (will be called by Garbage Collector).</td>
 	</tr>
 
 	<tr>
@@ -164,7 +164,7 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#Tree.lookup">Tree.lookup</a>&nbsp;(repo, id)</td>
-	<td class="summary">Create a new Tree object  </td>
+	<td class="summary">Create a new Tree object.</td>
 	</tr>
 
 	<tr>
@@ -201,7 +201,7 @@
 
 <dt><a name="Object:free"></a><strong>Object:free</strong>&nbsp;()</dt>
 <dd>
-Destroy this object. 
+Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing object; note that git_objects are owned and cached by the repository so the object may or may not be freed after this library call, depending on how agressive is the caching mechanism used by the repository.<p> IMPORTANT: It *is* necessary to call this method when you stop using an object. Failure to do so will cause a memory leak.
 
 
 
@@ -218,7 +218,7 @@ Destroy this object.
 
 <dt><a name="Object:id"></a><strong>Object:id</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
 
 
 
@@ -227,7 +227,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>OID</code>.
+<a href="OID.html">OID</a>.
 
 
 
@@ -238,7 +238,7 @@ object method.
 
 <dt><a name="Object:owner"></a><strong>Object:owner</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without affecting the object.
 
 
 
@@ -247,7 +247,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>Repository</code>.
+<a href="Repository.html">Repository</a>.
 
 
 
@@ -258,7 +258,7 @@ object method.
 
 <dt><a name="Object:type"></a><strong>Object:type</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
 
 
 
@@ -278,18 +278,18 @@ object method.
 
 <dt><a name="Tree.lookup"></a><strong>Tree.lookup</strong>&nbsp;(repo, id)</dt>
 <dd>
-Create a new Tree object 
+Create a new Tree object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_lookup">git_tree_lookup</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  repo: Must be of type `Repository`.
+	  repo: the repo to use when locating the tree..  Must be of type <a href="Repository.html">Repository</a>.
 	</li>
 	
 	<li>
-	  id: Must be of type `OID`.
+	  id: identity of the tree to locate..  Must be of type <a href="OID.html">OID</a>.
 	</li>
 	
 </ul>
@@ -302,7 +302,7 @@ Create a new Tree object
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>Tree</code> or <code>nil</code> on error.
+	<li><a href="Tree.html">Tree</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -317,14 +317,14 @@ Create a new Tree object
 
 <dt><a name="Tree:entry_byindex"></a><strong>Tree:entry_byindex</strong>&nbsp;(index)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_entry_byindex">git_tree_entry_byindex</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  index: Must be of type `integer`.
+	  index: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -335,7 +335,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>TreeEntry</code>.
+<a href="TreeEntry.html">TreeEntry</a>.
 
 
 
@@ -346,14 +346,14 @@ object method.
 
 <dt><a name="Tree:entry_byname"></a><strong>Tree:entry_byname</strong>&nbsp;(filename)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_entry_byname">git_tree_entry_byname</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  filename: Must be of type `string`.
+	  filename: the filename of the desired entry.  Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -364,7 +364,7 @@ object method.
 
 
 <h3>Return value:</h3>
-<code>TreeEntry</code>.
+<a href="TreeEntry.html">TreeEntry</a>.
 
 
 
@@ -375,7 +375,7 @@ object method.
 
 <dt><a name="Tree:entrycount"></a><strong>Tree:entrycount</strong>&nbsp;()</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_entrycount">git_tree_entrycount</a>:<p><p>
 
 
 

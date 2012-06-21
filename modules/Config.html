@@ -133,7 +133,7 @@
 
 <h1>Module <code>Config</code></h1>
 
-<p>Class "Config".  <br /></p>
+<p>Class "Config". </p>
 
 
 
@@ -144,12 +144,12 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#Config.new">Config.new</a>&nbsp;()</td>
-	<td class="summary">Create a new Config object  </td>
+	<td class="summary">Create a new Config object.</td>
 	</tr>
 
 	<tr>
 	<td class="name" nowrap><a href="#Config.open">Config.open</a>&nbsp;(path)</td>
-	<td class="summary">Create a new Config object  </td>
+	<td class="summary">Create a new Config object.</td>
 	</tr>
 
 	<tr>
@@ -164,7 +164,7 @@
 
 	<tr>
 	<td class="name" nowrap><a href="#Config:free">Config:free</a>&nbsp;()</td>
-	<td class="summary">Destroy this object.</td>
+	<td class="summary">Destroy this object (will be called by Garbage Collector).</td>
 	</tr>
 
 	<tr>
@@ -226,7 +226,7 @@
 
 <dt><a name="Config.new"></a><strong>Config.new</strong>&nbsp;()</dt>
 <dd>
-Create a new Config object 
+Create a new Config object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_new">git_config_new</a>:<p><p>This object is empty, so you have to add a file to it before you can do anything with it.
 
 
 
@@ -237,7 +237,7 @@ Create a new Config object
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>Config</code> or <code>nil</code> on error.
+	<li><a href="Config.html">Config</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -252,14 +252,14 @@ Create a new Config object
 
 <dt><a name="Config.open"></a><strong>Config.open</strong>&nbsp;(path)</dt>
 <dd>
-Create a new Config object 
+Create a new Config object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_open_ondisk">git_config_open_ondisk</a>:<p><p>This method is a simple utility wrapper for the following sequence of calls: - git_config_new - git_config_add_file_ondisk
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  path: Must be of type `string`.
+	  path: Path to the on-disk file to open.  Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -272,7 +272,7 @@ Create a new Config object
 <h3>Return values:</h3>
 <ol>
 	
-	<li><code>Config</code> or <code>nil</code> on error.
+	<li><a href="Config.html">Config</a> or <code>nil</code> on error.
 	
 	<li>Error string.
 	
@@ -287,18 +287,18 @@ Create a new Config object
 
 <dt><a name="Config:add_file_ondisk"></a><strong>Config:add_file_ondisk</strong>&nbsp;(path, priority)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_add_file_ondisk">git_config_add_file_ondisk</a>:<p><p>The on-disk file pointed at by `path` will be opened and parsed; it's expected to be a native Git config file following the default Git config syntax (see man git-config).<p> Note that the configuration object will free the file automatically.<p> Further queries on this config object will access each of the config file instances in order (instances with a higher priority will be accessed first).
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  path: Must be of type `string`.
+	  path: path to the configuration file (backend) to add.  Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  priority: Must be of type `integer`.
+	  priority: the priority the backend should have.  Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -326,14 +326,14 @@ object method.
 
 <dt><a name="Config:delete"></a><strong>Config:delete</strong>&nbsp;(name)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_delete">git_config_delete</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  name: Must be of type `string`.
+	  name: the variable to delete.  Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -361,7 +361,7 @@ object method.
 
 <dt><a name="Config:free"></a><strong>Config:free</strong>&nbsp;()</dt>
 <dd>
-Destroy this object. 
+Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_free">git_config_free</a>:<p><p>
 
 
 
@@ -378,14 +378,14 @@ Destroy this object.
 
 <dt><a name="Config:get_bool"></a><strong>Config:get_bool</strong>&nbsp;(name)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_get_bool">git_config_get_bool</a>:<p><p>This function uses the usual C convention of 0 being false and anything else true.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  name: Must be of type `string`.
+	  name: the variable's name.  Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -420,7 +420,7 @@ object method.
 <ul>
 	
 	<li>
-	  name: Must be of type `string`.
+	  name: Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -455,7 +455,7 @@ object method.
 <ul>
 	
 	<li>
-	  name: Must be of type `string`.
+	  name: Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -483,14 +483,14 @@ object method.
 
 <dt><a name="Config:get_string"></a><strong>Config:get_string</strong>&nbsp;(name)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_get_string">git_config_get_string</a>:<p><p>The string is owned by the variable and should not be freed by the user.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  name: Must be of type `string`.
+	  name: the variable's name.  Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -518,18 +518,18 @@ object method.
 
 <dt><a name="Config:set_bool"></a><strong>Config:set_bool</strong>&nbsp;(value, name)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_set_bool">git_config_set_bool</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  value: Must be of type `boolean`.
+	  value: the value to store.  Must be of type <code>boolean</code>.
 	</li>
 	
 	<li>
-	  name: Must be of type `string`.
+	  name: the variable's name.  Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -564,11 +564,11 @@ object method.
 <ul>
 	
 	<li>
-	  name: Must be of type `string`.
+	  name: Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  value: Must be of type `integer`.
+	  value: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -603,11 +603,11 @@ object method.
 <ul>
 	
 	<li>
-	  name: Must be of type `string`.
+	  name: Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  value: Must be of type `integer`.
+	  value: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -635,18 +635,18 @@ object method.
 
 <dt><a name="Config:set_string"></a><strong>Config:set_string</strong>&nbsp;(name, value)</dt>
 <dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_set_string">git_config_set_string</a>:<p><p>A copy of the string is made and the user is free to use it afterwards.
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  name: Must be of type `string`.
+	  name: the variable's name.  Must be of type <code>string</code>.
 	</li>
 	
 	<li>
-	  value: Must be of type `string`.
+	  value: the string to store..  Must be of type <code>string</code>.
 	</li>
 	
 </ul>

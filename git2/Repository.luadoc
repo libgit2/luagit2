@@ -4,129 +4,174 @@
 
 --- Class "Repository".
 --
--- <br />
 module("Repository")
 
---- Create a new Repository object
+--- Create a new Repository object.
 --
--- @name Repository.open
--- @param path Must be of type `string`.
--- @return <code>Repository</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_open">git_repository_open</a>:<p><p>The 'path' argument must point to either a git repository
+--  folder, or an existing work dir.<p> The method will automatically detect if 'path' is a normal
+--  or bare repository or fail is 'path' is neither.
+-- @param path the path to the repository.  Must be of type <code>string</code>.
+-- @return <a href="Repository.html">Repository</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Repository.open
 function Repository.open(path)
 end
 
---- Create a new Repository object
+--- Create a new Repository object.
 --
--- @name Repository.init
--- @param path Must be of type `string`.
--- @param is_bare Must be of type `integer`.
--- @return <code>Repository</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_init">git_repository_init</a>:<p><p>TODO:
+-- 	- Reinit the repository
+-- @param path the path to the repository.  Must be of type <code>string</code>.
+-- @param is_bare if true, a Git repository without a working directory is created   at the pointed path. If false, provided path will be considered as the working   directory into which the .git directory will be created..  Must be of type <code>integer</code>.
+-- @return <a href="Repository.html">Repository</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Repository.init
 function Repository.init(path, is_bare)
 end
 
 --- object method.
 --
--- @name Repository:head
--- @return <code>Reference</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_head">git_repository_head</a>:<p><p>
+-- @return <a href="Reference.html">Reference</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Repository:head
 function Repository:head()
 end
 
 --- object method.
 --
--- @name Repository:head_detached
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_head_detached">git_repository_head_detached</a>:<p><p>A repository's HEAD is detached when it points directly to a commit
+--  instead of a branch.
 -- @return <code>boolean</code>.
+-- @name Repository:head_detached
 function Repository:head_detached()
 end
 
 --- object method.
 --
--- @name Repository:head_orphan
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_head_orphan">git_repository_head_orphan</a>:<p><p>An orphan branch is one named from HEAD but which doesn't exist in
+--  the refs namespace, because it doesn't have any commit to point to.
 -- @return <code>boolean</code>.
+-- @name Repository:head_orphan
 function Repository:head_orphan()
 end
 
 --- object method.
 --
--- @name Repository:is_empty
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_is_empty">git_repository_is_empty</a>:<p><p>An empty repository has just been initialized and contains
+--  no commits.
 -- @return <code>boolean</code>.
+-- @name Repository:is_empty
 function Repository:is_empty()
 end
 
 --- object method.
 --
--- @name Repository:is_bare
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_is_bare">git_repository_is_bare</a>:<p><p>
 -- @return <code>boolean</code>.
+-- @name Repository:is_bare
 function Repository:is_bare()
 end
 
 --- object method.
 --
--- @name Repository:path
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_path">git_repository_path</a>:<p><p>This is the path of the `.git` folder for normal repositories,
+--  or of the repository itself for bare repositories.
 -- @return <code>string</code>.
+-- @name Repository:path
 function Repository:path()
 end
 
 --- object method.
 --
--- @name Repository:workdir
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_workdir">git_repository_workdir</a>:<p><p>If the repository is bare, this function will always return
+--  NULL.
 -- @return <code>string</code>.
+-- @name Repository:workdir
 function Repository:workdir()
 end
 
 --- object method.
 --
--- @name Repository:set_workdir
--- @param workdir Must be of type `string`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_set_workdir">git_repository_set_workdir</a>:<p><p>The working directory doesn't need to be the same one
+--  that contains the `.git` folder for this repository.<p> If this repository is bare, setting its working directory
+--  will turn it into a normal repository, capable of performing
+--  all the common workdir operations (checkout, status, index
+--  manipulation, etc).
+-- @param workdir The path to a working directory.  Must be of type <code>string</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Repository:set_workdir
 function Repository:set_workdir(workdir)
 end
 
 --- object method.
 --
--- @name Repository:config
--- @return <code>Config</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_config">git_repository_config</a>:<p><p>If a configuration file has not been set, the default
+--  config set for the repository will be returned, including
+--  global and system configurations (if they are available).<p> The configuration file must be freed once it's no longer
+--  being used by the user.
+-- @return <a href="Config.html">Config</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Repository:config
 function Repository:config()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_set_config">git_repository_set_config</a>:<p><p>This configuration file will be used for all configuration
+--  queries involving this repository.<p> The repository will keep a reference to the config file;
+--  the user must still free the config after setting it
+--  to the repository, or it will leak.
+-- @param config A Config object.  Must be of type <a href="Config.html">Config</a>.
 -- @name Repository:set_config
--- @param config Must be of type `Config`.
 function Repository:set_config(config)
 end
 
 --- object method.
 --
--- @name Repository:odb
--- @return <code>ODB</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_odb">git_repository_odb</a>:<p><p>If a custom ODB has not been set, the default
+--  database for the repository will be returned (the one
+--  located in `.git/objects`).<p> The ODB must be freed once it's no longer being used by
+--  the user.
+-- @return <a href="ODB.html">ODB</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Repository:odb
 function Repository:odb()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_set_odb">git_repository_set_odb</a>:<p><p>The ODB will be used for all object-related operations
+--  involving this repository.<p> The repository will keep a reference to the ODB; the user
+--  must still free the ODB object after setting it to the
+--  repository, or it will leak.
+-- @param odb An ODB object.  Must be of type <a href="ODB.html">ODB</a>.
 -- @name Repository:set_odb
--- @param odb Must be of type `ODB`.
 function Repository:set_odb(odb)
 end
 
 --- object method.
 --
--- @name Repository:index
--- @return <code>Index</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_index">git_repository_index</a>:<p><p>If a custom index has not been set, the default
+--  index for the repository will be returned (the one
+--  located in `.git/index`).<p> The index must be freed once it's no longer being used by
+--  the user.
+-- @return <a href="Index.html">Index</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Repository:index
 function Repository:index()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_set_index">git_repository_set_index</a>:<p><p>This index will be used for all index-related operations
+--  involving this repository.<p> The repository will keep a reference to the index file;
+--  the user must still free the index after setting it
+--  to the repository, or it will leak.
+-- @param index An index object.  Must be of type <a href="Index.html">Index</a>.
 -- @name Repository:set_index
--- @param index Must be of type `Index`.
 function Repository:set_index(index)
 end
 

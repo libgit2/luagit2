@@ -4,124 +4,144 @@
 
 --- Class "Config".
 --
--- <br />
 module("Config")
 
---- Create a new Config object
+--- Create a new Config object.
 --
--- @name Config.new
--- @return <code>Config</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_new">git_config_new</a>:<p><p>This object is empty, so you have to add a file to it before you
+--  can do anything with it.
+-- @return <a href="Config.html">Config</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Config.new
 function Config.new()
 end
 
---- Create a new Config object
+--- Create a new Config object.
 --
--- @name Config.open
--- @param path Must be of type `string`.
--- @return <code>Config</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_open_ondisk">git_config_open_ondisk</a>:<p><p>This method is a simple utility wrapper for the following sequence
+--  of calls:
+-- 	- git_config_new
+-- 	- git_config_add_file_ondisk
+-- @param path Path to the on-disk file to open.  Must be of type <code>string</code>.
+-- @return <a href="Config.html">Config</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Config.open
 function Config.open(path)
 end
 
---- Destroy this object.
+--- Destroy this object (will be called by Garbage Collector).
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_free">git_config_free</a>:<p><p>
 -- @name Config:free
 function Config:free()
 end
 
 --- object method.
 --
--- @name Config:add_file_ondisk
--- @param path Must be of type `string`.
--- @param priority Must be of type `integer`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_add_file_ondisk">git_config_add_file_ondisk</a>:<p><p>The on-disk file pointed at by `path` will be opened and
+--  parsed; it's expected to be a native Git config file following
+--  the default Git config syntax (see man git-config).<p> Note that the configuration object will free the file
+--  automatically.<p> Further queries on this config object will access each
+--  of the config file instances in order (instances with
+--  a higher priority will be accessed first).
+-- @param path path to the configuration file (backend) to add.  Must be of type <code>string</code>.
+-- @param priority the priority the backend should have.  Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Config:add_file_ondisk
 function Config:add_file_ondisk(path, priority)
 end
 
 --- object method.
 --
--- @name Config:get_int32
--- @param name Must be of type `string`.
+-- @param name Must be of type <code>string</code>.
 -- @return <code>integer</code> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Config:get_int32
 function Config:get_int32(name)
 end
 
 --- object method.
 --
--- @name Config:set_int32
--- @param name Must be of type `string`.
--- @param value Must be of type `integer`.
+-- @param name Must be of type <code>string</code>.
+-- @param value Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Config:set_int32
 function Config:set_int32(name, value)
 end
 
 --- object method.
 --
--- @name Config:get_int64
--- @param name Must be of type `string`.
+-- @param name Must be of type <code>string</code>.
 -- @return <code>integer</code> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Config:get_int64
 function Config:get_int64(name)
 end
 
 --- object method.
 --
--- @name Config:set_int64
--- @param name Must be of type `string`.
--- @param value Must be of type `integer`.
+-- @param name Must be of type <code>string</code>.
+-- @param value Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Config:set_int64
 function Config:set_int64(name, value)
 end
 
 --- object method.
 --
--- @name Config:get_bool
--- @param name Must be of type `string`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_get_bool">git_config_get_bool</a>:<p><p>This function uses the usual C convention of 0 being false and
+--  anything else true.
+-- @param name the variable's name.  Must be of type <code>string</code>.
 -- @return <code>boolean</code> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Config:get_bool
 function Config:get_bool(name)
 end
 
 --- object method.
 --
--- @name Config:set_bool
--- @param value Must be of type `boolean`.
--- @param name Must be of type `string`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_set_bool">git_config_set_bool</a>:<p><p>
+-- @param value the value to store.  Must be of type <code>boolean</code>.
+-- @param name the variable's name.  Must be of type <code>string</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Config:set_bool
 function Config:set_bool(value, name)
 end
 
 --- object method.
 --
--- @name Config:get_string
--- @param name Must be of type `string`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_get_string">git_config_get_string</a>:<p><p>The string is owned by the variable and should not be freed by the
+--  user.
+-- @param name the variable's name.  Must be of type <code>string</code>.
 -- @return <code>string</code> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Config:get_string
 function Config:get_string(name)
 end
 
 --- object method.
 --
--- @name Config:set_string
--- @param name Must be of type `string`.
--- @param value Must be of type `string`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_set_string">git_config_set_string</a>:<p><p>A copy of the string is made and the user is free to use it
+--  afterwards.
+-- @param name the variable's name.  Must be of type <code>string</code>.
+-- @param value the string to store..  Must be of type <code>string</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Config:set_string
 function Config:set_string(name, value)
 end
 
 --- object method.
 --
--- @name Config:delete
--- @param name Must be of type `string`.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_delete">git_config_delete</a>:<p><p>
+-- @param name the variable to delete.  Must be of type <code>string</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
+-- @name Config:delete
 function Config:delete(name)
 end
 

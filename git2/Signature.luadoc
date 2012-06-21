@@ -4,50 +4,51 @@
 
 --- Class "Signature".
 --
--- <br />
 module("Signature")
 
---- Create a new Signature object
+--- Create a new Signature object.
 --
--- @name Signature.new
--- @param name Must be of type `string`.
--- @param email Must be of type `string`.
--- @param time Must be of type `integer`.
--- @param offset Must be of type `integer`.
--- @return <code>Signature</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/signature/git_signature_new">git_signature_new</a>:<p><p>
+-- @param name name of the person.  Must be of type <code>string</code>.
+-- @param email email of the person.  Must be of type <code>string</code>.
+-- @param time time when the action happened.  Must be of type <code>integer</code>.
+-- @param offset timezone offset in minutes for the time.  Must be of type <code>integer</code>.
+-- @return <a href="Signature.html">Signature</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Signature.new
 function Signature.new(name, email, time, offset)
 end
 
---- Create a new Signature object
+--- Create a new Signature object.
 --
--- @name Signature.now
--- @param name Must be of type `string`.
--- @param email Must be of type `string`.
--- @return <code>Signature</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/signature/git_signature_now">git_signature_now</a>:<p><p>
+-- @param name name of the person.  Must be of type <code>string</code>.
+-- @param email email of the person.  Must be of type <code>string</code>.
+-- @return <a href="Signature.html">Signature</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Signature.now
 function Signature.now(name, email)
 end
 
 --- object method.
 --
--- @name Signature:name
 -- @return <code>string</code>.
+-- @name Signature:name
 function Signature:name()
 end
 
 --- object method.
 --
--- @name Signature:email
 -- @return <code>string</code>.
+-- @name Signature:email
 function Signature:email()
 end
 
 --- object method.
 --
+-- @return <code>integer</code>.
+-- @return <code>integer</code>.
 -- @name Signature:when
--- @return <code>integer</code>.
--- @return <code>integer</code>.
 function Signature:when()
 end
 

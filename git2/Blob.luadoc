@@ -5,77 +5,97 @@
 --- Class "Blob".
 --
 -- Extends <a href="Object.html">Object</a><br />
--- <br />
 module("Blob")
 
---- Create a new Blob object
+--- Create a new Blob object.
 --
--- @name Blob.lookup
--- @param repo Must be of type `Repository`.
--- @param id Must be of type `OID`.
--- @return <code>Blob</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_lookup">git_blob_lookup</a>:<p><p>
+-- @param repo the repo to use when locating the blob..  Must be of type <a href="Repository.html">Repository</a>.
+-- @param id identity of the blob to locate..  Must be of type <a href="OID.html">OID</a>.
+-- @return <a href="Blob.html">Blob</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Blob.lookup
 function Blob.lookup(repo, id)
 end
 
---- module function
+--- module function.
 --
--- @name Blob.fromfile
--- @param repo Must be of type `Repository`.
--- @param path Must be of type `string`.
--- @return <code>OID</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_create_fromfile">git_blob_create_fromfile</a>:<p><p>
+-- @param repo repository where the blob will be written.  this repository cannot be bare.  Must be of type <a href="Repository.html">Repository</a>.
+-- @param path file from which the blob will be created,  relative to the repository's working dir.  Must be of type <code>string</code>.
+-- @return <a href="OID.html">OID</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Blob.fromfile
 function Blob.fromfile(repo, path)
 end
 
---- module function
+--- module function.
 --
--- @name Blob.frombuffer
--- @param repo Must be of type `Repository`.
--- @param buffer Must be of type `string`.
--- @return <code>OID</code> or <code>nil</code> on error.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_create_frombuffer">git_blob_create_frombuffer</a>:<p><p>
+-- @param repo repository where to blob will be written.  Must be of type <a href="Repository.html">Repository</a>.
+-- @param buffer data to be written into the blob.  Must be of type <code>string</code>.
+-- @return <a href="OID.html">OID</a> or <code>nil</code> on error.
 -- @return Error string.
+-- @name Blob.frombuffer
 function Blob.frombuffer(repo, buffer)
 end
 
 --- object method.
 --
--- @name Blob:rawcontent
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_rawcontent">git_blob_rawcontent</a>:<p><p>A pointer to the raw content of a blob is returned;
+--  this pointer is owned internally by the object and shall
+--  not be free'd. The pointer may be invalidated at a later
+--  time.
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_rawsize">git_blob_rawsize</a>:<p><p>
 -- @return <code>string</code>.
+-- @name Blob:rawcontent
 function Blob:rawcontent()
 end
 
 --- object method.
 --
--- @name Blob:rawsize
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_rawsize">git_blob_rawsize</a>:<p><p>
 -- @return <code>integer</code>.
+-- @name Blob:rawsize
 function Blob:rawsize()
 end
 
---- Destroy this object.
+--- Destroy this object (will be called by Garbage Collector).
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing
+--  object; note that git_objects are owned and cached by the repository
+--  so the object may or may not be freed after this library call,
+--  depending on how agressive is the caching mechanism used
+--  by the repository.<p> IMPORTANT:
+--  It *is* necessary to call this method when you stop using
+--  an object. Failure to do so will cause a memory leak.
 -- @name Object:free
 function Object:free()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
+-- @return <a href="OID.html">OID</a>.
 -- @name Object:id
--- @return <code>OID</code>.
 function Object:id()
 end
 
 --- object method.
 --
--- @name Object:type
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
 -- @return <code>string</code>.
+-- @name Object:type
 function Object:type()
 end
 
 --- object method.
 --
+-- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the
+--  returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without
+--  affecting the object.
+-- @return <a href="Repository.html">Repository</a>.
 -- @name Object:owner
--- @return <code>Repository</code>.
 function Object:owner()
 end
 
