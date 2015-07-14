@@ -28,7 +28,7 @@ include_directories(${LUA_INCLUDE_DIR})
 
 ## LibGit2
 include(FindPkgConfig)
-pkg_search_module(GIT2 REQUIRED libgit2=0.17.0)
+pkg_search_module(GIT2 REQUIRED libgit2=0.22.3)
 add_definitions(${GIT2_CFLAGS})
 link_directories(${GIT2_LIBRARY_DIRS})
 include_directories(${GIT2_INCLUDE_DIRS})
