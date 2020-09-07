@@ -1,5 +1,7 @@
 
 basetype "git_time_t"  "integer" "0"
+-- really? is this it?
+basetype "git_config_level_t"  "integer" "0"
 
 c_module "git2" {
 -- module settings.

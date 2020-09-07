@@ -44,18 +44,16 @@ typedef git_index Index;
 	method "uniq" {
 		c_method_call "void"  "git_index_uniq" {}
 	},
+	method "add_bypath" {
+		c_method_call "GitError"  "git_index_add_bypath" { "const char *", "path"}
+	},
 	method "add" {
-		c_method_call "GitError"  "git_index_add" { "const char *", "path", "int", "stage" }
+		c_method_call "GitError"  "git_index_add" { "IndexEntry *", "source_entry" }
 	},
-	method "add2" {
-		c_method_call "GitError"  "git_index_add2" { "IndexEntry *", "source_entry" }
+	method "add_from_workdir" {
+		c_method_call "GitError"  "git_index_add_from_workdir" { "const char *", "path" }
 	},
-	method "append" {
-		c_method_call "GitError"  "git_index_append" { "const char *", "path", "int", "stage" }
-	},
-	method "append2" {
-		c_method_call "GitError"  "git_index_append2" { "IndexEntry *", "source_entry" }
-	},
+    -- TODO: add_conflict?
 	method "remove" {
 		c_method_call "GitError"  "git_index_remove" { "int", "position" }
 	},

@@ -21,6 +21,7 @@
 object "ODBBackend" {
 	c_source [[
 #include <git2/odb_backend.h>
+#include <git2/sys/odb_backend.h>
 
 typedef struct ODBBackend {
 	git_odb_backend backend;

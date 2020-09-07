@@ -44,8 +44,8 @@ error_code "GitError" "int" {
 	case GIT_PASSTHROUGH:
 		err_str = "PASSTHROUGH";
 		break;
-	case GIT_REVWALKOVER:
-		err_str = "REVWALKOVER";
+	case GIT_ITEROVER:
+		err_str = "ITEROVER";
 		break;
 	case GIT_OK:
 	default:
