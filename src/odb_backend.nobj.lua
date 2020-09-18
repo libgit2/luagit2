@@ -100,7 +100,7 @@ static int odb_backend_read_cb(void **data_p, size_t *len_p, git_otype *type_p, 
 	return err;
 }
 
-static int odb_backend_read_prefix_cb(git_oid *out_oid, void **data_p, size_t *len_p, git_otype *type_p, git_odb_backend *backend, const git_oid *short_oid, unsigned int len)
+static int odb_backend_read_prefix_cb(git_oid *out_oid, void **data_p, size_t *len_p, git_otype *type_p, git_odb_backend *backend, const git_oid *short_oid, size_t len)
 {
 	*data_p = NULL;
 	if(len >= GIT_OID_HEXSZ) {
@@ -150,7 +150,7 @@ static int odb_backend_read_header_cb(size_t *len_p, git_otype *type_p, git_odb_
 	return err;
 }
 
-static int odb_backend_write_cb(git_oid *oid, git_odb_backend *backend, const void *data, size_t len, git_otype type)
+static int odb_backend_write_cb(git_odb_backend *backend, const git_oid *oid, const void *data, size_t len, git_otype type)
 {
 	ODBBackend *lua_backend = (ODBBackend *)backend;
 	lua_State *L = lua_backend->L;
@@ -166,8 +166,9 @@ static int odb_backend_write_cb(git_oid *oid, git_odb_backend *backend, const vo
 
 	/* call Lua function. */
 	lua_call(L, 2, 2);
+	// TODO: this is bork
 	if(!lua_isnil(L, -2)) {
-		*oid = obj_type_OID_check(L,-2);
+		//*oid = obj_type_OID_check(L,-2);
 		err = GIT_OK;
 	} else {
 		err = lua_tointeger(L, -1);

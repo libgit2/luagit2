@@ -25,8 +25,8 @@ typedef git_tree_entry TreeEntry;
 	method "name" {
 		c_method_call "const char *" "git_tree_entry_name" {}
 	},
-	method "attributes" {
-		c_method_call "unsigned int" "git_tree_entry_attributes" {}
+	method "filemode" {
+		c_method_call "unsigned int" "git_tree_entry_filemode" {}
 	},
 	method "id" {
 		var_out{"OID", "id"},
