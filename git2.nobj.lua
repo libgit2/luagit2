@@ -10,6 +10,10 @@ hide_meta_info = false, --true,
 
 include "git2.h",
 
+c_source "module_init_src" [[
+  git_libgit2_init();
+]],
+
 doc[[
 See <a href="http://libgit2.github.com/libgit2/#HEAD">libgit2 API docs</a>.
 ]],
