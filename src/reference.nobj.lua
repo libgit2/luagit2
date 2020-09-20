@@ -27,17 +27,11 @@ typedef git_reference Reference;
 		c_call { "GitError", "err" } "git_reference_lookup"
 			{ "Reference *", "&this>1", "Repository *", "repo", "const char *", "name" },
 	},
-	method "oid" {
-		c_method_call "*OID" "git_reference_oid" {}
-	},
-	method "set_oid" {
-		c_method_call "GitError" "git_reference_set_oid" { "OID", "&oid" }
-	},
 	method "target" {
-		c_method_call "const char *" "git_reference_target" {}
+		c_method_call "*OID" "git_reference_target" {}
 	},
 	method "set_target" {
-		c_method_call "GitError" "git_reference_set_target" { "const char *", "target" }
+		c_call "GitError" "git_reference_set_target" { "Reference *", "&ref_out>1", "Reference *", "this", "OID", "&oid", "const char *", "log_message" }
 	},
 	method "type" {
 		c_method_call "git_ref_t" "git_reference_type" {}
@@ -53,17 +47,14 @@ typedef git_reference Reference;
 		c_method_call "Repository *" "git_reference_owner" {}
 	},
 	method "rename" {
-		c_method_call "GitError" "git_reference_rename" { "const char *", "new_name", "bool", "force" }
+		c_call "GitError" "git_reference_rename" { "Reference *", "&ref_out>1", "Reference *", "this", "const char *", "new_name", "int", "force", "const char *", "log_message" }
 	},
 	method "delete" {
 		c_method_call "GitError" "git_reference_delete" {}
 	},
-	c_function "packall" {
-		c_call "GitError" "git_reference_packall" { "Repository *", "repo" }
-	},
+    -- TODO: replacement for git_reference_packall ?
 	c_function "list" {
 		var_in{ "Repository *", "repo" },
-		var_in{ "unsigned int", "list_flags" },
 		var_out{ "StrArray *", "array" },
 		var_out{ "GitError", "err" },
 		c_source "pre" [[
@@ -72,7 +63,7 @@ typedef git_reference Reference;
 		c_source[[
 	/* push this onto stack now, just encase there is a out-of-memory error. */
 	${array} = obj_type_StrArray_push(L, &tmp_array);
-	${err} = git_reference_list(${array}, ${repo}, ${list_flags});
+	${err} = git_reference_list(${array}, ${repo});
 	if(${err} == GIT_OK) {
 		return 1; /* array is already on the stack. */
 	} else {

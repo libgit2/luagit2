@@ -83,7 +83,7 @@ typedef git_index_entry IndexEntry;
 	field "unsigned int" "uid",
 	field "unsigned int" "gid",
 	field "off_t" "file_size",
-	field "OID" "oid",
+	field "OID" "id",
 	field "unsigned int" "flags",
 	field "unsigned int" "flags_extended",
 	method "path" {
@@ -96,9 +96,10 @@ typedef git_index_entry IndexEntry;
 	if(${this}->path != NULL) {
 		free(${this}->path);
 	}
-	${this}->path = malloc(${val_len});
-	strncpy(${this}->path, ${val}, ${val_len});
-	${this}->path[${val_len}] = 0;
+    char * path_buf = malloc(${val_len});
+	strncpy(path_buf, ${val}, ${val_len});
+	path_buf[${val_len}] = 0;
+	${this}->path = path_buf;
 ]]
 	},
 }

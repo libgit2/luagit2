@@ -27,12 +27,12 @@ typedef git_blob Blob;
 		c_call { "GitError", "err" } "git_blob_lookup"
 			{ "Blob *", "&this", "Repository *", "repo", "OID", "&id" },
 	},
-	c_function "fromfile" {
-		c_call { "GitError", "err>2" } "git_blob_create_fromfile"
+	c_function "from_disk" {
+		c_call { "GitError", "err>2" } "git_blob_create_from_disk"
 			{ "OID", "&written_id>1", "Repository *", "repo", "const char *", "path" },
 	},
-	c_function "frombuffer" {
-		c_call { "GitError", "err" } "git_blob_create_frombuffer"
+	c_function "from_buffer" {
+		c_call { "GitError", "err" } "git_blob_create_from_buffer"
 			{ "OID", "&written_id>1", "Repository *", "repo",
 				"const char *", "buffer", "size_t", "#buffer" },
 	},

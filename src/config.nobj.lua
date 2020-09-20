@@ -34,7 +34,7 @@ typedef git_config Config;
 	},
 	method "add_file_ondisk" {
 		c_method_call { "GitError", "err"} "git_config_add_file_ondisk"
-			{ "const char *", "path", "int", "priority" },
+			{ "const char *", "path", "git_config_level_t", "level", "Repository *", "repo", "int", "force" },
 	},
 	method "get_int32" {
 		c_call { "GitError", "err"} "git_config_get_int32"
@@ -76,8 +76,11 @@ typedef git_config Config;
 		c_method_call { "GitError", "err"} "git_config_set_string"
 			{ "const char *", "name", "const char *", "value" },
 	},
-	method "delete" {
-		c_method_call { "GitError", "err"} "git_config_delete" { "const char *", "name" },
+	method "delete_entry" {
+		c_method_call { "GitError", "err"} "git_config_delete_entry" { "const char *", "name" },
+	},
+	method "delete_multivar" {
+		c_method_call { "GitError", "err"} "git_config_delete_multivar" { "const char *", "name", "const char *", "regexp"},
 	},
 }
 

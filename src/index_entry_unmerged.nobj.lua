@@ -20,7 +20,8 @@
 
 object "IndexEntryUnmerged" {
 	c_source [[
-typedef git_index_entry_unmerged IndexEntryUnmerged;
+#include <git2/sys/index.h>
+typedef git_index_reuc_entry IndexEntryUnmerged;
 ]],
 	method "mode" {
 		var_in{"int", "idx"},

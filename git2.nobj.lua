@@ -1,5 +1,7 @@
 
 basetype "git_time_t"  "integer" "0"
+-- really? is this it?
+basetype "git_config_level_t"  "integer" "0"
 
 c_module "git2" {
 -- module settings.
@@ -7,6 +9,10 @@ use_globals = false,
 hide_meta_info = false, --true,
 
 include "git2.h",
+
+c_source "module_init_src" [[
+  git_libgit2_init();
+]],
 
 doc[[
 See <a href="http://libgit2.github.com/libgit2/#HEAD">libgit2 API docs</a>.

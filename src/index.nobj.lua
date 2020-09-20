@@ -33,46 +33,41 @@ typedef git_index Index;
 		c_method_call "void"  "git_index_clear" {}
 	},
 	method "read" {
-		c_method_call "GitError"  "git_index_read" {}
+		c_method_call "GitError"  "git_index_read" { "int", "force" }
 	},
 	method "write" {
 		c_method_call "GitError"  "git_index_write" {}
 	},
 	method "find" {
-		c_method_call "int"  "git_index_find" { "const char *", "path" }
+		c_call "int"  "git_index_find" { "size_t *", "at_pos", "Index *", "this", "const char *", "path" }
 	},
-	method "uniq" {
-		c_method_call "void"  "git_index_uniq" {}
+	method "add_bypath" {
+		c_method_call "GitError"  "git_index_add_bypath" { "const char *", "path"}
 	},
 	method "add" {
-		c_method_call "GitError"  "git_index_add" { "const char *", "path", "int", "stage" }
+		c_method_call "GitError"  "git_index_add" { "IndexEntry *", "source_entry" }
 	},
-	method "add2" {
-		c_method_call "GitError"  "git_index_add2" { "IndexEntry *", "source_entry" }
-	},
-	method "append" {
-		c_method_call "GitError"  "git_index_append" { "const char *", "path", "int", "stage" }
-	},
-	method "append2" {
-		c_method_call "GitError"  "git_index_append2" { "IndexEntry *", "source_entry" }
-	},
+    -- TODO: add_conflict?
 	method "remove" {
-		c_method_call "GitError"  "git_index_remove" { "int", "position" }
+		c_method_call "GitError"  "git_index_remove" { "const char *", "path", "int", "stage" }
 	},
-	method "get" {
-		c_method_call "IndexEntry *"  "git_index_get" { "int", "n" }
+	method "get_byindex" {
+		c_method_call "const IndexEntry *"  "git_index_get_byindex" { "size_t", "n" }
+	},
+	method "get_bypath" {
+		c_method_call "const IndexEntry *"  "git_index_get_bypath" { "const char *", "path", "int", "stage" }
 	},
 	method "entrycount" {
 		c_method_call "unsigned int"  "git_index_entrycount" {}
 	},
-	method "entrycount_unmerged" {
-		c_method_call "unsigned int"  "git_index_entrycount_unmerged" {}
+	method "reuc_entrycount" {
+		c_method_call "unsigned int"  "git_index_reuc_entrycount" {}
 	},
-	method "get_unmerged_bypath" {
-		c_method_call "const IndexEntryUnmerged *"  "git_index_get_unmerged_bypath" { "const char *", "path" }
+	method "reuc_get_bypath" {
+		c_method_call "const IndexEntryUnmerged *"  "git_index_reuc_get_bypath" { "const char *", "path" }
 	},
-	method "get_unmerged_byindex" {
-		c_method_call "const IndexEntryUnmerged *"  "git_index_get_unmerged_byindex" { "int", "n" }
+	method "reuc_get_byindex" {
+		c_method_call "const IndexEntryUnmerged *"  "git_index_reuc_get_byindex" { "int", "n" }
 	},
 	method "read_tree" {
 		c_method_call "GitError"  "git_index_read_tree" { "Tree *", "tree" }

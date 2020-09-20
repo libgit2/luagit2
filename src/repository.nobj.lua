@@ -20,6 +20,7 @@
 
 object "Repository" {
 	c_source [[
+#include <git2/sys/repository.h>
 typedef git_repository Repository;
 ]],
 	constructor "open" {
@@ -48,8 +49,8 @@ typedef git_repository Repository;
 	method "head_detached" {
 		c_method_call "bool" "git_repository_head_detached" {}
 	},
-	method "head_orphan" {
-		c_method_call "bool" "git_repository_head_orphan" {}
+	method "head_unborn" {
+		c_method_call "bool" "git_repository_head_unborn" {}
 	},
 	method "is_empty" {
 		c_method_call "bool" "git_repository_is_empty" {}
@@ -64,7 +65,7 @@ typedef git_repository Repository;
 		c_method_call "const char *" "git_repository_workdir" {}
 	},
 	method "set_workdir" {
-		c_method_call "GitError" "git_repository_set_workdir" { "const char *", "workdir"}
+		c_method_call "GitError" "git_repository_set_workdir" { "const char *", "workdir", "int", "update_gitlink"}
 	},
 	method "config" {
 		c_call { "GitError", "err" } "git_repository_config"
