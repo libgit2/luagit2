@@ -6,7 +6,7 @@ LibGit2 bindings for Lua. [API Docs](http://libgit2.github.com/luagit2/)
 libgit2 version
 ---------------
 
-Currently supports version v0.17.0
+Currently supports version >= 0.17
 
 Installing
 ----------
