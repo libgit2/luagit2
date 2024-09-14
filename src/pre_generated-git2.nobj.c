@@ -10,6 +10,54 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+/* some Lua 5.0 compatibility support. */
+#if !defined(lua_pushliteral)
+#define lua_pushliteral(L, s) lua_pushstring(L, "" s, (sizeof(s)/sizeof(char))-1)
+#endif
+
+#if !defined(LUA_VERSION_NUM)
+#define lua_pushinteger(L, n) lua_pushnumber(L, (lua_Number)n)
+#define luaL_Reg luaL_reg
+#endif
+
+/* some Lua 5.1 compatibility support. */
+#if !defined(LUA_VERSION_NUM) || (LUA_VERSION_NUM == 501)
+/*
+** Adapted from Lua 5.2.0
+*/
+static void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
+  luaL_checkstack(L, nup, "too many upvalues");
+  for (; l->name != NULL; l++) {  /* fill the table with given functions */
+    int i;
+    for (i = 0; i < nup; i++)  /* copy upvalues to the top */
+      lua_pushvalue(L, -nup);
+    lua_pushstring(L, l->name);
+    lua_pushcclosure(L, l->func, nup);  /* closure with those upvalues */
+    lua_settable(L, -(nup + 3));
+  }
+  lua_pop(L, nup);  /* remove upvalues */
+}
+
+#define lua_load_no_mode(L, reader, data, source) \
+	lua_load(L, reader, data, source)
+
+#define lua_rawlen(L, idx) lua_objlen(L, idx)
+
+#endif
+
+#if LUA_VERSION_NUM >= 502
+
+#define lua_load_no_mode(L, reader, data, source) \
+	lua_load(L, reader, data, source, NULL)
+
+static int luaL_typerror (lua_State *L, int narg, const char *tname) {
+  const char *msg = lua_pushfstring(L, "%s expected, got %s",
+                                    tname, luaL_typename(L, narg));
+  return luaL_argerror(L, narg, msg);
+}
+
+#endif
+
 #define REG_PACKAGE_IS_CONSTRUCTOR 0
 #define REG_MODULES_AS_GLOBALS 0
 #define REG_OBJECTS_AS_GLOBALS 0
@@ -127,6 +175,7 @@ typedef void (*dyn_caster_t)(void **obj, obj_type **type);
 
 #define OBJ_TYPE_FLAG_WEAK_REF (1<<0)
 #define OBJ_TYPE_SIMPLE (1<<1)
+#define OBJ_TYPE_IMPORT (1<<2)
 struct obj_type {
 	dyn_caster_t    dcaster;  /**< caster to support casting to sub-objects. */
 	int32_t         id;       /**< type's id. */
@@ -181,15 +230,21 @@ typedef enum {
 	REG_META,
 } module_reg_type;
 
+typedef struct reg_impl {
+	const char *if_name;
+	const void *impl;
+} reg_impl;
+
 typedef struct reg_sub_module {
 	obj_type        *type;
 	module_reg_type req_type;
-	const luaL_reg  *pub_funcs;
-	const luaL_reg  *methods;
-	const luaL_reg  *metas;
+	const luaL_Reg  *pub_funcs;
+	const luaL_Reg  *methods;
+	const luaL_Reg  *metas;
 	const obj_base  *bases;
 	const obj_field *fields;
 	const obj_const *constants;
+	const reg_impl  *implements;
 	int             bidirectional_consts;
 } reg_sub_module;
 
@@ -381,7 +436,7 @@ static int nobj_try_loading_ffi(lua_State *L, const char *ffi_mod_name,
 		lua_settable(L, priv_table);
 		ffi_exports++;
 	}
-	err = lua_load(L, nobj_lua_Reader, &state, ffi_mod_name);
+	err = lua_load_no_mode(L, nobj_lua_Reader, &state, ffi_mod_name);
 	if(0 == err) {
 		lua_pushvalue(L, -2); /* dup C module's table. */
 		lua_pushvalue(L, priv_table); /* move priv_table to top of stack. */
@@ -401,11 +456,194 @@ static int nobj_try_loading_ffi(lua_State *L, const char *ffi_mod_name,
 }
 #endif
 
+
+typedef struct {
+	void *impl;
+	void *obj;
+} obj_implement;
+
+static FUNC_UNUSED void *obj_implement_luaoptional(lua_State *L, int _index, void **impl, char *if_name) {
+	void *ud;
+	if(lua_isnoneornil(L, _index)) {
+		return NULL;
+	}
+	/* get the implements table for this interface. */
+	lua_pushlightuserdata(L, if_name);
+	lua_rawget(L, LUA_REGISTRYINDEX);
+
+	/* get pointer to userdata value & check if it is a userdata value. */
+	ud = (obj_implement *)lua_touserdata(L, _index);
+	if(ud != NULL) {
+		/* get the userdata's metatable */
+		if(lua_getmetatable(L, _index)) {
+			/* lookup metatable in interface table for this object's implementation of the interface. */
+			lua_gettable(L, -2);
+		} else {
+			/* no metatable. */
+			goto no_interface;
+		}
+#if LUAJIT_FFI
+	} else if(nobj_ffi_support_enabled_hint) { /* handle cdata. */
+		/* get cdata interface check function from interface table. */
+		lua_getfield(L, -1, "cdata");
+		if(lua_isfunction(L, -1)) {
+			/* pass cdata to function, return value should be an implmentation. */
+			lua_pushvalue(L, _index);
+			lua_call(L, 1, 1);
+			/* get pointer to cdata. */
+			ud = (void *)lua_topointer(L, _index);
+		} else {
+			lua_pop(L, 1); /* pop non-function. */
+			goto no_interface;
+		}
+#endif
+	} else {
+		goto no_interface;
+	}
+
+	if(!lua_isnil(L, -1)) {
+		*impl = lua_touserdata(L, -1);
+		lua_pop(L, 2); /* pop interface table & implementation. */
+		/* object implements interface. */
+		return ud;
+	} else {
+		lua_pop(L, 1); /* pop nil. */
+	}
+no_interface:
+	lua_pop(L, 1); /* pop interface table. */
+	return NULL;
+}
+
+static FUNC_UNUSED void *obj_implement_luacheck(lua_State *L, int _index, void **impl, char *type) {
+	void *ud = obj_implement_luaoptional(L, _index, impl, type);
+	if(ud == NULL) {
+#define ERROR_BUFFER_SIZE 256
+		char buf[ERROR_BUFFER_SIZE];
+		snprintf(buf, ERROR_BUFFER_SIZE-1,"Expected object with %s interface", type);
+		/* value doesn't implement this interface. */
+		luaL_argerror(L, _index, buf);
+	}
+	return ud;
+}
+
+/* use static pointer as key to interfaces table. (version 1.0) */
+static char obj_interfaces_table_key[] = "obj_interfaces<1.0>_table_key";
+
+static void obj_get_global_interfaces_table(lua_State *L) {
+	/* get global interfaces table. */
+	lua_getfield(L, LUA_REGISTRYINDEX, obj_interfaces_table_key);
+	if(lua_isnil(L, -1)) {
+		/* Need to create global interfaces table. */
+		lua_pop(L, 1); /* pop nil */
+		lua_createtable(L, 0, 4); /* 0 size array part, small hash part. */
+		lua_pushvalue(L, -1); /* dup table. */
+		/* store interfaces table in Lua registery. */
+		lua_setfield(L, LUA_REGISTRYINDEX, obj_interfaces_table_key);
+	}
+}
+
+static void obj_get_interface(lua_State *L, const char *name, int global_if_tab) {
+	/* get a interface's implementation table */
+	lua_getfield(L, global_if_tab, name);
+	if(lua_isnil(L, -1)) {
+		lua_pop(L, 1); /* pop nil */
+		/* new interface. (i.e. no object implement it yet.)
+		 *
+		 * create an empty table for this interface that will be used when an
+		 * implementation is registered for this interface.
+		 */
+		lua_createtable(L, 0, 2); /* 0 size array part, small hash part. */
+		lua_pushvalue(L, -1); /* dup table. */
+		lua_setfield(L, global_if_tab, name); /* store interface in global interfaces table. */
+	}
+}
+
+static int obj_get_userdata_interface(lua_State *L) {
+	/* get the userdata's metatable */
+	if(lua_getmetatable(L, 2)) {
+		/* lookup metatable in interface table for the userdata's implementation of the interface. */
+		lua_gettable(L, 1);
+		if(!lua_isnil(L, -1)) {
+			/* return the implementation. */
+			return 1;
+		}
+	}
+	/* no metatable or no implementation. */
+	return 0;
+}
+
+static void obj_interface_register(lua_State *L, char *name, int global_if_tab) {
+	/* get the table of implementations for this interface. */
+	obj_get_interface(L, name, global_if_tab);
+
+	/* check for 'userdata' function. */
+	lua_getfield(L, -1, "userdata");
+	if(lua_isnil(L, -1)) {
+		lua_pop(L, 1); /* pop nil. */
+		/* add C function for getting a userdata's implementation. */
+		lua_pushcfunction(L, obj_get_userdata_interface);
+		lua_setfield(L, -2, "userdata");
+	} else {
+		/* already have function. */
+		lua_pop(L, 1); /* pop C function. */
+	}
+	/* we are going to use a lightuserdata pointer for fast lookup of the interface's impl. table. */
+	lua_pushlightuserdata(L, name);
+	lua_insert(L, -2);
+	lua_settable(L, LUA_REGISTRYINDEX);
+}
+
+static void obj_register_interfaces(lua_State *L, char *interfaces[]) {
+	int i;
+	int if_tab;
+	/* get global interfaces table. */
+	obj_get_global_interfaces_table(L);
+	if_tab = lua_gettop(L);
+
+	for(i = 0; interfaces[i] != NULL ; i++) {
+		obj_interface_register(L, interfaces[i], if_tab);
+	}
+	lua_pop(L, 1); /* pop global interfaces table. */
+}
+
+static void obj_type_register_implement(lua_State *L, const reg_impl *impl, int global_if_tab, int mt_tab) {
+	/* get the table of implementations for this interface. */
+	obj_get_interface(L, impl->if_name, global_if_tab);
+
+	/* register object's implement in the interface table. */
+	lua_pushvalue(L, mt_tab);
+	lua_pushlightuserdata(L, (void *)impl->impl);
+	lua_settable(L, -3);
+
+	lua_pop(L, 1); /* pop inteface table. */
+}
+
+static void obj_type_register_implements(lua_State *L, const reg_impl *impls) {
+	int if_tab;
+	int mt_tab;
+	/* get absolute position of object's metatable. */
+	mt_tab = lua_gettop(L);
+	/* get global interfaces table. */
+	obj_get_global_interfaces_table(L);
+	if_tab = lua_gettop(L);
+
+	for(; impls->if_name != NULL ; impls++) {
+		obj_type_register_implement(L, impls, if_tab, mt_tab);
+	}
+	lua_pop(L, 1); /* pop global interfaces table. */
+}
+
 #ifndef REG_PACKAGE_IS_CONSTRUCTOR
 #define REG_PACKAGE_IS_CONSTRUCTOR 1
 #endif
 
 #ifndef REG_MODULES_AS_GLOBALS
+#define REG_MODULES_AS_GLOBALS 0
+#endif
+
+/* For Lua 5.2 don't register modules as globals. */
+#if LUA_VERSION_NUM == 502
+#undef REG_MODULES_AS_GLOBALS
 #define REG_MODULES_AS_GLOBALS 0
 #endif
 
@@ -417,6 +655,48 @@ static int nobj_try_loading_ffi(lua_State *L, const char *ffi_mod_name,
 #define OBJ_DATA_HIDDEN_METATABLE 1
 #endif
 
+static FUNC_UNUSED int obj_import_external_type(lua_State *L, obj_type *type) {
+	/* find the external type's metatable using it's name. */
+	lua_pushstring(L, type->name);
+	lua_rawget(L, LUA_REGISTRYINDEX); /* external type's metatable. */
+	if(!lua_isnil(L, -1)) {
+		/* found it.  Now we will map our 'type' pointer to the metatable. */
+		/* REGISTERY[lightuserdata<type>] = REGISTERY[type->name] */
+		lua_pushlightuserdata(L, type); /* use our 'type' pointer as lookup key. */
+		lua_pushvalue(L, -2); /* dup. type's metatable. */
+		lua_rawset(L, LUA_REGISTRYINDEX); /* save external type's metatable. */
+		/* NOTE: top of Lua stack still has the type's metatable. */
+		return 1;
+	} else {
+		lua_pop(L, 1); /* pop nil. */
+	}
+	return 0;
+}
+
+static FUNC_UNUSED int obj_import_external_ffi_type(lua_State *L, obj_type *type) {
+	/* find the external type's metatable using it's name. */
+	lua_pushstring(L, type->name);
+	lua_rawget(L, LUA_REGISTRYINDEX); /* external type's metatable. */
+	if(!lua_isnil(L, -1)) {
+		/* found it.  Now we will map our 'type' pointer to the C check function. */
+		/* _priv_table[lightuserdata<type>] = REGISTERY[type->name].c_check */
+		lua_getfield(L, -1, "c_check");
+		lua_remove(L, -2); /* remove metatable. */
+		if(lua_isfunction(L, -1)) {
+			lua_pushlightuserdata(L, type); /* use our 'type' pointer as lookup key. */
+			lua_pushvalue(L, -2); /* dup. check function */
+			lua_rawset(L, -4); /* save check function to module's private table. */
+			/* NOTE: top of Lua stack still has the type's C check function. */
+			return 1;
+		} else {
+			lua_pop(L, 1); /* pop non function value. */
+		}
+	} else {
+		lua_pop(L, 1); /* pop nil. */
+	}
+	return 0;
+}
+
 static FUNC_UNUSED obj_udata *obj_udata_toobj(lua_State *L, int _index) {
 	obj_udata *ud;
 	size_t len;
@@ -427,7 +707,7 @@ static FUNC_UNUSED obj_udata *obj_udata_toobj(lua_State *L, int _index) {
 		luaL_typerror(L, _index, "userdata"); /* is not a userdata value. */
 	}
 	/* verify userdata size. */
-	len = lua_objlen(L, _index);
+	len = lua_rawlen(L, _index);
 	if(len != sizeof(obj_udata)) {
 		/* This shouldn't be possible */
 		luaL_error(L, "invalid userdata size: size=%d, expected=%d", len, sizeof(obj_udata));
@@ -440,10 +720,23 @@ static FUNC_UNUSED int obj_udata_is_compatible(lua_State *L, obj_udata *ud, void
 	obj_type *ud_type;
 	lua_pushlightuserdata(L, type);
 	lua_rawget(L, LUA_REGISTRYINDEX); /* type's metatable. */
+recheck_metatable:
 	if(lua_rawequal(L, -1, -2)) {
 		*obj = ud->obj;
 		/* same type no casting needed. */
 		return 1;
+	} else if(lua_isnil(L, -1)) {
+		lua_pop(L, 1); /* pop nil. */
+		if((type->flags & OBJ_TYPE_IMPORT) == 0) {
+			/* can't resolve internal type. */
+			luaL_error(L, "Unknown object type(id=%d, name=%s)", type->id, type->name);
+		}
+		/* try to import external type. */
+		if(obj_import_external_type(L, type)) {
+			/* imported type, re-try metatable check. */
+			goto recheck_metatable;
+		}
+		/* External type not yet available, so the object can't be compatible. */
 	} else {
 		/* Different types see if we can cast to the required type. */
 		lua_rawgeti(L, -2, type->id);
@@ -496,7 +789,7 @@ static FUNC_UNUSED obj_udata *obj_udata_luacheck_internal(lua_State *L, int _ind
 				return ud;
 			}
 		}
-	} else if(!lua_isnil(L, _index)) {
+	} else if(!lua_isnoneornil(L, _index)) {
 		/* handle cdata. */
 		/* get private table. */
 		lua_pushlightuserdata(L, obj_udata_private_key);
@@ -507,6 +800,7 @@ static FUNC_UNUSED obj_udata *obj_udata_luacheck_internal(lua_State *L, int _ind
 
 		/* check for function. */
 		if(!lua_isnil(L, -1)) {
+got_check_func:
 			/* pass cdata value to type checking function. */
 			lua_pushvalue(L, _index);
 			lua_call(L, 1, 1);
@@ -518,7 +812,15 @@ static FUNC_UNUSED obj_udata *obj_udata_luacheck_internal(lua_State *L, int _ind
 			}
 			lua_pop(L, 2);
 		} else {
-			lua_pop(L, 1);
+			lua_pop(L, 1); /* pop nil. */
+			if(type->flags & OBJ_TYPE_IMPORT) {
+				/* try to import external ffi type. */
+				if(obj_import_external_ffi_type(L, type)) {
+					/* imported type. */
+					goto got_check_func;
+				}
+				/* External type not yet available, so the object can't be compatible. */
+			}
 		}
 	}
 	if(not_delete) {
@@ -535,7 +837,7 @@ static FUNC_UNUSED void *obj_udata_luacheck(lua_State *L, int _index, obj_type *
 
 static FUNC_UNUSED void *obj_udata_luaoptional(lua_State *L, int _index, obj_type *type) {
 	void *obj = NULL;
-	if(lua_isnil(L, _index)) {
+	if(lua_isnoneornil(L, _index)) {
 		return obj;
 	}
 	obj_udata_luacheck_internal(L, _index, &(obj), type, 1);
@@ -720,12 +1022,26 @@ static FUNC_UNUSED void * obj_simple_udata_luacheck(lua_State *L, int _index, ob
 		if(lua_getmetatable(L, _index)) {
 			lua_pushlightuserdata(L, type);
 			lua_rawget(L, LUA_REGISTRYINDEX); /* type's metatable. */
+recheck_metatable:
 			if(lua_rawequal(L, -1, -2)) {
 				lua_pop(L, 2); /* pop both metatables. */
 				return ud;
+			} else if(lua_isnil(L, -1)) {
+				lua_pop(L, 1); /* pop nil. */
+				if((type->flags & OBJ_TYPE_IMPORT) == 0) {
+					/* can't resolve internal type. */
+					luaL_error(L, "Unknown object type(id=%d, name=%s)", type->id, type->name);
+				}
+				/* try to import external type. */
+				if(obj_import_external_type(L, type)) {
+					/* imported type, re-try metatable check. */
+					goto recheck_metatable;
+				}
+				/* External type not yet available, so the object can't be compatible. */
+				return 0;
 			}
 		}
-	} else if(!lua_isnil(L, _index)) {
+	} else if(!lua_isnoneornil(L, _index)) {
 		/* handle cdata. */
 		/* get private table. */
 		lua_pushlightuserdata(L, obj_udata_private_key);
@@ -736,6 +1052,7 @@ static FUNC_UNUSED void * obj_simple_udata_luacheck(lua_State *L, int _index, ob
 
 		/* check for function. */
 		if(!lua_isnil(L, -1)) {
+got_check_func:
 			/* pass cdata value to type checking function. */
 			lua_pushvalue(L, _index);
 			lua_call(L, 1, 1);
@@ -744,6 +1061,15 @@ static FUNC_UNUSED void * obj_simple_udata_luacheck(lua_State *L, int _index, ob
 				lua_pop(L, 2);
 				return (void *)lua_topointer(L, _index);
 			}
+		} else {
+			if(type->flags & OBJ_TYPE_IMPORT) {
+				/* try to import external ffi type. */
+				if(obj_import_external_ffi_type(L, type)) {
+					/* imported type. */
+					goto got_check_func;
+				}
+				/* External type not yet available, so the object can't be compatible. */
+			}
 		}
 	}
 	luaL_typerror(L, _index, type->name); /* is not a userdata value. */
@@ -751,7 +1077,7 @@ static FUNC_UNUSED void * obj_simple_udata_luacheck(lua_State *L, int _index, ob
 }
 
 static FUNC_UNUSED void * obj_simple_udata_luaoptional(lua_State *L, int _index, obj_type *type) {
-	if(lua_isnil(L, _index)) {
+	if(lua_isnoneornil(L, _index)) {
 		return NULL;
 	}
 	return obj_simple_udata_luacheck(L, _index, type);
@@ -797,9 +1123,9 @@ static FUNC_UNUSED void *obj_simple_udata_luapush(lua_State *L, void *obj, int s
 /* default simple object equal method. */
 static FUNC_UNUSED int obj_simple_udata_default_equal(lua_State *L) {
 	void *ud1 = obj_simple_udata_toobj(L, 1);
-	size_t len1 = lua_objlen(L, 1);
+	size_t len1 = lua_rawlen(L, 1);
 	void *ud2 = obj_simple_udata_toobj(L, 2);
-	size_t len2 = lua_objlen(L, 2);
+	size_t len2 = lua_rawlen(L, 2);
 
 	if(len1 == len2) {
 		lua_pushboolean(L, (memcmp(ud1, ud2, len1) == 0));
@@ -878,12 +1204,12 @@ static void obj_type_register_constants(lua_State *L, const obj_const *constants
 }
 
 static void obj_type_register_package(lua_State *L, const reg_sub_module *type_reg) {
-	const luaL_reg *reg_list = type_reg->pub_funcs;
+	const luaL_Reg *reg_list = type_reg->pub_funcs;
 
 	/* create public functions table. */
 	if(reg_list != NULL && reg_list[0].name != NULL) {
 		/* register functions */
-		luaL_register(L, NULL, reg_list);
+		luaL_setfuncs(L, reg_list, 0);
 	}
 
 	obj_type_register_constants(L, type_reg->constants, -1, type_reg->bidirectional_consts);
@@ -892,23 +1218,23 @@ static void obj_type_register_package(lua_State *L, const reg_sub_module *type_r
 }
 
 static void obj_type_register_meta(lua_State *L, const reg_sub_module *type_reg) {
-	const luaL_reg *reg_list;
+	const luaL_Reg *reg_list;
 
 	/* create public functions table. */
 	reg_list = type_reg->pub_funcs;
 	if(reg_list != NULL && reg_list[0].name != NULL) {
 		/* register functions */
-		luaL_register(L, NULL, reg_list);
+		luaL_setfuncs(L, reg_list, 0);
 	}
 
 	obj_type_register_constants(L, type_reg->constants, -1, type_reg->bidirectional_consts);
 
 	/* register methods. */
-	luaL_register(L, NULL, type_reg->methods);
+	luaL_setfuncs(L, type_reg->methods, 0);
 
 	/* create metatable table. */
 	lua_newtable(L);
-	luaL_register(L, NULL, type_reg->metas); /* fill metatable */
+	luaL_setfuncs(L, type_reg->metas, 0); /* fill metatable */
 	/* setmetatable on meta-object. */
 	lua_setmetatable(L, -2);
 
@@ -916,7 +1242,7 @@ static void obj_type_register_meta(lua_State *L, const reg_sub_module *type_reg)
 }
 
 static void obj_type_register(lua_State *L, const reg_sub_module *type_reg, int priv_table) {
-	const luaL_reg *reg_list;
+	const luaL_Reg *reg_list;
 	obj_type *type = type_reg->type;
 	const obj_base *base = type_reg->bases;
 
@@ -933,7 +1259,7 @@ static void obj_type_register(lua_State *L, const reg_sub_module *type_reg, int 
 	reg_list = type_reg->pub_funcs;
 	if(reg_list != NULL && reg_list[0].name != NULL) {
 		/* register "constructors" as to object's public API */
-		luaL_register(L, NULL, reg_list); /* fill public API table. */
+		luaL_setfuncs(L, reg_list, 0); /* fill public API table. */
 
 		/* make public API table callable as the default constructor. */
 		lua_newtable(L); /* create metatable */
@@ -963,7 +1289,7 @@ static void obj_type_register(lua_State *L, const reg_sub_module *type_reg, int 
 #endif
 	}
 
-	luaL_register(L, NULL, type_reg->methods); /* fill methods table. */
+	luaL_setfuncs(L, type_reg->methods, 0); /* fill methods table. */
 
 	luaL_newmetatable(L, type->name); /* create metatable */
 	lua_pushliteral(L, ".name");
@@ -981,7 +1307,7 @@ static void obj_type_register(lua_State *L, const reg_sub_module *type_reg, int 
 	lua_pushvalue(L, -2); /* dup metatable. */
 	lua_rawset(L, priv_table);    /* priv_table["<object_name>"] = metatable */
 
-	luaL_register(L, NULL, type_reg->metas); /* fill metatable */
+	luaL_setfuncs(L, type_reg->metas, 0); /* fill metatable */
 
 	/* add obj_bases to metatable. */
 	while(base->id >= 0) {
@@ -991,6 +1317,8 @@ static void obj_type_register(lua_State *L, const reg_sub_module *type_reg, int 
 	}
 
 	obj_type_register_constants(L, type_reg->constants, -2, type_reg->bidirectional_consts);
+
+	obj_type_register_implements(L, type_reg->implements);
 
 	lua_pushliteral(L, "__index");
 	lua_pushvalue(L, -3);               /* dup methods table */
@@ -1009,6 +1337,80 @@ static FUNC_UNUSED int lua_checktype_ref(lua_State *L, int _index, int _type) {
 	lua_pushvalue(L,_index);
 	return luaL_ref(L, LUA_REGISTRYINDEX);
 }
+
+/* use static pointer as key to weak callback_state table. */
+static char obj_callback_state_weak_ref_key[] = "obj_callback_state_weak_ref_key";
+
+static FUNC_UNUSED void *nobj_get_callback_state(lua_State *L, int owner_idx, int size) {
+	void *cb_state;
+
+	lua_pushlightuserdata(L, obj_callback_state_weak_ref_key); /* key for weak table. */
+	lua_rawget(L, LUA_REGISTRYINDEX);  /* check if weak table exists already. */
+	if(lua_isnil(L, -1)) {
+		lua_pop(L, 1); /* pop nil. */
+		/* create weak table for callback_state */
+		lua_newtable(L);               /* weak table. */
+		lua_newtable(L);               /* metatable for weak table. */
+		lua_pushliteral(L, "__mode");
+		lua_pushliteral(L, "k");
+		lua_rawset(L, -3);             /* metatable.__mode = 'k'  weak keys. */
+		lua_setmetatable(L, -2);       /* add metatable to weak table. */
+		lua_pushlightuserdata(L, obj_callback_state_weak_ref_key); /* key for weak table. */
+		lua_pushvalue(L, -2);          /* dup weak table. */
+		lua_rawset(L, LUA_REGISTRYINDEX);  /* add weak table to registry. */
+	}
+
+	/* check weak table for callback_state. */
+	lua_pushvalue(L, owner_idx); /* dup. owner as lookup key. */
+	lua_rawget(L, -2);
+	if(lua_isnil(L, -1)) {
+		lua_pop(L, 1); /* pop nil. */
+		lua_pushvalue(L, owner_idx); /* dup. owner as lookup key. */
+		/* create new callback state. */
+		cb_state = lua_newuserdata(L, size);
+		lua_rawset(L, -3);
+		lua_pop(L, 1); /* pop <weak table> */
+	} else {
+		/* got existing callback state. */
+		cb_state = lua_touserdata(L, -1);
+		lua_pop(L, 2); /* pop <weak table>, <callback_state> */
+	}
+
+	return cb_state;
+}
+
+static FUNC_UNUSED void *nobj_delete_callback_state(lua_State *L, int owner_idx) {
+	void *cb_state = NULL;
+
+	lua_pushlightuserdata(L, obj_callback_state_weak_ref_key); /* key for weak table. */
+	lua_rawget(L, LUA_REGISTRYINDEX);  /* check if weak table exists already. */
+	if(lua_isnil(L, -1)) {
+		lua_pop(L, 1); /* pop nil.  no weak table, so there is no callback state. */
+		return NULL;
+	}
+	/* get callback state. */
+	lua_pushvalue(L, owner_idx); /* dup. owner */
+	lua_rawget(L, -2);
+	if(lua_isnil(L, -1)) {
+		lua_pop(L, 2); /* pop <weak table>, nil.  No callback state for the owner. */
+	} else {
+		cb_state = lua_touserdata(L, -1);
+		lua_pop(L, 1); /* pop <state> */
+		/* remove callback state. */
+		lua_pushvalue(L, owner_idx); /* dup. owner */
+		lua_pushnil(L);
+		lua_rawset(L, -3);
+		lua_pop(L, 1); /* pop <weak table> */
+	}
+
+	return cb_state;
+}
+
+
+
+static char *obj_interfaces[] = {
+  NULL,
+};
 
 
 
@@ -1196,6 +1598,7 @@ static FUNC_UNUSED int lua_checktype_ref(lua_State *L, int _index, int _type) {
 
 typedef git_strarray StrArray;
 
+#include <git2/sys/repository.h>
 typedef git_repository Repository;
 
 typedef git_config Config;
@@ -1209,6 +1612,7 @@ typedef git_oid_shorten OID_Shorten;
 typedef git_odb ODB;
 
 #include <git2/odb_backend.h>
+#include <git2/sys/odb_backend.h>
 
 typedef struct ODBBackend {
 	git_odb_backend backend;
@@ -1287,7 +1691,7 @@ static int odb_backend_read_cb(void **data_p, size_t *len_p, git_otype *type_p, 
 	return err;
 }
 
-static int odb_backend_read_prefix_cb(git_oid *out_oid, void **data_p, size_t *len_p, git_otype *type_p, git_odb_backend *backend, const git_oid *short_oid, unsigned int len)
+static int odb_backend_read_prefix_cb(git_oid *out_oid, void **data_p, size_t *len_p, git_otype *type_p, git_odb_backend *backend, const git_oid *short_oid, size_t len)
 {
 	*data_p = NULL;
 	if(len >= GIT_OID_HEXSZ) {
@@ -1337,7 +1741,7 @@ static int odb_backend_read_header_cb(size_t *len_p, git_otype *type_p, git_odb_
 	return err;
 }
 
-static int odb_backend_write_cb(git_oid *oid, git_odb_backend *backend, const void *data, size_t len, git_otype type)
+static int odb_backend_write_cb(git_odb_backend *backend, const git_oid *oid, const void *data, size_t len, git_otype type)
 {
 	ODBBackend *lua_backend = (ODBBackend *)backend;
 	lua_State *L = lua_backend->L;
@@ -1353,8 +1757,9 @@ static int odb_backend_write_cb(git_oid *oid, git_odb_backend *backend, const vo
 
 	/* call Lua function. */
 	lua_call(L, 2, 2);
+	// TODO: this is bork
 	if(!lua_isnil(L, -2)) {
-		*oid = obj_type_OID_check(L,-2);
+		//*oid = obj_type_OID_check(L,-2);
 		err = GIT_OK;
 	} else {
 		err = lua_tointeger(L, -1);
@@ -1396,7 +1801,8 @@ typedef git_index Index;
 
 typedef git_index_entry IndexEntry;
 
-typedef git_index_entry_unmerged IndexEntryUnmerged;
+#include <git2/sys/index.h>
+typedef git_index_reuc_entry IndexEntryUnmerged;
 
 typedef git_object Object;
 
@@ -1454,7 +1860,8 @@ static int StrArray__new__meth(lua_State *L) {
 
 /* method: free */
 static int StrArray__free__meth(lua_State *L) {
-  StrArray * this_idx1 = obj_type_StrArray_delete(L,1);
+  StrArray * this_idx1;
+  this_idx1 = obj_type_StrArray_delete(L,1);
 	if(this_idx1->strings != 0) {
 		git_strarray_free(this_idx1);
 		this_idx1->strings = NULL;
@@ -1465,9 +1872,11 @@ static int StrArray__free__meth(lua_State *L) {
 
 /* method: str */
 static int StrArray__str__meth(lua_State *L) {
-  StrArray * this_idx1 = obj_type_StrArray_check(L,1);
-  size_t n_idx2 = luaL_checkinteger(L,2);
+  StrArray * this_idx1;
+  size_t n_idx2;
   const char * str_idx1 = NULL;
+  this_idx1 = obj_type_StrArray_check(L,1);
+  n_idx2 = luaL_checkinteger(L,2);
 	if(n_idx2 < this_idx1->count) {
 		str_idx1 = this_idx1->strings[n_idx2];
 	}
@@ -1478,9 +1887,10 @@ static int StrArray__str__meth(lua_State *L) {
 
 /* method: get_array */
 static int StrArray__get_array__meth(lua_State *L) {
-  StrArray * this_idx1 = obj_type_StrArray_check(L,1);
+  StrArray * this_idx1;
 	size_t n;
 
+  this_idx1 = obj_type_StrArray_check(L,1);
 	lua_createtable(L, this_idx1->count, 0);
 	for(n = 0; n < this_idx1->count; n++) {
 		lua_pushstring(L, this_idx1->strings[n]);
@@ -1492,8 +1902,9 @@ static int StrArray__get_array__meth(lua_State *L) {
 
 /* method: count */
 static int StrArray__count__meth(lua_State *L) {
-  StrArray * this_idx1 = obj_type_StrArray_check(L,1);
+  StrArray * this_idx1;
   size_t field_idx1 = 0;
+  this_idx1 = obj_type_StrArray_check(L,1);
 	field_idx1 = this_idx1->count;
 
   lua_pushinteger(L, field_idx1);
@@ -1523,8 +1934,8 @@ static void error_code__GitError__push(lua_State *L, GitError err) {
 	case GIT_PASSTHROUGH:
 		err_str = "PASSTHROUGH";
 		break;
-	case GIT_REVWALKOVER:
-		err_str = "REVWALKOVER";
+	case GIT_ITEROVER:
+		err_str = "ITEROVER";
 		break;
 	case GIT_OK:
 	default:
@@ -1541,10 +1952,11 @@ static void error_code__GitError__push(lua_State *L, GitError err) {
 /* method: open */
 static int Repository__open__meth(lua_State *L) {
   size_t path_len_idx1;
-  const char * path_idx1 = luaL_checklstring(L,1,&(path_len_idx1));
+  const char * path_idx1;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Repository * this_idx1;
   GitError err_idx2 = GIT_OK;
+  path_idx1 = luaL_checklstring(L,1,&(path_len_idx1));
   err_idx2 = git_repository_open(&(this_idx1), path_idx1);
   if(!(GIT_OK != err_idx2)) {
     obj_type_Repository_push(L, this_idx1, this_flags_idx1);
@@ -1558,11 +1970,13 @@ static int Repository__open__meth(lua_State *L) {
 /* method: init */
 static int Repository__init__meth(lua_State *L) {
   size_t path_len_idx1;
-  const char * path_idx1 = luaL_checklstring(L,1,&(path_len_idx1));
-  unsigned int is_bare_idx2 = luaL_checkinteger(L,2);
+  const char * path_idx1;
+  unsigned int is_bare_idx2;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Repository * this_idx1;
   GitError err_idx2 = GIT_OK;
+  path_idx1 = luaL_checklstring(L,1,&(path_len_idx1));
+  is_bare_idx2 = luaL_checkinteger(L,2);
   err_idx2 = git_repository_init(&(this_idx1), path_idx1, is_bare_idx2);
   if(!(GIT_OK != err_idx2)) {
     obj_type_Repository_push(L, this_idx1, this_flags_idx1);
@@ -1576,7 +1990,8 @@ static int Repository__init__meth(lua_State *L) {
 /* method: _priv */
 static int Repository__delete__meth(lua_State *L) {
   int this_flags_idx1 = 0;
-  Repository * this_idx1 = obj_type_Repository_delete(L,1,&(this_flags_idx1));
+  Repository * this_idx1;
+  this_idx1 = obj_type_Repository_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
   git_repository_free(this_idx1);
   return 0;
@@ -1584,10 +1999,11 @@ static int Repository__delete__meth(lua_State *L) {
 
 /* method: head */
 static int Repository__head__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
+  Repository * this_idx1;
   int head_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Reference * head_idx1;
   GitError err_idx2 = GIT_OK;
+  this_idx1 = obj_type_Repository_check(L,1);
   err_idx2 = git_repository_head(&(head_idx1), this_idx1);
   if(!(GIT_OK != err_idx2)) {
     obj_type_Reference_push(L, head_idx1, head_flags_idx1);
@@ -1600,26 +2016,29 @@ static int Repository__head__meth(lua_State *L) {
 
 /* method: head_detached */
 static int Repository__head_detached__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
+  Repository * this_idx1;
   bool rc_git_repository_head_detached_idx1 = 0;
+  this_idx1 = obj_type_Repository_check(L,1);
   rc_git_repository_head_detached_idx1 = git_repository_head_detached(this_idx1);
   lua_pushboolean(L, rc_git_repository_head_detached_idx1);
   return 1;
 }
 
-/* method: head_orphan */
-static int Repository__head_orphan__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
-  bool rc_git_repository_head_orphan_idx1 = 0;
-  rc_git_repository_head_orphan_idx1 = git_repository_head_orphan(this_idx1);
-  lua_pushboolean(L, rc_git_repository_head_orphan_idx1);
+/* method: head_unborn */
+static int Repository__head_unborn__meth(lua_State *L) {
+  Repository * this_idx1;
+  bool rc_git_repository_head_unborn_idx1 = 0;
+  this_idx1 = obj_type_Repository_check(L,1);
+  rc_git_repository_head_unborn_idx1 = git_repository_head_unborn(this_idx1);
+  lua_pushboolean(L, rc_git_repository_head_unborn_idx1);
   return 1;
 }
 
 /* method: is_empty */
 static int Repository__is_empty__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
+  Repository * this_idx1;
   bool rc_git_repository_is_empty_idx1 = 0;
+  this_idx1 = obj_type_Repository_check(L,1);
   rc_git_repository_is_empty_idx1 = git_repository_is_empty(this_idx1);
   lua_pushboolean(L, rc_git_repository_is_empty_idx1);
   return 1;
@@ -1627,8 +2046,9 @@ static int Repository__is_empty__meth(lua_State *L) {
 
 /* method: is_bare */
 static int Repository__is_bare__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
+  Repository * this_idx1;
   bool rc_git_repository_is_bare_idx1 = 0;
+  this_idx1 = obj_type_Repository_check(L,1);
   rc_git_repository_is_bare_idx1 = git_repository_is_bare(this_idx1);
   lua_pushboolean(L, rc_git_repository_is_bare_idx1);
   return 1;
@@ -1636,8 +2056,9 @@ static int Repository__is_bare__meth(lua_State *L) {
 
 /* method: path */
 static int Repository__path__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
+  Repository * this_idx1;
   const char * rc_git_repository_path_idx1 = NULL;
+  this_idx1 = obj_type_Repository_check(L,1);
   rc_git_repository_path_idx1 = git_repository_path(this_idx1);
   lua_pushstring(L, rc_git_repository_path_idx1);
   return 1;
@@ -1645,8 +2066,9 @@ static int Repository__path__meth(lua_State *L) {
 
 /* method: workdir */
 static int Repository__workdir__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
+  Repository * this_idx1;
   const char * rc_git_repository_workdir_idx1 = NULL;
+  this_idx1 = obj_type_Repository_check(L,1);
   rc_git_repository_workdir_idx1 = git_repository_workdir(this_idx1);
   lua_pushstring(L, rc_git_repository_workdir_idx1);
   return 1;
@@ -1654,11 +2076,15 @@ static int Repository__workdir__meth(lua_State *L) {
 
 /* method: set_workdir */
 static int Repository__set_workdir__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
+  Repository * this_idx1;
   size_t workdir_len_idx2;
-  const char * workdir_idx2 = luaL_checklstring(L,2,&(workdir_len_idx2));
+  const char * workdir_idx2;
+  int update_gitlink_idx3;
   GitError rc_git_repository_set_workdir_idx1 = GIT_OK;
-  rc_git_repository_set_workdir_idx1 = git_repository_set_workdir(this_idx1, workdir_idx2);
+  this_idx1 = obj_type_Repository_check(L,1);
+  workdir_idx2 = luaL_checklstring(L,2,&(workdir_len_idx2));
+  update_gitlink_idx3 = luaL_checkinteger(L,3);
+  rc_git_repository_set_workdir_idx1 = git_repository_set_workdir(this_idx1, workdir_idx2, update_gitlink_idx3);
   /* check for error. */
   if((GIT_OK != rc_git_repository_set_workdir_idx1)) {
     lua_pushnil(L);
@@ -1672,10 +2098,11 @@ static int Repository__set_workdir__meth(lua_State *L) {
 
 /* method: config */
 static int Repository__config__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
+  Repository * this_idx1;
   int config_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Config * config_idx1;
   GitError err_idx2 = GIT_OK;
+  this_idx1 = obj_type_Repository_check(L,1);
   err_idx2 = git_repository_config(&(config_idx1), this_idx1);
   if(!(GIT_OK != err_idx2)) {
     obj_type_Config_push(L, config_idx1, config_flags_idx1);
@@ -1688,18 +2115,21 @@ static int Repository__config__meth(lua_State *L) {
 
 /* method: set_config */
 static int Repository__set_config__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
-  Config * config_idx2 = obj_type_Config_check(L,2);
+  Repository * this_idx1;
+  Config * config_idx2;
+  this_idx1 = obj_type_Repository_check(L,1);
+  config_idx2 = obj_type_Config_check(L,2);
   git_repository_set_config(this_idx1, config_idx2);
   return 0;
 }
 
 /* method: odb */
 static int Repository__odb__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
+  Repository * this_idx1;
   int odb_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   ODB * odb_idx1;
   GitError err_idx2 = GIT_OK;
+  this_idx1 = obj_type_Repository_check(L,1);
   err_idx2 = git_repository_odb(&(odb_idx1), this_idx1);
   if(!(GIT_OK != err_idx2)) {
     obj_type_ODB_push(L, odb_idx1, odb_flags_idx1);
@@ -1712,18 +2142,21 @@ static int Repository__odb__meth(lua_State *L) {
 
 /* method: set_odb */
 static int Repository__set_odb__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
-  ODB * odb_idx2 = obj_type_ODB_check(L,2);
+  Repository * this_idx1;
+  ODB * odb_idx2;
+  this_idx1 = obj_type_Repository_check(L,1);
+  odb_idx2 = obj_type_ODB_check(L,2);
   git_repository_set_odb(this_idx1, odb_idx2);
   return 0;
 }
 
 /* method: index */
 static int Repository__index__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
+  Repository * this_idx1;
   int index_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Index * index_idx1;
   GitError err_idx2 = GIT_OK;
+  this_idx1 = obj_type_Repository_check(L,1);
   err_idx2 = git_repository_index(&(index_idx1), this_idx1);
   if(!(GIT_OK != err_idx2)) {
     obj_type_Index_push(L, index_idx1, index_flags_idx1);
@@ -1736,8 +2169,10 @@ static int Repository__index__meth(lua_State *L) {
 
 /* method: set_index */
 static int Repository__set_index__meth(lua_State *L) {
-  Repository * this_idx1 = obj_type_Repository_check(L,1);
-  Index * index_idx2 = obj_type_Index_check(L,2);
+  Repository * this_idx1;
+  Index * index_idx2;
+  this_idx1 = obj_type_Repository_check(L,1);
+  index_idx2 = obj_type_Index_check(L,2);
   git_repository_set_index(this_idx1, index_idx2);
   return 0;
 }
@@ -1760,10 +2195,11 @@ static int Config__new__meth(lua_State *L) {
 /* method: open */
 static int Config__open__meth(lua_State *L) {
   size_t path_len_idx1;
-  const char * path_idx1 = luaL_checklstring(L,1,&(path_len_idx1));
+  const char * path_idx1;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Config * this_idx1;
   GitError err_idx2 = GIT_OK;
+  path_idx1 = luaL_checklstring(L,1,&(path_len_idx1));
   err_idx2 = git_config_open_ondisk(&(this_idx1), path_idx1);
   if(!(GIT_OK != err_idx2)) {
     obj_type_Config_push(L, this_idx1, this_flags_idx1);
@@ -1777,7 +2213,8 @@ static int Config__open__meth(lua_State *L) {
 /* method: free */
 static int Config__free__meth(lua_State *L) {
   int this_flags_idx1 = 0;
-  Config * this_idx1 = obj_type_Config_delete(L,1,&(this_flags_idx1));
+  Config * this_idx1;
+  this_idx1 = obj_type_Config_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
   git_config_free(this_idx1);
   return 0;
@@ -1785,12 +2222,19 @@ static int Config__free__meth(lua_State *L) {
 
 /* method: add_file_ondisk */
 static int Config__add_file_ondisk__meth(lua_State *L) {
-  Config * this_idx1 = obj_type_Config_check(L,1);
+  Config * this_idx1;
   size_t path_len_idx2;
-  const char * path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
-  int priority_idx3 = luaL_checkinteger(L,3);
+  const char * path_idx2;
+  git_config_level_t level_idx3;
+  Repository * repo_idx4;
+  int force_idx5;
   GitError err_idx1 = GIT_OK;
-  err_idx1 = git_config_add_file_ondisk(this_idx1, path_idx2, priority_idx3);
+  this_idx1 = obj_type_Config_check(L,1);
+  path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
+  level_idx3 = luaL_checkinteger(L,3);
+  repo_idx4 = obj_type_Repository_check(L,4);
+  force_idx5 = luaL_checkinteger(L,5);
+  err_idx1 = git_config_add_file_ondisk(this_idx1, path_idx2, level_idx3, repo_idx4, force_idx5);
   /* check for error. */
   if((GIT_OK != err_idx1)) {
     lua_pushnil(L);
@@ -1804,11 +2248,13 @@ static int Config__add_file_ondisk__meth(lua_State *L) {
 
 /* method: get_int32 */
 static int Config__get_int32__meth(lua_State *L) {
-  Config * this_idx1 = obj_type_Config_check(L,1);
+  Config * this_idx1;
   size_t name_len_idx2;
-  const char * name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  const char * name_idx2;
   int32_t out_idx1 = 0;
   GitError err_idx2 = GIT_OK;
+  this_idx1 = obj_type_Config_check(L,1);
+  name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
   err_idx2 = git_config_get_int32(&(out_idx1), this_idx1, name_idx2);
   if(!(GIT_OK != err_idx2)) {
     lua_pushinteger(L, out_idx1);
@@ -1821,11 +2267,14 @@ static int Config__get_int32__meth(lua_State *L) {
 
 /* method: set_int32 */
 static int Config__set_int32__meth(lua_State *L) {
-  Config * this_idx1 = obj_type_Config_check(L,1);
+  Config * this_idx1;
   size_t name_len_idx2;
-  const char * name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
-  int32_t value_idx3 = luaL_checkinteger(L,3);
+  const char * name_idx2;
+  int32_t value_idx3;
   GitError err_idx1 = GIT_OK;
+  this_idx1 = obj_type_Config_check(L,1);
+  name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  value_idx3 = luaL_checkinteger(L,3);
   err_idx1 = git_config_set_int32(this_idx1, name_idx2, value_idx3);
   /* check for error. */
   if((GIT_OK != err_idx1)) {
@@ -1840,11 +2289,13 @@ static int Config__set_int32__meth(lua_State *L) {
 
 /* method: get_int64 */
 static int Config__get_int64__meth(lua_State *L) {
-  Config * this_idx1 = obj_type_Config_check(L,1);
+  Config * this_idx1;
   size_t name_len_idx2;
-  const char * name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  const char * name_idx2;
   int64_t out_idx1 = 0;
   GitError err_idx2 = GIT_OK;
+  this_idx1 = obj_type_Config_check(L,1);
+  name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
   err_idx2 = git_config_get_int64(&(out_idx1), this_idx1, name_idx2);
   if(!(GIT_OK != err_idx2)) {
     lua_pushinteger(L, out_idx1);
@@ -1857,11 +2308,14 @@ static int Config__get_int64__meth(lua_State *L) {
 
 /* method: set_int64 */
 static int Config__set_int64__meth(lua_State *L) {
-  Config * this_idx1 = obj_type_Config_check(L,1);
+  Config * this_idx1;
   size_t name_len_idx2;
-  const char * name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
-  int64_t value_idx3 = luaL_checkinteger(L,3);
+  const char * name_idx2;
+  int64_t value_idx3;
   GitError err_idx1 = GIT_OK;
+  this_idx1 = obj_type_Config_check(L,1);
+  name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  value_idx3 = luaL_checkinteger(L,3);
   err_idx1 = git_config_set_int64(this_idx1, name_idx2, value_idx3);
   /* check for error. */
   if((GIT_OK != err_idx1)) {
@@ -1876,12 +2330,14 @@ static int Config__set_int64__meth(lua_State *L) {
 
 /* method: get_bool */
 static int Config__get_bool__meth(lua_State *L) {
-  Config * this_idx1 = obj_type_Config_check(L,1);
+  Config * this_idx1;
   size_t name_len_idx2;
-  const char * name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  const char * name_idx2;
   bool out_idx1 = 0;
   GitError err_idx2 = GIT_OK;
   int out_int_idx3 = 0;
+  this_idx1 = obj_type_Config_check(L,1);
+  name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
   err_idx2 = git_config_get_bool(&(out_int_idx3), this_idx1, name_idx2);
 	out_idx1 = out_int_idx3;
 
@@ -1896,12 +2352,15 @@ static int Config__get_bool__meth(lua_State *L) {
 
 /* method: set_bool */
 static int Config__set_bool__meth(lua_State *L) {
-  Config * this_idx1 = obj_type_Config_check(L,1);
-  bool value_idx2 = lua_toboolean(L,2);
+  Config * this_idx1;
+  bool value_idx2;
   size_t name_len_idx3;
-  const char * name_idx3 = luaL_checklstring(L,3,&(name_len_idx3));
+  const char * name_idx3;
   GitError err_idx1 = GIT_OK;
   int value_int_idx2 = 0;
+  this_idx1 = obj_type_Config_check(L,1);
+  value_idx2 = lua_toboolean(L,2);
+  name_idx3 = luaL_checklstring(L,3,&(name_len_idx3));
 	value_int_idx2 = value_idx2 ? 1 : 0;
 
   err_idx1 = git_config_set_bool(this_idx1, name_idx3, value_int_idx2);
@@ -1918,11 +2377,13 @@ static int Config__set_bool__meth(lua_State *L) {
 
 /* method: get_string */
 static int Config__get_string__meth(lua_State *L) {
-  Config * this_idx1 = obj_type_Config_check(L,1);
+  Config * this_idx1;
   size_t name_len_idx2;
-  const char * name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  const char * name_idx2;
   const char * out_idx1 = NULL;
   GitError err_idx2 = GIT_OK;
+  this_idx1 = obj_type_Config_check(L,1);
+  name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
   err_idx2 = git_config_get_string(&(out_idx1), this_idx1, name_idx2);
   if(!(GIT_OK != err_idx2)) {
     lua_pushstring(L, out_idx1);
@@ -1935,12 +2396,15 @@ static int Config__get_string__meth(lua_State *L) {
 
 /* method: set_string */
 static int Config__set_string__meth(lua_State *L) {
-  Config * this_idx1 = obj_type_Config_check(L,1);
+  Config * this_idx1;
   size_t name_len_idx2;
-  const char * name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  const char * name_idx2;
   size_t value_len_idx3;
-  const char * value_idx3 = luaL_checklstring(L,3,&(value_len_idx3));
+  const char * value_idx3;
   GitError err_idx1 = GIT_OK;
+  this_idx1 = obj_type_Config_check(L,1);
+  name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  value_idx3 = luaL_checklstring(L,3,&(value_len_idx3));
   err_idx1 = git_config_set_string(this_idx1, name_idx2, value_idx3);
   /* check for error. */
   if((GIT_OK != err_idx1)) {
@@ -1953,13 +2417,38 @@ static int Config__set_string__meth(lua_State *L) {
   return 2;
 }
 
-/* method: delete */
-static int Config__delete__meth(lua_State *L) {
-  Config * this_idx1 = obj_type_Config_check(L,1);
+/* method: delete_entry */
+static int Config__delete_entry__meth(lua_State *L) {
+  Config * this_idx1;
   size_t name_len_idx2;
-  const char * name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  const char * name_idx2;
   GitError err_idx1 = GIT_OK;
-  err_idx1 = git_config_delete(this_idx1, name_idx2);
+  this_idx1 = obj_type_Config_check(L,1);
+  name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  err_idx1 = git_config_delete_entry(this_idx1, name_idx2);
+  /* check for error. */
+  if((GIT_OK != err_idx1)) {
+    lua_pushnil(L);
+      error_code__GitError__push(L, err_idx1);
+  } else {
+    lua_pushboolean(L, 1);
+    lua_pushnil(L);
+  }
+  return 2;
+}
+
+/* method: delete_multivar */
+static int Config__delete_multivar__meth(lua_State *L) {
+  Config * this_idx1;
+  size_t name_len_idx2;
+  const char * name_idx2;
+  size_t regexp_len_idx3;
+  const char * regexp_idx3;
+  GitError err_idx1 = GIT_OK;
+  this_idx1 = obj_type_Config_check(L,1);
+  name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  regexp_idx3 = luaL_checklstring(L,3,&(regexp_len_idx3));
+  err_idx1 = git_config_delete_multivar(this_idx1, name_idx2, regexp_idx3);
   /* check for error. */
   if((GIT_OK != err_idx1)) {
     lua_pushnil(L);
@@ -1974,7 +2463,8 @@ static int Config__delete__meth(lua_State *L) {
 /* method: free */
 static int OdbObject__free__meth(lua_State *L) {
   int this_flags_idx1 = 0;
-  OdbObject * this_idx1 = obj_type_OdbObject_delete(L,1,&(this_flags_idx1));
+  OdbObject * this_idx1;
+  this_idx1 = obj_type_OdbObject_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
   git_odb_object_free(this_idx1);
   return 0;
@@ -1982,8 +2472,9 @@ static int OdbObject__free__meth(lua_State *L) {
 
 /* method: id */
 static int OdbObject__id__meth(lua_State *L) {
-  OdbObject * this_idx1 = obj_type_OdbObject_check(L,1);
+  OdbObject * this_idx1;
   OID id_idx1;
+  this_idx1 = obj_type_OdbObject_check(L,1);
   id_idx1 = *git_odb_object_id(this_idx1);
   obj_type_OID_push(L, id_idx1);
   return 1;
@@ -1991,9 +2482,10 @@ static int OdbObject__id__meth(lua_State *L) {
 
 /* method: data */
 static int OdbObject__data__meth(lua_State *L) {
-  OdbObject * this_idx1 = obj_type_OdbObject_check(L,1);
+  OdbObject * this_idx1;
   size_t data_len_idx1 = 0;
   const char * data_idx1 = NULL;
+  this_idx1 = obj_type_OdbObject_check(L,1);
   data_idx1 = git_odb_object_data(this_idx1);
   data_len_idx1 = git_odb_object_size(this_idx1);
   if(data_idx1 == NULL) lua_pushnil(L);  else lua_pushlstring(L, data_idx1,data_len_idx1);
@@ -2002,8 +2494,9 @@ static int OdbObject__data__meth(lua_State *L) {
 
 /* method: size */
 static int OdbObject__size__meth(lua_State *L) {
-  OdbObject * this_idx1 = obj_type_OdbObject_check(L,1);
+  OdbObject * this_idx1;
   size_t rc_git_odb_object_size_idx1 = 0;
+  this_idx1 = obj_type_OdbObject_check(L,1);
   rc_git_odb_object_size_idx1 = git_odb_object_size(this_idx1);
   lua_pushinteger(L, rc_git_odb_object_size_idx1);
   return 1;
@@ -2011,9 +2504,10 @@ static int OdbObject__size__meth(lua_State *L) {
 
 /* method: type */
 static int OdbObject__type__meth(lua_State *L) {
-  OdbObject * this_idx1 = obj_type_OdbObject_check(L,1);
+  OdbObject * this_idx1;
   git_otype otype_idx1;
   const char * type_idx2 = NULL;
+  this_idx1 = obj_type_OdbObject_check(L,1);
   otype_idx1 = git_odb_object_type(this_idx1);
   type_idx2 = git_object_type2string(otype_idx1);
   lua_pushstring(L, type_idx2);
@@ -2023,9 +2517,10 @@ static int OdbObject__type__meth(lua_State *L) {
 /* method: hex */
 static int OID__hex__meth(lua_State *L) {
   size_t str_len_idx1;
-  const char * str_idx1 = luaL_checklstring(L,1,&(str_len_idx1));
+  const char * str_idx1;
   OID this_idx1;
   GitError err_idx2 = GIT_OK;
+  str_idx1 = luaL_checklstring(L,1,&(str_len_idx1));
   err_idx2 = git_oid_fromstrn(&(this_idx1), str_idx1, str_len_idx1);
   if(!(GIT_OK != err_idx2)) {
     obj_type_OID_push(L, this_idx1);
@@ -2039,8 +2534,9 @@ static int OID__hex__meth(lua_State *L) {
 /* method: raw */
 static int OID__raw__meth(lua_State *L) {
   size_t raw_len_idx1;
-  const unsigned char * raw_idx1 = (unsigned char *)luaL_checklstring(L,1,&(raw_len_idx1));
+  const unsigned char * raw_idx1;
   OID this_idx1;
+  raw_idx1 = (unsigned char *)luaL_checklstring(L,1,&(raw_len_idx1));
 		if(raw_len_idx1 < GIT_OID_RAWSZ) {
 			lua_pushnil(L);
 			lua_pushliteral(L, "Invalid RAW OID");
@@ -2054,8 +2550,9 @@ static int OID__raw__meth(lua_State *L) {
 
 /* method: pathfmt */
 static int OID__pathfmt__meth(lua_State *L) {
-  OID this_idx1 = obj_type_OID_check(L,1);
+  OID this_idx1;
   const char * ret_idx1 = NULL;
+  this_idx1 = obj_type_OID_check(L,1);
 	char buf[GIT_OID_HEXSZ+1+1];
   git_oid_pathfmt(buf, &(this_idx1));
 	buf[GIT_OID_HEXSZ] = 0;
@@ -2067,8 +2564,9 @@ static int OID__pathfmt__meth(lua_State *L) {
 
 /* method: fmt */
 static int OID__fmt__meth(lua_State *L) {
-  OID this_idx1 = obj_type_OID_check(L,1);
+  OID this_idx1;
   const char * ret_idx1 = NULL;
+  this_idx1 = obj_type_OID_check(L,1);
 	char buf[GIT_OID_HEXSZ+1];
   git_oid_fmt(buf, &(this_idx1));
 	buf[GIT_OID_HEXSZ] = 0;
@@ -2080,8 +2578,9 @@ static int OID__fmt__meth(lua_State *L) {
 
 /* method: __tostring */
 static int OID____str____meth(lua_State *L) {
-  OID this_idx1 = obj_type_OID_check(L,1);
+  OID this_idx1;
   const char * ret_idx1 = NULL;
+  this_idx1 = obj_type_OID_check(L,1);
 	char buf[GIT_OID_HEXSZ+1];
   git_oid_fmt(buf, &(this_idx1));
 	buf[GIT_OID_HEXSZ] = 0;
@@ -2093,9 +2592,11 @@ static int OID____str____meth(lua_State *L) {
 
 /* method: __eq */
 static int OID____eq____meth(lua_State *L) {
-  OID this_idx1 = obj_type_OID_check(L,1);
-  OID id_idx2 = obj_type_OID_check(L,2);
+  OID this_idx1;
+  OID id_idx2;
   int ret_idx1 = 0;
+  this_idx1 = obj_type_OID_check(L,1);
+  id_idx2 = obj_type_OID_check(L,2);
   ret_idx1 = git_oid_cmp(&(this_idx1), &(id_idx2));
   lua_pushinteger(L, ret_idx1);
   return 1;
@@ -2103,9 +2604,10 @@ static int OID____eq____meth(lua_State *L) {
 
 /* method: new */
 static int OID_Shorten__new__meth(lua_State *L) {
-  size_t min_length_idx1 = luaL_checkinteger(L,1);
+  size_t min_length_idx1;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   OID_Shorten * this_idx1;
+  min_length_idx1 = luaL_checkinteger(L,1);
   this_idx1 = git_oid_shorten_new(min_length_idx1);
   obj_type_OID_Shorten_push(L, this_idx1, this_flags_idx1);
   return 1;
@@ -2114,7 +2616,8 @@ static int OID_Shorten__new__meth(lua_State *L) {
 /* method: _priv */
 static int OID_Shorten__delete__meth(lua_State *L) {
   int this_flags_idx1 = 0;
-  OID_Shorten * this_idx1 = obj_type_OID_Shorten_delete(L,1,&(this_flags_idx1));
+  OID_Shorten * this_idx1;
+  this_idx1 = obj_type_OID_Shorten_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
   git_oid_shorten_free(this_idx1);
   return 0;
@@ -2122,10 +2625,12 @@ static int OID_Shorten__delete__meth(lua_State *L) {
 
 /* method: add */
 static int OID_Shorten__add__meth(lua_State *L) {
-  OID_Shorten * this_idx1 = obj_type_OID_Shorten_check(L,1);
+  OID_Shorten * this_idx1;
   size_t text_oid_len_idx2;
-  const char * text_oid_idx2 = luaL_checklstring(L,2,&(text_oid_len_idx2));
+  const char * text_oid_idx2;
   GitError rc_idx1 = GIT_OK;
+  this_idx1 = obj_type_OID_Shorten_check(L,1);
+  text_oid_idx2 = luaL_checklstring(L,2,&(text_oid_len_idx2));
   rc_idx1 = git_oid_shorten_add(this_idx1, text_oid_idx2);
 		if(rc_idx1 >= 0) {
 			lua_pushinteger(L, rc_idx1);
@@ -2161,10 +2666,11 @@ static int ODB__new__meth(lua_State *L) {
 /* method: open */
 static int ODB__open__meth(lua_State *L) {
   size_t object_dir_len_idx1;
-  const char * object_dir_idx1 = luaL_checklstring(L,1,&(object_dir_len_idx1));
+  const char * object_dir_idx1;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   ODB * this_idx1;
   GitError err_idx2 = GIT_OK;
+  object_dir_idx1 = luaL_checklstring(L,1,&(object_dir_len_idx1));
   err_idx2 = git_odb_open(&(this_idx1), object_dir_idx1);
   if(!(GIT_OK != err_idx2)) {
     obj_type_ODB_push(L, this_idx1, this_flags_idx1);
@@ -2178,7 +2684,8 @@ static int ODB__open__meth(lua_State *L) {
 /* method: free */
 static int ODB__free__meth(lua_State *L) {
   int this_flags_idx1 = 0;
-  ODB * this_idx1 = obj_type_ODB_delete(L,1,&(this_flags_idx1));
+  ODB * this_idx1;
+  this_idx1 = obj_type_ODB_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
   git_odb_free(this_idx1);
   return 0;
@@ -2186,10 +2693,13 @@ static int ODB__free__meth(lua_State *L) {
 
 /* method: add_backend */
 static int ODB__add_backend__meth(lua_State *L) {
-  ODB * this_idx1 = obj_type_ODB_check(L,1);
-  ODBBackend * backend_idx2 = obj_type_ODBBackend_check(L,2);
-  int priority_idx3 = luaL_checkinteger(L,3);
+  ODB * this_idx1;
+  ODBBackend * backend_idx2;
+  int priority_idx3;
   GitError err_idx1 = GIT_OK;
+  this_idx1 = obj_type_ODB_check(L,1);
+  backend_idx2 = obj_type_ODBBackend_check(L,2);
+  priority_idx3 = luaL_checkinteger(L,3);
 	err_idx1 = git_odb_add_backend(this_idx1, &(backend_idx2->backend), priority_idx3);
 	ODBBackend_ref(backend_idx2);
 
@@ -2206,10 +2716,13 @@ static int ODB__add_backend__meth(lua_State *L) {
 
 /* method: add_alternate */
 static int ODB__add_alternate__meth(lua_State *L) {
-  ODB * this_idx1 = obj_type_ODB_check(L,1);
-  ODBBackend * backend_idx2 = obj_type_ODBBackend_check(L,2);
-  int priority_idx3 = luaL_checkinteger(L,3);
+  ODB * this_idx1;
+  ODBBackend * backend_idx2;
+  int priority_idx3;
   GitError err_idx1 = GIT_OK;
+  this_idx1 = obj_type_ODB_check(L,1);
+  backend_idx2 = obj_type_ODBBackend_check(L,2);
+  priority_idx3 = luaL_checkinteger(L,3);
 	err_idx1 = git_odb_add_alternate(this_idx1, &(backend_idx2->backend), priority_idx3);
 	ODBBackend_ref(backend_idx2);
 
@@ -2226,11 +2739,13 @@ static int ODB__add_alternate__meth(lua_State *L) {
 
 /* method: read */
 static int ODB__read__meth(lua_State *L) {
-  ODB * this_idx1 = obj_type_ODB_check(L,1);
-  OID id_idx2 = obj_type_OID_check(L,2);
+  ODB * this_idx1;
+  OID id_idx2;
   int out_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   OdbObject * out_idx1;
   GitError rc_git_odb_read_idx2 = GIT_OK;
+  this_idx1 = obj_type_ODB_check(L,1);
+  id_idx2 = obj_type_OID_check(L,2);
   rc_git_odb_read_idx2 = git_odb_read(&(out_idx1), this_idx1, &(id_idx2));
   if(!(GIT_OK != rc_git_odb_read_idx2)) {
     obj_type_OdbObject_push(L, out_idx1, out_flags_idx1);
@@ -2243,12 +2758,15 @@ static int ODB__read__meth(lua_State *L) {
 
 /* method: read_prefix */
 static int ODB__read_prefix__meth(lua_State *L) {
-  ODB * this_idx1 = obj_type_ODB_check(L,1);
-  OID short_id_idx2 = obj_type_OID_check(L,2);
-  unsigned int len_idx3 = luaL_checkinteger(L,3);
+  ODB * this_idx1;
+  OID short_id_idx2;
+  unsigned int len_idx3;
   int out_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   OdbObject * out_idx1;
   GitError rc_git_odb_read_prefix_idx2 = GIT_OK;
+  this_idx1 = obj_type_ODB_check(L,1);
+  short_id_idx2 = obj_type_OID_check(L,2);
+  len_idx3 = luaL_checkinteger(L,3);
   rc_git_odb_read_prefix_idx2 = git_odb_read_prefix(&(out_idx1), this_idx1, &(short_id_idx2), len_idx3);
   if(!(GIT_OK != rc_git_odb_read_prefix_idx2)) {
     obj_type_OdbObject_push(L, out_idx1, out_flags_idx1);
@@ -2261,12 +2779,14 @@ static int ODB__read_prefix__meth(lua_State *L) {
 
 /* method: read_header */
 static int ODB__read_header__meth(lua_State *L) {
-  ODB * this_idx1 = obj_type_ODB_check(L,1);
-  OID id_idx2 = obj_type_OID_check(L,2);
+  ODB * this_idx1;
+  OID id_idx2;
   size_t len_p_idx1 = 0;
   const char * type_idx2 = NULL;
   GitError err_idx3 = GIT_OK;
   git_otype otype_idx4;
+  this_idx1 = obj_type_ODB_check(L,1);
+  id_idx2 = obj_type_OID_check(L,2);
   err_idx3 = git_odb_read_header(&(len_p_idx1), &(otype_idx4), this_idx1, &(id_idx2));
   type_idx2 = git_object_type2string(otype_idx4);
   if(!(GIT_OK != err_idx3)) {
@@ -2285,9 +2805,11 @@ static int ODB__read_header__meth(lua_State *L) {
 
 /* method: exists */
 static int ODB__exists__meth(lua_State *L) {
-  ODB * this_idx1 = obj_type_ODB_check(L,1);
-  OID id_idx2 = obj_type_OID_check(L,2);
+  ODB * this_idx1;
+  OID id_idx2;
   GitError err_idx1 = GIT_OK;
+  this_idx1 = obj_type_ODB_check(L,1);
+  id_idx2 = obj_type_OID_check(L,2);
   err_idx1 = git_odb_exists(this_idx1, &(id_idx2));
   /* check for error. */
   if((GIT_OK != err_idx1)) {
@@ -2302,14 +2824,17 @@ static int ODB__exists__meth(lua_State *L) {
 
 /* method: write */
 static int ODB__write__meth(lua_State *L) {
-  ODB * this_idx1 = obj_type_ODB_check(L,1);
+  ODB * this_idx1;
   size_t data_len_idx2;
-  const char * data_idx2 = luaL_checklstring(L,2,&(data_len_idx2));
+  const char * data_idx2;
   size_t type_len_idx3;
-  const char * type_idx3 = luaL_checklstring(L,3,&(type_len_idx3));
+  const char * type_idx3;
   OID id_idx1;
   GitError rc_git_odb_write_idx2 = GIT_OK;
   git_otype otype_idx3;
+  this_idx1 = obj_type_ODB_check(L,1);
+  data_idx2 = luaL_checklstring(L,2,&(data_len_idx2));
+  type_idx3 = luaL_checklstring(L,3,&(type_len_idx3));
   otype_idx3 = git_object_string2type(type_idx3);
   rc_git_odb_write_idx2 = git_odb_write(&(id_idx1), this_idx1, data_idx2, data_len_idx2, otype_idx3);
   if(!(GIT_OK != rc_git_odb_write_idx2)) {
@@ -2324,10 +2849,12 @@ static int ODB__write__meth(lua_State *L) {
 /* method: hash */
 static int ODB__hash__func(lua_State *L) {
   size_t data_len_idx1;
-  const char * data_idx1 = luaL_checklstring(L,1,&(data_len_idx1));
-  git_otype otype_idx2 = luaL_checkinteger(L,2);
+  const char * data_idx1;
+  git_otype otype_idx2;
   OID id_idx1;
   GitError err_idx2 = GIT_OK;
+  data_idx1 = luaL_checklstring(L,1,&(data_len_idx1));
+  otype_idx2 = luaL_checkinteger(L,2);
   err_idx2 = git_odb_hash(&(id_idx1), data_idx1, data_len_idx1, otype_idx2);
   if(!(GIT_OK != err_idx2)) {
     obj_type_OID_push(L, id_idx1);
@@ -2341,10 +2868,12 @@ static int ODB__hash__func(lua_State *L) {
 /* method: hashfile */
 static int ODB__hashfile__func(lua_State *L) {
   size_t path_len_idx1;
-  const char * path_idx1 = luaL_checklstring(L,1,&(path_len_idx1));
-  git_otype otype_idx2 = luaL_checkinteger(L,2);
+  const char * path_idx1;
+  git_otype otype_idx2;
   OID id_idx1;
   GitError err_idx2 = GIT_OK;
+  path_idx1 = luaL_checklstring(L,1,&(path_len_idx1));
+  otype_idx2 = luaL_checkinteger(L,2);
   err_idx2 = git_odb_hashfile(&(id_idx1), path_idx1, otype_idx2);
   if(!(GIT_OK != err_idx2)) {
     obj_type_OID_push(L, id_idx1);
@@ -2379,6 +2908,10 @@ static int ODBBackend__new__meth(lua_State *L) {
 	REF_CB(free)
 #undef REF_CB
 
+#ifdef GIT_ODB_BACKEND_VERSION
+  this_idx1->backend.version = GIT_ODB_BACKEND_VERSION;
+#endif
+
   obj_type_ODBBackend_push(L, this_idx1, this_flags_idx1);
   return 1;
 }
@@ -2386,7 +2919,8 @@ static int ODBBackend__new__meth(lua_State *L) {
 /* method: _priv */
 static int ODBBackend__delete__meth(lua_State *L) {
   int this_flags_idx1 = 0;
-  ODBBackend * this_idx1 = obj_type_ODBBackend_delete(L,1,&(this_flags_idx1));
+  ODBBackend * this_idx1;
+  this_idx1 = obj_type_ODBBackend_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
 	ODBBackend_unref(this_idx1);
 
@@ -2396,10 +2930,11 @@ static int ODBBackend__delete__meth(lua_State *L) {
 /* method: bare */
 static int Index__bare__meth(lua_State *L) {
   size_t index_path_len_idx1;
-  const char * index_path_idx1 = luaL_checklstring(L,1,&(index_path_len_idx1));
+  const char * index_path_idx1;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Index * this_idx1;
   GitError err_idx2 = GIT_OK;
+  index_path_idx1 = luaL_checklstring(L,1,&(index_path_len_idx1));
   err_idx2 = git_index_open(&(this_idx1), index_path_idx1);
   if(!(GIT_OK != err_idx2)) {
     obj_type_Index_push(L, this_idx1, this_flags_idx1);
@@ -2413,7 +2948,8 @@ static int Index__bare__meth(lua_State *L) {
 /* method: _priv */
 static int Index__delete__meth(lua_State *L) {
   int this_flags_idx1 = 0;
-  Index * this_idx1 = obj_type_Index_delete(L,1,&(this_flags_idx1));
+  Index * this_idx1;
+  this_idx1 = obj_type_Index_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
   git_index_free(this_idx1);
   return 0;
@@ -2421,16 +2957,20 @@ static int Index__delete__meth(lua_State *L) {
 
 /* method: clear */
 static int Index__clear__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
+  Index * this_idx1;
+  this_idx1 = obj_type_Index_check(L,1);
   git_index_clear(this_idx1);
   return 0;
 }
 
 /* method: read */
 static int Index__read__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
+  Index * this_idx1;
+  int force_idx2;
   GitError rc_git_index_read_idx1 = GIT_OK;
-  rc_git_index_read_idx1 = git_index_read(this_idx1);
+  this_idx1 = obj_type_Index_check(L,1);
+  force_idx2 = luaL_checkinteger(L,2);
+  rc_git_index_read_idx1 = git_index_read(this_idx1, force_idx2);
   /* check for error. */
   if((GIT_OK != rc_git_index_read_idx1)) {
     lua_pushnil(L);
@@ -2444,8 +2984,9 @@ static int Index__read__meth(lua_State *L) {
 
 /* method: write */
 static int Index__write__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
+  Index * this_idx1;
   GitError rc_git_index_write_idx1 = GIT_OK;
+  this_idx1 = obj_type_Index_check(L,1);
   rc_git_index_write_idx1 = git_index_write(this_idx1);
   /* check for error. */
   if((GIT_OK != rc_git_index_write_idx1)) {
@@ -2460,30 +3001,47 @@ static int Index__write__meth(lua_State *L) {
 
 /* method: find */
 static int Index__find__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
-  size_t path_len_idx2;
-  const char * path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
+  Index * this_idx1;
+  size_t * at_pos_idx2;
+  size_t path_len_idx3;
+  const char * path_idx3;
   int rc_git_index_find_idx1 = 0;
-  rc_git_index_find_idx1 = git_index_find(this_idx1, path_idx2);
+  this_idx1 = obj_type_Index_check(L,1);
+  at_pos_idx2 = lua_touserdata(L,2);
+  path_idx3 = luaL_checklstring(L,3,&(path_len_idx3));
+  rc_git_index_find_idx1 = git_index_find(at_pos_idx2, this_idx1, path_idx3);
   lua_pushinteger(L, rc_git_index_find_idx1);
   return 1;
 }
 
-/* method: uniq */
-static int Index__uniq__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
-  git_index_uniq(this_idx1);
-  return 0;
+/* method: add_bypath */
+static int Index__add_bypath__meth(lua_State *L) {
+  Index * this_idx1;
+  size_t path_len_idx2;
+  const char * path_idx2;
+  GitError rc_git_index_add_bypath_idx1 = GIT_OK;
+  this_idx1 = obj_type_Index_check(L,1);
+  path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
+  rc_git_index_add_bypath_idx1 = git_index_add_bypath(this_idx1, path_idx2);
+  /* check for error. */
+  if((GIT_OK != rc_git_index_add_bypath_idx1)) {
+    lua_pushnil(L);
+      error_code__GitError__push(L, rc_git_index_add_bypath_idx1);
+  } else {
+    lua_pushboolean(L, 1);
+    lua_pushnil(L);
+  }
+  return 2;
 }
 
 /* method: add */
 static int Index__add__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
-  size_t path_len_idx2;
-  const char * path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
-  int stage_idx3 = luaL_checkinteger(L,3);
+  Index * this_idx1;
+  IndexEntry * source_entry_idx2;
   GitError rc_git_index_add_idx1 = GIT_OK;
-  rc_git_index_add_idx1 = git_index_add(this_idx1, path_idx2, stage_idx3);
+  this_idx1 = obj_type_Index_check(L,1);
+  source_entry_idx2 = obj_type_IndexEntry_check(L,2);
+  rc_git_index_add_idx1 = git_index_add(this_idx1, source_entry_idx2);
   /* check for error. */
   if((GIT_OK != rc_git_index_add_idx1)) {
     lua_pushnil(L);
@@ -2495,65 +3053,17 @@ static int Index__add__meth(lua_State *L) {
   return 2;
 }
 
-/* method: add2 */
-static int Index__add2__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
-  IndexEntry * source_entry_idx2 = obj_type_IndexEntry_check(L,2);
-  GitError rc_git_index_add2_idx1 = GIT_OK;
-  rc_git_index_add2_idx1 = git_index_add2(this_idx1, source_entry_idx2);
-  /* check for error. */
-  if((GIT_OK != rc_git_index_add2_idx1)) {
-    lua_pushnil(L);
-      error_code__GitError__push(L, rc_git_index_add2_idx1);
-  } else {
-    lua_pushboolean(L, 1);
-    lua_pushnil(L);
-  }
-  return 2;
-}
-
-/* method: append */
-static int Index__append__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
-  size_t path_len_idx2;
-  const char * path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
-  int stage_idx3 = luaL_checkinteger(L,3);
-  GitError rc_git_index_append_idx1 = GIT_OK;
-  rc_git_index_append_idx1 = git_index_append(this_idx1, path_idx2, stage_idx3);
-  /* check for error. */
-  if((GIT_OK != rc_git_index_append_idx1)) {
-    lua_pushnil(L);
-      error_code__GitError__push(L, rc_git_index_append_idx1);
-  } else {
-    lua_pushboolean(L, 1);
-    lua_pushnil(L);
-  }
-  return 2;
-}
-
-/* method: append2 */
-static int Index__append2__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
-  IndexEntry * source_entry_idx2 = obj_type_IndexEntry_check(L,2);
-  GitError rc_git_index_append2_idx1 = GIT_OK;
-  rc_git_index_append2_idx1 = git_index_append2(this_idx1, source_entry_idx2);
-  /* check for error. */
-  if((GIT_OK != rc_git_index_append2_idx1)) {
-    lua_pushnil(L);
-      error_code__GitError__push(L, rc_git_index_append2_idx1);
-  } else {
-    lua_pushboolean(L, 1);
-    lua_pushnil(L);
-  }
-  return 2;
-}
-
 /* method: remove */
 static int Index__remove__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
-  int position_idx2 = luaL_checkinteger(L,2);
+  Index * this_idx1;
+  size_t path_len_idx2;
+  const char * path_idx2;
+  int stage_idx3;
   GitError rc_git_index_remove_idx1 = GIT_OK;
-  rc_git_index_remove_idx1 = git_index_remove(this_idx1, position_idx2);
+  this_idx1 = obj_type_Index_check(L,1);
+  path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
+  stage_idx3 = luaL_checkinteger(L,3);
+  rc_git_index_remove_idx1 = git_index_remove(this_idx1, path_idx2, stage_idx3);
   /* check for error. */
   if((GIT_OK != rc_git_index_remove_idx1)) {
     lua_pushnil(L);
@@ -2565,60 +3075,85 @@ static int Index__remove__meth(lua_State *L) {
   return 2;
 }
 
-/* method: get */
-static int Index__get__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
-  int n_idx2 = luaL_checkinteger(L,2);
-  IndexEntry * rc_git_index_get_idx1;
-  rc_git_index_get_idx1 = git_index_get(this_idx1, n_idx2);
-  obj_type_IndexEntry_push(L, rc_git_index_get_idx1, 0);
+/* method: get_byindex */
+static int Index__get_byindex__meth(lua_State *L) {
+  Index * this_idx1;
+  size_t n_idx2;
+  const IndexEntry * rc_git_index_get_byindex_idx1;
+  this_idx1 = obj_type_Index_check(L,1);
+  n_idx2 = luaL_checkinteger(L,2);
+  rc_git_index_get_byindex_idx1 = git_index_get_byindex(this_idx1, n_idx2);
+  obj_type_IndexEntry_push(L, rc_git_index_get_byindex_idx1, 0);
+  return 1;
+}
+
+/* method: get_bypath */
+static int Index__get_bypath__meth(lua_State *L) {
+  Index * this_idx1;
+  size_t path_len_idx2;
+  const char * path_idx2;
+  int stage_idx3;
+  const IndexEntry * rc_git_index_get_bypath_idx1;
+  this_idx1 = obj_type_Index_check(L,1);
+  path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
+  stage_idx3 = luaL_checkinteger(L,3);
+  rc_git_index_get_bypath_idx1 = git_index_get_bypath(this_idx1, path_idx2, stage_idx3);
+  obj_type_IndexEntry_push(L, rc_git_index_get_bypath_idx1, 0);
   return 1;
 }
 
 /* method: entrycount */
 static int Index__entrycount__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
+  Index * this_idx1;
   unsigned int rc_git_index_entrycount_idx1 = 0;
+  this_idx1 = obj_type_Index_check(L,1);
   rc_git_index_entrycount_idx1 = git_index_entrycount(this_idx1);
   lua_pushinteger(L, rc_git_index_entrycount_idx1);
   return 1;
 }
 
-/* method: entrycount_unmerged */
-static int Index__entrycount_unmerged__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
-  unsigned int rc_git_index_entrycount_unmerged_idx1 = 0;
-  rc_git_index_entrycount_unmerged_idx1 = git_index_entrycount_unmerged(this_idx1);
-  lua_pushinteger(L, rc_git_index_entrycount_unmerged_idx1);
+/* method: reuc_entrycount */
+static int Index__reuc_entrycount__meth(lua_State *L) {
+  Index * this_idx1;
+  unsigned int rc_git_index_reuc_entrycount_idx1 = 0;
+  this_idx1 = obj_type_Index_check(L,1);
+  rc_git_index_reuc_entrycount_idx1 = git_index_reuc_entrycount(this_idx1);
+  lua_pushinteger(L, rc_git_index_reuc_entrycount_idx1);
   return 1;
 }
 
-/* method: get_unmerged_bypath */
-static int Index__get_unmerged_bypath__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
+/* method: reuc_get_bypath */
+static int Index__reuc_get_bypath__meth(lua_State *L) {
+  Index * this_idx1;
   size_t path_len_idx2;
-  const char * path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
-  const IndexEntryUnmerged * rc_git_index_get_unmerged_bypath_idx1;
-  rc_git_index_get_unmerged_bypath_idx1 = git_index_get_unmerged_bypath(this_idx1, path_idx2);
-  obj_type_IndexEntryUnmerged_push(L, rc_git_index_get_unmerged_bypath_idx1, 0);
+  const char * path_idx2;
+  const IndexEntryUnmerged * rc_git_index_reuc_get_bypath_idx1;
+  this_idx1 = obj_type_Index_check(L,1);
+  path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
+  rc_git_index_reuc_get_bypath_idx1 = git_index_reuc_get_bypath(this_idx1, path_idx2);
+  obj_type_IndexEntryUnmerged_push(L, rc_git_index_reuc_get_bypath_idx1, 0);
   return 1;
 }
 
-/* method: get_unmerged_byindex */
-static int Index__get_unmerged_byindex__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
-  int n_idx2 = luaL_checkinteger(L,2);
-  const IndexEntryUnmerged * rc_git_index_get_unmerged_byindex_idx1;
-  rc_git_index_get_unmerged_byindex_idx1 = git_index_get_unmerged_byindex(this_idx1, n_idx2);
-  obj_type_IndexEntryUnmerged_push(L, rc_git_index_get_unmerged_byindex_idx1, 0);
+/* method: reuc_get_byindex */
+static int Index__reuc_get_byindex__meth(lua_State *L) {
+  Index * this_idx1;
+  int n_idx2;
+  const IndexEntryUnmerged * rc_git_index_reuc_get_byindex_idx1;
+  this_idx1 = obj_type_Index_check(L,1);
+  n_idx2 = luaL_checkinteger(L,2);
+  rc_git_index_reuc_get_byindex_idx1 = git_index_reuc_get_byindex(this_idx1, n_idx2);
+  obj_type_IndexEntryUnmerged_push(L, rc_git_index_reuc_get_byindex_idx1, 0);
   return 1;
 }
 
 /* method: read_tree */
 static int Index__read_tree__meth(lua_State *L) {
-  Index * this_idx1 = obj_type_Index_check(L,1);
-  Tree * tree_idx2 = obj_type_Tree_check(L,2);
+  Index * this_idx1;
+  Tree * tree_idx2;
   GitError rc_git_index_read_tree_idx1 = GIT_OK;
+  this_idx1 = obj_type_Index_check(L,1);
+  tree_idx2 = obj_type_Tree_check(L,2);
   rc_git_index_read_tree_idx1 = git_index_read_tree(this_idx1, tree_idx2);
   /* check for error. */
   if((GIT_OK != rc_git_index_read_tree_idx1)) {
@@ -2644,7 +3179,8 @@ static int IndexEntry__new__meth(lua_State *L) {
 /* method: _priv */
 static int IndexEntry__delete__meth(lua_State *L) {
   int this_flags_idx1 = 0;
-  IndexEntry * this_idx1 = obj_type_IndexEntry_delete(L,1,&(this_flags_idx1));
+  IndexEntry * this_idx1;
+  this_idx1 = obj_type_IndexEntry_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
 	if(this_idx1->path != NULL) {
 		free(this_idx1->path);
@@ -2656,8 +3192,9 @@ static int IndexEntry__delete__meth(lua_State *L) {
 
 /* method: stage */
 static int IndexEntry__stage__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   int rc_git_index_entry_stage_idx1 = 0;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
   rc_git_index_entry_stage_idx1 = git_index_entry_stage(this_idx1);
   lua_pushinteger(L, rc_git_index_entry_stage_idx1);
   return 1;
@@ -2665,9 +3202,10 @@ static int IndexEntry__stage__meth(lua_State *L) {
 
 /* method: ctime */
 static int IndexEntry__ctime__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   git_time_t secs_idx1 = 0;
   unsigned int nanosecs_idx2 = 0;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
 	secs_idx1 = this_idx1->ctime.seconds;
 	nanosecs_idx2 = this_idx1->ctime.nanoseconds;
 
@@ -2678,9 +3216,12 @@ static int IndexEntry__ctime__meth(lua_State *L) {
 
 /* method: set_ctime */
 static int IndexEntry__set_ctime__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
-  git_time_t secs_idx2 = luaL_checkinteger(L,2);
-  unsigned int nanosecs_idx3 = luaL_checkinteger(L,3);
+  IndexEntry * this_idx1;
+  git_time_t secs_idx2;
+  unsigned int nanosecs_idx3;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
+  secs_idx2 = luaL_checkinteger(L,2);
+  nanosecs_idx3 = luaL_checkinteger(L,3);
 	this_idx1->ctime.seconds = secs_idx2;
 	this_idx1->ctime.nanoseconds = nanosecs_idx3;
 
@@ -2689,9 +3230,10 @@ static int IndexEntry__set_ctime__meth(lua_State *L) {
 
 /* method: mtime */
 static int IndexEntry__mtime__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   git_time_t secs_idx1 = 0;
   unsigned int nanosecs_idx2 = 0;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
 	secs_idx1 = this_idx1->mtime.seconds;
 	nanosecs_idx2 = this_idx1->mtime.nanoseconds;
 
@@ -2702,9 +3244,12 @@ static int IndexEntry__mtime__meth(lua_State *L) {
 
 /* method: set_mtime */
 static int IndexEntry__set_mtime__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
-  git_time_t secs_idx2 = luaL_checkinteger(L,2);
-  unsigned int nanosecs_idx3 = luaL_checkinteger(L,3);
+  IndexEntry * this_idx1;
+  git_time_t secs_idx2;
+  unsigned int nanosecs_idx3;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
+  secs_idx2 = luaL_checkinteger(L,2);
+  nanosecs_idx3 = luaL_checkinteger(L,3);
 	this_idx1->mtime.seconds = secs_idx2;
 	this_idx1->mtime.nanoseconds = nanosecs_idx3;
 
@@ -2713,8 +3258,9 @@ static int IndexEntry__set_mtime__meth(lua_State *L) {
 
 /* method: path */
 static int IndexEntry__path__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   const char * ret_idx1 = NULL;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
 ret_idx1 = this_idx1->path;
   lua_pushstring(L, ret_idx1);
   return 1;
@@ -2722,23 +3268,27 @@ ret_idx1 = this_idx1->path;
 
 /* method: set_path */
 static int IndexEntry__set_path__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   size_t val_len_idx2;
-  const char * val_idx2 = luaL_checklstring(L,2,&(val_len_idx2));
+  const char * val_idx2;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
+  val_idx2 = luaL_checklstring(L,2,&(val_len_idx2));
 	if(this_idx1->path != NULL) {
 		free(this_idx1->path);
 	}
-	this_idx1->path = malloc(val_len_idx2);
-	strncpy(this_idx1->path, val_idx2, val_len_idx2);
-	this_idx1->path[val_len_idx2] = 0;
+    char * path_buf = malloc(val_len_idx2);
+	strncpy(path_buf, val_idx2, val_len_idx2);
+	path_buf[val_len_idx2] = 0;
+	this_idx1->path = path_buf;
 
   return 0;
 }
 
 /* method: dev */
 static int IndexEntry__dev__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   unsigned int field_idx1 = 0;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
 	field_idx1 = this_idx1->dev;
 
   lua_pushinteger(L, field_idx1);
@@ -2747,8 +3297,9 @@ static int IndexEntry__dev__meth(lua_State *L) {
 
 /* method: ino */
 static int IndexEntry__ino__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   unsigned int field_idx1 = 0;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
 	field_idx1 = this_idx1->ino;
 
   lua_pushinteger(L, field_idx1);
@@ -2757,8 +3308,9 @@ static int IndexEntry__ino__meth(lua_State *L) {
 
 /* method: mode */
 static int IndexEntry__mode__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   unsigned int field_idx1 = 0;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
 	field_idx1 = this_idx1->mode;
 
   lua_pushinteger(L, field_idx1);
@@ -2767,8 +3319,9 @@ static int IndexEntry__mode__meth(lua_State *L) {
 
 /* method: uid */
 static int IndexEntry__uid__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   unsigned int field_idx1 = 0;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
 	field_idx1 = this_idx1->uid;
 
   lua_pushinteger(L, field_idx1);
@@ -2777,8 +3330,9 @@ static int IndexEntry__uid__meth(lua_State *L) {
 
 /* method: gid */
 static int IndexEntry__gid__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   unsigned int field_idx1 = 0;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
 	field_idx1 = this_idx1->gid;
 
   lua_pushinteger(L, field_idx1);
@@ -2787,19 +3341,21 @@ static int IndexEntry__gid__meth(lua_State *L) {
 
 /* method: file_size */
 static int IndexEntry__file_size__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   off_t field_idx1 = 0;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
 	field_idx1 = this_idx1->file_size;
 
   lua_pushinteger(L, field_idx1);
   return 1;
 }
 
-/* method: oid */
-static int IndexEntry__oid__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+/* method: id */
+static int IndexEntry__id__meth(lua_State *L) {
+  IndexEntry * this_idx1;
   OID field_idx1;
-	field_idx1 = this_idx1->oid;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
+	field_idx1 = this_idx1->id;
 
   obj_type_OID_push(L, field_idx1);
   return 1;
@@ -2807,8 +3363,9 @@ static int IndexEntry__oid__meth(lua_State *L) {
 
 /* method: flags */
 static int IndexEntry__flags__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   unsigned int field_idx1 = 0;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
 	field_idx1 = this_idx1->flags;
 
   lua_pushinteger(L, field_idx1);
@@ -2817,8 +3374,9 @@ static int IndexEntry__flags__meth(lua_State *L) {
 
 /* method: flags_extended */
 static int IndexEntry__flags_extended__meth(lua_State *L) {
-  IndexEntry * this_idx1 = obj_type_IndexEntry_check(L,1);
+  IndexEntry * this_idx1;
   unsigned int field_idx1 = 0;
+  this_idx1 = obj_type_IndexEntry_check(L,1);
 	field_idx1 = this_idx1->flags_extended;
 
   lua_pushinteger(L, field_idx1);
@@ -2827,9 +3385,11 @@ static int IndexEntry__flags_extended__meth(lua_State *L) {
 
 /* method: mode */
 static int IndexEntryUnmerged__mode__meth(lua_State *L) {
-  IndexEntryUnmerged * this_idx1 = obj_type_IndexEntryUnmerged_check(L,1);
-  int idx_idx2 = luaL_checkinteger(L,2);
+  IndexEntryUnmerged * this_idx1;
+  int idx_idx2;
   unsigned int mode_idx1 = 0;
+  this_idx1 = obj_type_IndexEntryUnmerged_check(L,1);
+  idx_idx2 = luaL_checkinteger(L,2);
 	if(idx_idx2 < 0 || idx_idx2 >=3) {
 		return luaL_argerror(L, 2, "Index out-of-bounds (0-2)");
 	}
@@ -2841,9 +3401,11 @@ static int IndexEntryUnmerged__mode__meth(lua_State *L) {
 
 /* method: oid */
 static int IndexEntryUnmerged__oid__meth(lua_State *L) {
-  IndexEntryUnmerged * this_idx1 = obj_type_IndexEntryUnmerged_check(L,1);
-  int idx_idx2 = luaL_checkinteger(L,2);
+  IndexEntryUnmerged * this_idx1;
+  int idx_idx2;
   OID oid_idx1;
+  this_idx1 = obj_type_IndexEntryUnmerged_check(L,1);
+  idx_idx2 = luaL_checkinteger(L,2);
 	if(idx_idx2 < 0 || idx_idx2 >=3) {
 		return luaL_argerror(L, 2, "Index out-of-bounds (0-2)");
 	}
@@ -2855,8 +3417,9 @@ static int IndexEntryUnmerged__oid__meth(lua_State *L) {
 
 /* method: path */
 static int IndexEntryUnmerged__path__meth(lua_State *L) {
-  IndexEntryUnmerged * this_idx1 = obj_type_IndexEntryUnmerged_check(L,1);
+  IndexEntryUnmerged * this_idx1;
   const char * ret_idx1 = NULL;
+  this_idx1 = obj_type_IndexEntryUnmerged_check(L,1);
 ret_idx1 = this_idx1->path;
   lua_pushstring(L, ret_idx1);
   return 1;
@@ -2865,7 +3428,8 @@ ret_idx1 = this_idx1->path;
 /* method: free */
 static int Object__free__meth(lua_State *L) {
   int this_flags_idx1 = 0;
-  Object * this_idx1 = obj_type_Object_delete(L,1,&(this_flags_idx1));
+  Object * this_idx1;
+  this_idx1 = obj_type_Object_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
   git_object_free(this_idx1);
   return 0;
@@ -2873,8 +3437,9 @@ static int Object__free__meth(lua_State *L) {
 
 /* method: id */
 static int Object__id__meth(lua_State *L) {
-  Object * this_idx1 = obj_type_Object_check(L,1);
+  Object * this_idx1;
   OID id_idx1;
+  this_idx1 = obj_type_Object_check(L,1);
   id_idx1 = *git_object_id(this_idx1);
   obj_type_OID_push(L, id_idx1);
   return 1;
@@ -2882,9 +3447,10 @@ static int Object__id__meth(lua_State *L) {
 
 /* method: type */
 static int Object__type__meth(lua_State *L) {
-  Object * this_idx1 = obj_type_Object_check(L,1);
+  Object * this_idx1;
   git_otype otype_idx1;
   const char * type_idx2 = NULL;
+  this_idx1 = obj_type_Object_check(L,1);
   otype_idx1 = git_object_type(this_idx1);
   type_idx2 = git_object_type2string(otype_idx1);
   lua_pushstring(L, type_idx2);
@@ -2893,8 +3459,9 @@ static int Object__type__meth(lua_State *L) {
 
 /* method: owner */
 static int Object__owner__meth(lua_State *L) {
-  Object * this_idx1 = obj_type_Object_check(L,1);
+  Object * this_idx1;
   Repository * rc_git_object_owner_idx1;
+  this_idx1 = obj_type_Object_check(L,1);
   rc_git_object_owner_idx1 = git_object_owner(this_idx1);
   obj_type_Repository_push(L, rc_git_object_owner_idx1, 0);
   return 1;
@@ -2902,8 +3469,9 @@ static int Object__owner__meth(lua_State *L) {
 
 /* method: type2string */
 static int Object__type2string__func(lua_State *L) {
-  git_otype otype_idx1 = luaL_checkinteger(L,1);
+  git_otype otype_idx1;
   const char * rc_git_object_type2string_idx1 = NULL;
+  otype_idx1 = luaL_checkinteger(L,1);
   rc_git_object_type2string_idx1 = git_object_type2string(otype_idx1);
   lua_pushstring(L, rc_git_object_type2string_idx1);
   return 1;
@@ -2912,8 +3480,9 @@ static int Object__type2string__func(lua_State *L) {
 /* method: string2type */
 static int Object__string2type__func(lua_State *L) {
   size_t str_len_idx1;
-  const char * str_idx1 = luaL_checklstring(L,1,&(str_len_idx1));
+  const char * str_idx1;
   git_otype rc_git_object_string2type_idx1;
+  str_idx1 = luaL_checklstring(L,1,&(str_len_idx1));
   rc_git_object_string2type_idx1 = git_object_string2type(str_idx1);
   lua_pushinteger(L, rc_git_object_string2type_idx1);
   return 1;
@@ -2922,17 +3491,17 @@ static int Object__string2type__func(lua_State *L) {
 static void dyn_caster_Object(void **obj, obj_type **type) {
   Object * base_obj = (Object *)*obj;
   switch(git_object_type(base_obj)) {
-  case GIT_OBJ_COMMIT:
-    *type = &(obj_type_Commit);
-    break;
   case GIT_OBJ_BLOB:
     *type = &(obj_type_Blob);
     break;
-  case GIT_OBJ_TREE:
-    *type = &(obj_type_Tree);
+  case GIT_OBJ_COMMIT:
+    *type = &(obj_type_Commit);
     break;
   case GIT_OBJ_TAG:
     *type = &(obj_type_Tag);
+    break;
+  case GIT_OBJ_TREE:
+    *type = &(obj_type_Tree);
     break;
   default:
     break;
@@ -2941,11 +3510,13 @@ static void dyn_caster_Object(void **obj, obj_type **type) {
 
 /* method: lookup */
 static int Blob__lookup__meth(lua_State *L) {
-  Repository * repo_idx1 = obj_type_Repository_check(L,1);
-  OID id_idx2 = obj_type_OID_check(L,2);
+  Repository * repo_idx1;
+  OID id_idx2;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Blob * this_idx1;
   GitError err_idx2 = GIT_OK;
+  repo_idx1 = obj_type_Repository_check(L,1);
+  id_idx2 = obj_type_OID_check(L,2);
   err_idx2 = git_blob_lookup(&(this_idx1), repo_idx1, &(id_idx2));
   if(!(GIT_OK != err_idx2)) {
     obj_type_Blob_push(L, this_idx1, this_flags_idx1);
@@ -2956,14 +3527,16 @@ static int Blob__lookup__meth(lua_State *L) {
   return 2;
 }
 
-/* method: fromfile */
-static int Blob__fromfile__func(lua_State *L) {
-  Repository * repo_idx1 = obj_type_Repository_check(L,1);
+/* method: from_disk */
+static int Blob__from_disk__func(lua_State *L) {
+  Repository * repo_idx1;
   size_t path_len_idx2;
-  const char * path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
+  const char * path_idx2;
   OID written_id_idx1;
   GitError err_idx2 = GIT_OK;
-  err_idx2 = git_blob_create_fromfile(&(written_id_idx1), repo_idx1, path_idx2);
+  repo_idx1 = obj_type_Repository_check(L,1);
+  path_idx2 = luaL_checklstring(L,2,&(path_len_idx2));
+  err_idx2 = git_blob_create_from_disk(&(written_id_idx1), repo_idx1, path_idx2);
   if(!(GIT_OK != err_idx2)) {
     obj_type_OID_push(L, written_id_idx1);
   } else {
@@ -2973,14 +3546,16 @@ static int Blob__fromfile__func(lua_State *L) {
   return 2;
 }
 
-/* method: frombuffer */
-static int Blob__frombuffer__func(lua_State *L) {
-  Repository * repo_idx1 = obj_type_Repository_check(L,1);
+/* method: from_buffer */
+static int Blob__from_buffer__func(lua_State *L) {
+  Repository * repo_idx1;
   size_t buffer_len_idx2;
-  const char * buffer_idx2 = luaL_checklstring(L,2,&(buffer_len_idx2));
+  const char * buffer_idx2;
   OID written_id_idx1;
   GitError err_idx2 = GIT_OK;
-  err_idx2 = git_blob_create_frombuffer(&(written_id_idx1), repo_idx1, buffer_idx2, buffer_len_idx2);
+  repo_idx1 = obj_type_Repository_check(L,1);
+  buffer_idx2 = luaL_checklstring(L,2,&(buffer_len_idx2));
+  err_idx2 = git_blob_create_from_buffer(&(written_id_idx1), repo_idx1, buffer_idx2, buffer_len_idx2);
   if(!(GIT_OK != err_idx2)) {
     obj_type_OID_push(L, written_id_idx1);
   } else {
@@ -2992,9 +3567,10 @@ static int Blob__frombuffer__func(lua_State *L) {
 
 /* method: rawcontent */
 static int Blob__rawcontent__meth(lua_State *L) {
-  Blob * this_idx1 = obj_type_Blob_check(L,1);
+  Blob * this_idx1;
   size_t buff_len_idx1 = 0;
   const char * buff_idx1 = NULL;
+  this_idx1 = obj_type_Blob_check(L,1);
   buff_idx1 = git_blob_rawcontent(this_idx1);
   buff_len_idx1 = git_blob_rawsize(this_idx1);
   if(buff_idx1 == NULL) lua_pushnil(L);  else lua_pushlstring(L, buff_idx1,buff_len_idx1);
@@ -3003,8 +3579,9 @@ static int Blob__rawcontent__meth(lua_State *L) {
 
 /* method: rawsize */
 static int Blob__rawsize__meth(lua_State *L) {
-  Blob * this_idx1 = obj_type_Blob_check(L,1);
+  Blob * this_idx1;
   int rc_git_blob_rawsize_idx1 = 0;
+  this_idx1 = obj_type_Blob_check(L,1);
   rc_git_blob_rawsize_idx1 = git_blob_rawsize(this_idx1);
   lua_pushinteger(L, rc_git_blob_rawsize_idx1);
   return 1;
@@ -3013,14 +3590,18 @@ static int Blob__rawsize__meth(lua_State *L) {
 /* method: new */
 static int Signature__new__meth(lua_State *L) {
   size_t name_len_idx1;
-  const char * name_idx1 = luaL_checklstring(L,1,&(name_len_idx1));
+  const char * name_idx1;
   size_t email_len_idx2;
-  const char * email_idx2 = luaL_checklstring(L,2,&(email_len_idx2));
-  git_time_t time_idx3 = luaL_checkinteger(L,3);
-  int offset_idx4 = luaL_checkinteger(L,4);
+  const char * email_idx2;
+  git_time_t time_idx3;
+  int offset_idx4;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Signature * this_idx1;
   GitError rc_git_signature_new_idx2 = GIT_OK;
+  name_idx1 = luaL_checklstring(L,1,&(name_len_idx1));
+  email_idx2 = luaL_checklstring(L,2,&(email_len_idx2));
+  time_idx3 = luaL_checkinteger(L,3);
+  offset_idx4 = luaL_checkinteger(L,4);
   rc_git_signature_new_idx2 = git_signature_new(&(this_idx1), name_idx1, email_idx2, time_idx3, offset_idx4);
   if(!(GIT_OK != rc_git_signature_new_idx2)) {
     obj_type_Signature_push(L, this_idx1, this_flags_idx1);
@@ -3034,12 +3615,14 @@ static int Signature__new__meth(lua_State *L) {
 /* method: now */
 static int Signature__now__meth(lua_State *L) {
   size_t name_len_idx1;
-  const char * name_idx1 = luaL_checklstring(L,1,&(name_len_idx1));
+  const char * name_idx1;
   size_t email_len_idx2;
-  const char * email_idx2 = luaL_checklstring(L,2,&(email_len_idx2));
+  const char * email_idx2;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Signature * this_idx1;
   GitError rc_git_signature_now_idx2 = GIT_OK;
+  name_idx1 = luaL_checklstring(L,1,&(name_len_idx1));
+  email_idx2 = luaL_checklstring(L,2,&(email_len_idx2));
   rc_git_signature_now_idx2 = git_signature_now(&(this_idx1), name_idx1, email_idx2);
   if(!(GIT_OK != rc_git_signature_now_idx2)) {
     obj_type_Signature_push(L, this_idx1, this_flags_idx1);
@@ -3053,7 +3636,8 @@ static int Signature__now__meth(lua_State *L) {
 /* method: _priv */
 static int Signature__delete__meth(lua_State *L) {
   int this_flags_idx1 = 0;
-  Signature * this_idx1 = obj_type_Signature_delete(L,1,&(this_flags_idx1));
+  Signature * this_idx1;
+  this_idx1 = obj_type_Signature_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
   git_signature_free(this_idx1);
   return 0;
@@ -3061,8 +3645,9 @@ static int Signature__delete__meth(lua_State *L) {
 
 /* method: name */
 static int Signature__name__meth(lua_State *L) {
-  Signature * this_idx1 = obj_type_Signature_check(L,1);
+  Signature * this_idx1;
   const char * name_idx1 = NULL;
+  this_idx1 = obj_type_Signature_check(L,1);
 name_idx1 = this_idx1->name;
   lua_pushstring(L, name_idx1);
   return 1;
@@ -3070,8 +3655,9 @@ name_idx1 = this_idx1->name;
 
 /* method: email */
 static int Signature__email__meth(lua_State *L) {
-  Signature * this_idx1 = obj_type_Signature_check(L,1);
+  Signature * this_idx1;
   const char * email_idx1 = NULL;
+  this_idx1 = obj_type_Signature_check(L,1);
 email_idx1 = this_idx1->email;
   lua_pushstring(L, email_idx1);
   return 1;
@@ -3079,9 +3665,10 @@ email_idx1 = this_idx1->email;
 
 /* method: when */
 static int Signature__when__meth(lua_State *L) {
-  Signature * this_idx1 = obj_type_Signature_check(L,1);
+  Signature * this_idx1;
   git_time_t time_idx1 = 0;
   int offset_idx2 = 0;
+  this_idx1 = obj_type_Signature_check(L,1);
 time_idx1 = this_idx1->when.time; offset_idx2 = this_idx1->when.offset;
   lua_pushinteger(L, time_idx1);
   lua_pushinteger(L, offset_idx2);
@@ -3090,11 +3677,13 @@ time_idx1 = this_idx1->when.time; offset_idx2 = this_idx1->when.offset;
 
 /* method: lookup */
 static int Commit__lookup__meth(lua_State *L) {
-  Repository * repo_idx1 = obj_type_Repository_check(L,1);
-  OID id_idx2 = obj_type_OID_check(L,2);
+  Repository * repo_idx1;
+  OID id_idx2;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Commit * this_idx1;
   GitError err_idx2 = GIT_OK;
+  repo_idx1 = obj_type_Repository_check(L,1);
+  id_idx2 = obj_type_OID_check(L,2);
   err_idx2 = git_commit_lookup(&(this_idx1), repo_idx1, &(id_idx2));
   if(!(GIT_OK != err_idx2)) {
     obj_type_Commit_push(L, this_idx1, this_flags_idx1);
@@ -3107,23 +3696,32 @@ static int Commit__lookup__meth(lua_State *L) {
 
 /* method: create */
 static int Commit__create__func(lua_State *L) {
-  OID oid_idx1 = obj_type_OID_check(L,1);
-  Repository * repo_idx2 = obj_type_Repository_check(L,2);
+  OID oid_idx1;
+  Repository * repo_idx2;
   size_t update_ref_len_idx3;
-  const char * update_ref_idx3 = luaL_checklstring(L,3,&(update_ref_len_idx3));
-  Signature * author_idx4 = obj_type_Signature_check(L,4);
-  Signature * committer_idx5 = obj_type_Signature_check(L,5);
+  const char * update_ref_idx3;
+  Signature * author_idx4;
+  Signature * committer_idx5;
   size_t message_encoding_len_idx6;
-  const char * message_encoding_idx6 = luaL_checklstring(L,6,&(message_encoding_len_idx6));
+  const char * message_encoding_idx6;
   size_t message_len_idx7;
-  const char * message_idx7 = luaL_checklstring(L,7,&(message_len_idx7));
-  Tree * tree_idx8 = obj_type_Tree_check(L,8);
-  Commit * parent_idx9 = obj_type_Commit_check(L,9);
+  const char * message_idx7;
+  Tree * tree_idx8;
+  Commit * parent_idx9;
   GitError err_idx1 = GIT_OK;
 	int parent_count = 0;
 	const git_commit **parents;
 	int n;
 
+  oid_idx1 = obj_type_OID_check(L,1);
+  repo_idx2 = obj_type_Repository_check(L,2);
+  update_ref_idx3 = luaL_checklstring(L,3,&(update_ref_len_idx3));
+  author_idx4 = obj_type_Signature_check(L,4);
+  committer_idx5 = obj_type_Signature_check(L,5);
+  message_encoding_idx6 = luaL_checklstring(L,6,&(message_encoding_len_idx6));
+  message_idx7 = luaL_checklstring(L,7,&(message_len_idx7));
+  tree_idx8 = obj_type_Tree_check(L,8);
+  parent_idx9 = obj_type_Commit_check(L,9);
 	/* count parents. */
 	parent_count = lua_gettop(L) - 9 + 1;
 	/* valid parents.  The first parent commit is already validated. */
@@ -3158,8 +3756,9 @@ static int Commit__create__func(lua_State *L) {
 
 /* method: id */
 static int Commit__id__meth(lua_State *L) {
-  Commit * this_idx1 = obj_type_Commit_check(L,1);
+  Commit * this_idx1;
   OID id_idx1;
+  this_idx1 = obj_type_Commit_check(L,1);
   id_idx1 = *git_commit_id(this_idx1);
   obj_type_OID_push(L, id_idx1);
   return 1;
@@ -3167,8 +3766,9 @@ static int Commit__id__meth(lua_State *L) {
 
 /* method: message_encoding */
 static int Commit__message_encoding__meth(lua_State *L) {
-  Commit * this_idx1 = obj_type_Commit_check(L,1);
+  Commit * this_idx1;
   const char * rc_git_commit_message_encoding_idx1 = NULL;
+  this_idx1 = obj_type_Commit_check(L,1);
   rc_git_commit_message_encoding_idx1 = git_commit_message_encoding(this_idx1);
   lua_pushstring(L, rc_git_commit_message_encoding_idx1);
   return 1;
@@ -3176,8 +3776,9 @@ static int Commit__message_encoding__meth(lua_State *L) {
 
 /* method: message */
 static int Commit__message__meth(lua_State *L) {
-  Commit * this_idx1 = obj_type_Commit_check(L,1);
+  Commit * this_idx1;
   const char * rc_git_commit_message_idx1 = NULL;
+  this_idx1 = obj_type_Commit_check(L,1);
   rc_git_commit_message_idx1 = git_commit_message(this_idx1);
   lua_pushstring(L, rc_git_commit_message_idx1);
   return 1;
@@ -3185,8 +3786,9 @@ static int Commit__message__meth(lua_State *L) {
 
 /* method: time */
 static int Commit__time__meth(lua_State *L) {
-  Commit * this_idx1 = obj_type_Commit_check(L,1);
+  Commit * this_idx1;
   git_time_t rc_git_commit_time_idx1 = 0;
+  this_idx1 = obj_type_Commit_check(L,1);
   rc_git_commit_time_idx1 = git_commit_time(this_idx1);
   lua_pushinteger(L, rc_git_commit_time_idx1);
   return 1;
@@ -3194,8 +3796,9 @@ static int Commit__time__meth(lua_State *L) {
 
 /* method: time_offset */
 static int Commit__time_offset__meth(lua_State *L) {
-  Commit * this_idx1 = obj_type_Commit_check(L,1);
+  Commit * this_idx1;
   int rc_git_commit_time_offset_idx1 = 0;
+  this_idx1 = obj_type_Commit_check(L,1);
   rc_git_commit_time_offset_idx1 = git_commit_time_offset(this_idx1);
   lua_pushinteger(L, rc_git_commit_time_offset_idx1);
   return 1;
@@ -3203,8 +3806,9 @@ static int Commit__time_offset__meth(lua_State *L) {
 
 /* method: committer */
 static int Commit__committer__meth(lua_State *L) {
-  Commit * this_idx1 = obj_type_Commit_check(L,1);
+  Commit * this_idx1;
   const Signature * rc_git_commit_committer_idx1;
+  this_idx1 = obj_type_Commit_check(L,1);
   rc_git_commit_committer_idx1 = git_commit_committer(this_idx1);
   obj_type_Signature_push(L, rc_git_commit_committer_idx1, 0);
   return 1;
@@ -3212,8 +3816,9 @@ static int Commit__committer__meth(lua_State *L) {
 
 /* method: author */
 static int Commit__author__meth(lua_State *L) {
-  Commit * this_idx1 = obj_type_Commit_check(L,1);
+  Commit * this_idx1;
   const Signature * rc_git_commit_author_idx1;
+  this_idx1 = obj_type_Commit_check(L,1);
   rc_git_commit_author_idx1 = git_commit_author(this_idx1);
   obj_type_Signature_push(L, rc_git_commit_author_idx1, 0);
   return 1;
@@ -3221,10 +3826,11 @@ static int Commit__author__meth(lua_State *L) {
 
 /* method: tree */
 static int Commit__tree__meth(lua_State *L) {
-  Commit * this_idx1 = obj_type_Commit_check(L,1);
+  Commit * this_idx1;
   int tree_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Tree * tree_idx1;
   GitError rc_git_commit_tree_idx2 = GIT_OK;
+  this_idx1 = obj_type_Commit_check(L,1);
   rc_git_commit_tree_idx2 = git_commit_tree(&(tree_idx1), this_idx1);
   if(!(GIT_OK != rc_git_commit_tree_idx2)) {
     obj_type_Tree_push(L, tree_idx1, tree_flags_idx1);
@@ -3237,8 +3843,9 @@ static int Commit__tree__meth(lua_State *L) {
 
 /* method: parentcount */
 static int Commit__parentcount__meth(lua_State *L) {
-  Commit * this_idx1 = obj_type_Commit_check(L,1);
+  Commit * this_idx1;
   unsigned int rc_git_commit_parentcount_idx1 = 0;
+  this_idx1 = obj_type_Commit_check(L,1);
   rc_git_commit_parentcount_idx1 = git_commit_parentcount(this_idx1);
   lua_pushinteger(L, rc_git_commit_parentcount_idx1);
   return 1;
@@ -3246,10 +3853,12 @@ static int Commit__parentcount__meth(lua_State *L) {
 
 /* method: parent */
 static int Commit__parent__meth(lua_State *L) {
-  Commit * this_idx1 = obj_type_Commit_check(L,1);
-  unsigned int n_idx2 = luaL_checkinteger(L,2);
+  Commit * this_idx1;
+  unsigned int n_idx2;
   Commit * parent_idx1;
   GitError rc_git_commit_parent_idx2 = GIT_OK;
+  this_idx1 = obj_type_Commit_check(L,1);
+  n_idx2 = luaL_checkinteger(L,2);
   rc_git_commit_parent_idx2 = git_commit_parent(&(parent_idx1), this_idx1, n_idx2);
   if(!(GIT_OK != rc_git_commit_parent_idx2)) {
     obj_type_Commit_push(L, parent_idx1, 0);
@@ -3262,11 +3871,13 @@ static int Commit__parent__meth(lua_State *L) {
 
 /* method: lookup */
 static int Tree__lookup__meth(lua_State *L) {
-  Repository * repo_idx1 = obj_type_Repository_check(L,1);
-  OID id_idx2 = obj_type_OID_check(L,2);
+  Repository * repo_idx1;
+  OID id_idx2;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Tree * this_idx1;
   GitError err_idx2 = GIT_OK;
+  repo_idx1 = obj_type_Repository_check(L,1);
+  id_idx2 = obj_type_OID_check(L,2);
   err_idx2 = git_tree_lookup(&(this_idx1), repo_idx1, &(id_idx2));
   if(!(GIT_OK != err_idx2)) {
     obj_type_Tree_push(L, this_idx1, this_flags_idx1);
@@ -3279,8 +3890,9 @@ static int Tree__lookup__meth(lua_State *L) {
 
 /* method: entrycount */
 static int Tree__entrycount__meth(lua_State *L) {
-  Tree * this_idx1 = obj_type_Tree_check(L,1);
+  Tree * this_idx1;
   size_t rc_git_tree_entrycount_idx1 = 0;
+  this_idx1 = obj_type_Tree_check(L,1);
   rc_git_tree_entrycount_idx1 = git_tree_entrycount(this_idx1);
   lua_pushinteger(L, rc_git_tree_entrycount_idx1);
   return 1;
@@ -3288,10 +3900,12 @@ static int Tree__entrycount__meth(lua_State *L) {
 
 /* method: entry_byname */
 static int Tree__entry_byname__meth(lua_State *L) {
-  Tree * this_idx1 = obj_type_Tree_check(L,1);
+  Tree * this_idx1;
   size_t filename_len_idx2;
-  const char * filename_idx2 = luaL_checklstring(L,2,&(filename_len_idx2));
+  const char * filename_idx2;
   const TreeEntry * rc_git_tree_entry_byname_idx1;
+  this_idx1 = obj_type_Tree_check(L,1);
+  filename_idx2 = luaL_checklstring(L,2,&(filename_len_idx2));
   rc_git_tree_entry_byname_idx1 = git_tree_entry_byname(this_idx1, filename_idx2);
   obj_type_TreeEntry_push(L, rc_git_tree_entry_byname_idx1, 0);
   return 1;
@@ -3299,9 +3913,11 @@ static int Tree__entry_byname__meth(lua_State *L) {
 
 /* method: entry_byindex */
 static int Tree__entry_byindex__meth(lua_State *L) {
-  Tree * this_idx1 = obj_type_Tree_check(L,1);
-  int index_idx2 = luaL_checkinteger(L,2);
+  Tree * this_idx1;
+  int index_idx2;
   const TreeEntry * rc_git_tree_entry_byindex_idx1;
+  this_idx1 = obj_type_Tree_check(L,1);
+  index_idx2 = luaL_checkinteger(L,2);
   rc_git_tree_entry_byindex_idx1 = git_tree_entry_byindex(this_idx1, index_idx2);
   obj_type_TreeEntry_push(L, rc_git_tree_entry_byindex_idx1, 0);
   return 1;
@@ -3309,26 +3925,29 @@ static int Tree__entry_byindex__meth(lua_State *L) {
 
 /* method: name */
 static int TreeEntry__name__meth(lua_State *L) {
-  TreeEntry * this_idx1 = obj_type_TreeEntry_check(L,1);
+  TreeEntry * this_idx1;
   const char * rc_git_tree_entry_name_idx1 = NULL;
+  this_idx1 = obj_type_TreeEntry_check(L,1);
   rc_git_tree_entry_name_idx1 = git_tree_entry_name(this_idx1);
   lua_pushstring(L, rc_git_tree_entry_name_idx1);
   return 1;
 }
 
-/* method: attributes */
-static int TreeEntry__attributes__meth(lua_State *L) {
-  TreeEntry * this_idx1 = obj_type_TreeEntry_check(L,1);
-  unsigned int rc_git_tree_entry_attributes_idx1 = 0;
-  rc_git_tree_entry_attributes_idx1 = git_tree_entry_attributes(this_idx1);
-  lua_pushinteger(L, rc_git_tree_entry_attributes_idx1);
+/* method: filemode */
+static int TreeEntry__filemode__meth(lua_State *L) {
+  TreeEntry * this_idx1;
+  unsigned int rc_git_tree_entry_filemode_idx1 = 0;
+  this_idx1 = obj_type_TreeEntry_check(L,1);
+  rc_git_tree_entry_filemode_idx1 = git_tree_entry_filemode(this_idx1);
+  lua_pushinteger(L, rc_git_tree_entry_filemode_idx1);
   return 1;
 }
 
 /* method: id */
 static int TreeEntry__id__meth(lua_State *L) {
-  TreeEntry * this_idx1 = obj_type_TreeEntry_check(L,1);
+  TreeEntry * this_idx1;
   OID id_idx1;
+  this_idx1 = obj_type_TreeEntry_check(L,1);
 id_idx1 = *(git_tree_entry_id(this_idx1));
   obj_type_OID_push(L, id_idx1);
   return 1;
@@ -3336,11 +3955,13 @@ id_idx1 = *(git_tree_entry_id(this_idx1));
 
 /* method: object */
 static int TreeEntry__object__meth(lua_State *L) {
-  TreeEntry * this_idx1 = obj_type_TreeEntry_check(L,1);
-  Repository * repo_idx2 = obj_type_Repository_check(L,2);
+  TreeEntry * this_idx1;
+  Repository * repo_idx2;
   int obj_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Object * obj_idx1;
   GitError rc_git_tree_entry_to_object_idx2 = GIT_OK;
+  this_idx1 = obj_type_TreeEntry_check(L,1);
+  repo_idx2 = obj_type_Repository_check(L,2);
   rc_git_tree_entry_to_object_idx2 = git_tree_entry_to_object(&(obj_idx1), repo_idx2, this_idx1);
   if(!(GIT_OK != rc_git_tree_entry_to_object_idx2)) {
     obj_type_Object_push(L, obj_idx1, obj_flags_idx1);
@@ -3353,11 +3974,13 @@ static int TreeEntry__object__meth(lua_State *L) {
 
 /* method: lookup */
 static int Tag__lookup__meth(lua_State *L) {
-  Repository * repo_idx1 = obj_type_Repository_check(L,1);
-  OID id_idx2 = obj_type_OID_check(L,2);
+  Repository * repo_idx1;
+  OID id_idx2;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Tag * this_idx1;
   GitError err_idx2 = GIT_OK;
+  repo_idx1 = obj_type_Repository_check(L,1);
+  id_idx2 = obj_type_OID_check(L,2);
   err_idx2 = git_tag_lookup(&(this_idx1), repo_idx1, &(id_idx2));
   if(!(GIT_OK != err_idx2)) {
     obj_type_Tag_push(L, this_idx1, this_flags_idx1);
@@ -3370,9 +3993,10 @@ static int Tag__lookup__meth(lua_State *L) {
 
 /* method: target */
 static int Tag__target__meth(lua_State *L) {
-  Tag * this_idx1 = obj_type_Tag_check(L,1);
+  Tag * this_idx1;
   Object * out_idx1;
   GitError rc_git_tag_target_idx2 = GIT_OK;
+  this_idx1 = obj_type_Tag_check(L,1);
   rc_git_tag_target_idx2 = git_tag_target(&(out_idx1), this_idx1);
   if(!(GIT_OK != rc_git_tag_target_idx2)) {
     obj_type_Object_push(L, out_idx1, 0);
@@ -3385,8 +4009,9 @@ static int Tag__target__meth(lua_State *L) {
 
 /* method: name */
 static int Tag__name__meth(lua_State *L) {
-  Tag * this_idx1 = obj_type_Tag_check(L,1);
+  Tag * this_idx1;
   const char * rc_git_tag_name_idx1 = NULL;
+  this_idx1 = obj_type_Tag_check(L,1);
   rc_git_tag_name_idx1 = git_tag_name(this_idx1);
   lua_pushstring(L, rc_git_tag_name_idx1);
   return 1;
@@ -3394,8 +4019,9 @@ static int Tag__name__meth(lua_State *L) {
 
 /* method: tagger */
 static int Tag__tagger__meth(lua_State *L) {
-  Tag * this_idx1 = obj_type_Tag_check(L,1);
+  Tag * this_idx1;
   const Signature * rc_git_tag_tagger_idx1;
+  this_idx1 = obj_type_Tag_check(L,1);
   rc_git_tag_tagger_idx1 = git_tag_tagger(this_idx1);
   obj_type_Signature_push(L, rc_git_tag_tagger_idx1, 0);
   return 1;
@@ -3403,8 +4029,9 @@ static int Tag__tagger__meth(lua_State *L) {
 
 /* method: message */
 static int Tag__message__meth(lua_State *L) {
-  Tag * this_idx1 = obj_type_Tag_check(L,1);
+  Tag * this_idx1;
   const char * rc_git_tag_message_idx1 = NULL;
+  this_idx1 = obj_type_Tag_check(L,1);
   rc_git_tag_message_idx1 = git_tag_message(this_idx1);
   lua_pushstring(L, rc_git_tag_message_idx1);
   return 1;
@@ -3412,10 +4039,11 @@ static int Tag__message__meth(lua_State *L) {
 
 /* method: new */
 static int RevWalk__new__meth(lua_State *L) {
-  Repository * repo_idx1 = obj_type_Repository_check(L,1);
+  Repository * repo_idx1;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   RevWalk * this_idx1;
   GitError err_idx2 = GIT_OK;
+  repo_idx1 = obj_type_Repository_check(L,1);
   err_idx2 = git_revwalk_new(&(this_idx1), repo_idx1);
   if(!(GIT_OK != err_idx2)) {
     obj_type_RevWalk_push(L, this_idx1, this_flags_idx1);
@@ -3429,7 +4057,8 @@ static int RevWalk__new__meth(lua_State *L) {
 /* method: close */
 static int RevWalk__close__meth(lua_State *L) {
   int this_flags_idx1 = 0;
-  RevWalk * this_idx1 = obj_type_RevWalk_delete(L,1,&(this_flags_idx1));
+  RevWalk * this_idx1;
+  this_idx1 = obj_type_RevWalk_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
   git_revwalk_free(this_idx1);
   return 0;
@@ -3437,16 +4066,19 @@ static int RevWalk__close__meth(lua_State *L) {
 
 /* method: reset */
 static int RevWalk__reset__meth(lua_State *L) {
-  RevWalk * this_idx1 = obj_type_RevWalk_check(L,1);
+  RevWalk * this_idx1;
+  this_idx1 = obj_type_RevWalk_check(L,1);
   git_revwalk_reset(this_idx1);
   return 0;
 }
 
 /* method: push */
 static int RevWalk__push__meth(lua_State *L) {
-  RevWalk * this_idx1 = obj_type_RevWalk_check(L,1);
-  OID id_idx2 = obj_type_OID_check(L,2);
+  RevWalk * this_idx1;
+  OID id_idx2;
   GitError rc_git_revwalk_push_idx1 = GIT_OK;
+  this_idx1 = obj_type_RevWalk_check(L,1);
+  id_idx2 = obj_type_OID_check(L,2);
   rc_git_revwalk_push_idx1 = git_revwalk_push(this_idx1, &(id_idx2));
   /* check for error. */
   if((GIT_OK != rc_git_revwalk_push_idx1)) {
@@ -3461,9 +4093,11 @@ static int RevWalk__push__meth(lua_State *L) {
 
 /* method: hide */
 static int RevWalk__hide__meth(lua_State *L) {
-  RevWalk * this_idx1 = obj_type_RevWalk_check(L,1);
-  OID id_idx2 = obj_type_OID_check(L,2);
+  RevWalk * this_idx1;
+  OID id_idx2;
   GitError rc_git_revwalk_hide_idx1 = GIT_OK;
+  this_idx1 = obj_type_RevWalk_check(L,1);
+  id_idx2 = obj_type_OID_check(L,2);
   rc_git_revwalk_hide_idx1 = git_revwalk_hide(this_idx1, &(id_idx2));
   /* check for error. */
   if((GIT_OK != rc_git_revwalk_hide_idx1)) {
@@ -3478,9 +4112,10 @@ static int RevWalk__hide__meth(lua_State *L) {
 
 /* method: next */
 static int RevWalk__next__meth(lua_State *L) {
-  RevWalk * this_idx1 = obj_type_RevWalk_check(L,1);
+  RevWalk * this_idx1;
   OID id_idx1;
   GitError rc_git_revwalk_next_idx2 = GIT_OK;
+  this_idx1 = obj_type_RevWalk_check(L,1);
   rc_git_revwalk_next_idx2 = git_revwalk_next(&(id_idx1), this_idx1);
   if(!(GIT_OK != rc_git_revwalk_next_idx2)) {
     obj_type_OID_push(L, id_idx1);
@@ -3493,16 +4128,19 @@ static int RevWalk__next__meth(lua_State *L) {
 
 /* method: sorting */
 static int RevWalk__sorting__meth(lua_State *L) {
-  RevWalk * this_idx1 = obj_type_RevWalk_check(L,1);
-  unsigned int sort_mode_idx2 = luaL_checkinteger(L,2);
+  RevWalk * this_idx1;
+  unsigned int sort_mode_idx2;
+  this_idx1 = obj_type_RevWalk_check(L,1);
+  sort_mode_idx2 = luaL_checkinteger(L,2);
   git_revwalk_sorting(this_idx1, sort_mode_idx2);
   return 0;
 }
 
 /* method: repository */
 static int RevWalk__repository__meth(lua_State *L) {
-  RevWalk * this_idx1 = obj_type_RevWalk_check(L,1);
+  RevWalk * this_idx1;
   Repository * rc_git_revwalk_repository_idx1;
+  this_idx1 = obj_type_RevWalk_check(L,1);
   rc_git_revwalk_repository_idx1 = git_revwalk_repository(this_idx1);
   obj_type_Repository_push(L, rc_git_revwalk_repository_idx1, 0);
   return 1;
@@ -3510,12 +4148,14 @@ static int RevWalk__repository__meth(lua_State *L) {
 
 /* method: lookup */
 static int Reference__lookup__meth(lua_State *L) {
-  Repository * repo_idx1 = obj_type_Repository_check(L,1);
+  Repository * repo_idx1;
   size_t name_len_idx2;
-  const char * name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
+  const char * name_idx2;
   int this_flags_idx1 = OBJ_UDATA_FLAG_OWN;
   Reference * this_idx1;
   GitError err_idx2 = GIT_OK;
+  repo_idx1 = obj_type_Repository_check(L,1);
+  name_idx2 = luaL_checklstring(L,2,&(name_len_idx2));
   err_idx2 = git_reference_lookup(&(this_idx1), repo_idx1, name_idx2);
   if(!(GIT_OK != err_idx2)) {
     obj_type_Reference_push(L, this_idx1, this_flags_idx1);
@@ -3526,63 +4166,42 @@ static int Reference__lookup__meth(lua_State *L) {
   return 2;
 }
 
-/* method: oid */
-static int Reference__oid__meth(lua_State *L) {
-  Reference * this_idx1 = obj_type_Reference_check(L,1);
-  OID rc_git_reference_oid_idx1;
-  rc_git_reference_oid_idx1 = *git_reference_oid(this_idx1);
-  obj_type_OID_push(L, rc_git_reference_oid_idx1);
-  return 1;
-}
-
-/* method: set_oid */
-static int Reference__set_oid__meth(lua_State *L) {
-  Reference * this_idx1 = obj_type_Reference_check(L,1);
-  OID oid_idx2 = obj_type_OID_check(L,2);
-  GitError rc_git_reference_set_oid_idx1 = GIT_OK;
-  rc_git_reference_set_oid_idx1 = git_reference_set_oid(this_idx1, &(oid_idx2));
-  /* check for error. */
-  if((GIT_OK != rc_git_reference_set_oid_idx1)) {
-    lua_pushnil(L);
-      error_code__GitError__push(L, rc_git_reference_set_oid_idx1);
-  } else {
-    lua_pushboolean(L, 1);
-    lua_pushnil(L);
-  }
-  return 2;
-}
-
 /* method: target */
 static int Reference__target__meth(lua_State *L) {
-  Reference * this_idx1 = obj_type_Reference_check(L,1);
-  const char * rc_git_reference_target_idx1 = NULL;
-  rc_git_reference_target_idx1 = git_reference_target(this_idx1);
-  lua_pushstring(L, rc_git_reference_target_idx1);
+  Reference * this_idx1;
+  OID rc_git_reference_target_idx1;
+  this_idx1 = obj_type_Reference_check(L,1);
+  rc_git_reference_target_idx1 = *git_reference_target(this_idx1);
+  obj_type_OID_push(L, rc_git_reference_target_idx1);
   return 1;
 }
 
 /* method: set_target */
 static int Reference__set_target__meth(lua_State *L) {
-  Reference * this_idx1 = obj_type_Reference_check(L,1);
-  size_t target_len_idx2;
-  const char * target_idx2 = luaL_checklstring(L,2,&(target_len_idx2));
-  GitError rc_git_reference_set_target_idx1 = GIT_OK;
-  rc_git_reference_set_target_idx1 = git_reference_set_target(this_idx1, target_idx2);
-  /* check for error. */
-  if((GIT_OK != rc_git_reference_set_target_idx1)) {
-    lua_pushnil(L);
-      error_code__GitError__push(L, rc_git_reference_set_target_idx1);
+  Reference * this_idx1;
+  OID oid_idx2;
+  size_t log_message_len_idx3;
+  const char * log_message_idx3;
+  Reference * ref_out_idx1;
+  GitError rc_git_reference_set_target_idx2 = GIT_OK;
+  this_idx1 = obj_type_Reference_check(L,1);
+  oid_idx2 = obj_type_OID_check(L,2);
+  log_message_idx3 = luaL_checklstring(L,3,&(log_message_len_idx3));
+  rc_git_reference_set_target_idx2 = git_reference_set_target(&(ref_out_idx1), this_idx1, &(oid_idx2), log_message_idx3);
+  if(!(GIT_OK != rc_git_reference_set_target_idx2)) {
+    obj_type_Reference_push(L, ref_out_idx1, 0);
   } else {
-    lua_pushboolean(L, 1);
     lua_pushnil(L);
   }
+  error_code__GitError__push(L, rc_git_reference_set_target_idx2);
   return 2;
 }
 
 /* method: type */
 static int Reference__type__meth(lua_State *L) {
-  Reference * this_idx1 = obj_type_Reference_check(L,1);
+  Reference * this_idx1;
   git_ref_t rc_git_reference_type_idx1;
+  this_idx1 = obj_type_Reference_check(L,1);
   rc_git_reference_type_idx1 = git_reference_type(this_idx1);
   lua_pushinteger(L, rc_git_reference_type_idx1);
   return 1;
@@ -3590,8 +4209,9 @@ static int Reference__type__meth(lua_State *L) {
 
 /* method: name */
 static int Reference__name__meth(lua_State *L) {
-  Reference * this_idx1 = obj_type_Reference_check(L,1);
+  Reference * this_idx1;
   const char * rc_git_reference_name_idx1 = NULL;
+  this_idx1 = obj_type_Reference_check(L,1);
   rc_git_reference_name_idx1 = git_reference_name(this_idx1);
   lua_pushstring(L, rc_git_reference_name_idx1);
   return 1;
@@ -3599,9 +4219,10 @@ static int Reference__name__meth(lua_State *L) {
 
 /* method: resolve */
 static int Reference__resolve__meth(lua_State *L) {
-  Reference * this_idx1 = obj_type_Reference_check(L,1);
+  Reference * this_idx1;
   Reference * resolved_ref_idx1;
   GitError rc_git_reference_resolve_idx2 = GIT_OK;
+  this_idx1 = obj_type_Reference_check(L,1);
   rc_git_reference_resolve_idx2 = git_reference_resolve(&(resolved_ref_idx1), this_idx1);
   if(!(GIT_OK != rc_git_reference_resolve_idx2)) {
     obj_type_Reference_push(L, resolved_ref_idx1, 0);
@@ -3614,8 +4235,9 @@ static int Reference__resolve__meth(lua_State *L) {
 
 /* method: owner */
 static int Reference__owner__meth(lua_State *L) {
-  Reference * this_idx1 = obj_type_Reference_check(L,1);
+  Reference * this_idx1;
   Repository * rc_git_reference_owner_idx1;
+  this_idx1 = obj_type_Reference_check(L,1);
   rc_git_reference_owner_idx1 = git_reference_owner(this_idx1);
   obj_type_Repository_push(L, rc_git_reference_owner_idx1, 0);
   return 1;
@@ -3623,27 +4245,33 @@ static int Reference__owner__meth(lua_State *L) {
 
 /* method: rename */
 static int Reference__rename__meth(lua_State *L) {
-  Reference * this_idx1 = obj_type_Reference_check(L,1);
+  Reference * this_idx1;
   size_t new_name_len_idx2;
-  const char * new_name_idx2 = luaL_checklstring(L,2,&(new_name_len_idx2));
-  bool force_idx3 = lua_toboolean(L,3);
-  GitError rc_git_reference_rename_idx1 = GIT_OK;
-  rc_git_reference_rename_idx1 = git_reference_rename(this_idx1, new_name_idx2, force_idx3);
-  /* check for error. */
-  if((GIT_OK != rc_git_reference_rename_idx1)) {
-    lua_pushnil(L);
-      error_code__GitError__push(L, rc_git_reference_rename_idx1);
+  const char * new_name_idx2;
+  int force_idx3;
+  size_t log_message_len_idx4;
+  const char * log_message_idx4;
+  Reference * ref_out_idx1;
+  GitError rc_git_reference_rename_idx2 = GIT_OK;
+  this_idx1 = obj_type_Reference_check(L,1);
+  new_name_idx2 = luaL_checklstring(L,2,&(new_name_len_idx2));
+  force_idx3 = luaL_checkinteger(L,3);
+  log_message_idx4 = luaL_checklstring(L,4,&(log_message_len_idx4));
+  rc_git_reference_rename_idx2 = git_reference_rename(&(ref_out_idx1), this_idx1, new_name_idx2, force_idx3, log_message_idx4);
+  if(!(GIT_OK != rc_git_reference_rename_idx2)) {
+    obj_type_Reference_push(L, ref_out_idx1, 0);
   } else {
-    lua_pushboolean(L, 1);
     lua_pushnil(L);
   }
+  error_code__GitError__push(L, rc_git_reference_rename_idx2);
   return 2;
 }
 
 /* method: delete */
 static int Reference__delete__meth(lua_State *L) {
-  Reference * this_idx1 = obj_type_Reference_check(L,1);
+  Reference * this_idx1;
   GitError rc_git_reference_delete_idx1 = GIT_OK;
+  this_idx1 = obj_type_Reference_check(L,1);
   rc_git_reference_delete_idx1 = git_reference_delete(this_idx1);
   /* check for error. */
   if((GIT_OK != rc_git_reference_delete_idx1)) {
@@ -3656,34 +4284,18 @@ static int Reference__delete__meth(lua_State *L) {
   return 2;
 }
 
-/* method: packall */
-static int Reference__packall__func(lua_State *L) {
-  Repository * repo_idx1 = obj_type_Repository_check(L,1);
-  GitError rc_git_reference_packall_idx1 = GIT_OK;
-  rc_git_reference_packall_idx1 = git_reference_packall(repo_idx1);
-  /* check for error. */
-  if((GIT_OK != rc_git_reference_packall_idx1)) {
-    lua_pushnil(L);
-      error_code__GitError__push(L, rc_git_reference_packall_idx1);
-  } else {
-    lua_pushboolean(L, 1);
-    lua_pushnil(L);
-  }
-  return 2;
-}
-
 /* method: list */
 static int Reference__list__func(lua_State *L) {
-  Repository * repo_idx1 = obj_type_Repository_check(L,1);
-  unsigned int list_flags_idx2 = luaL_checkinteger(L,2);
+  Repository * repo_idx1;
   StrArray array_idx1_store;
   StrArray * array_idx1 = &(array_idx1_store);
   GitError err_idx2 = GIT_OK;
 	git_strarray tmp_array = { .strings = NULL, .count = 0 };
 
+  repo_idx1 = obj_type_Repository_check(L,1);
 	/* push this onto stack now, just encase there is a out-of-memory error. */
 	array_idx1 = obj_type_StrArray_push(L, &tmp_array);
-	err_idx2 = git_reference_list(array_idx1, repo_idx1, list_flags_idx2);
+	err_idx2 = git_reference_list(array_idx1, repo_idx1);
 	if(err_idx2 == GIT_OK) {
 		return 1; /* array is already on the stack. */
 	} else {
@@ -3703,12 +4315,12 @@ static int Reference__list__func(lua_State *L) {
 
 
 
-static const luaL_reg obj_StrArray_pub_funcs[] = {
+static const luaL_Reg obj_StrArray_pub_funcs[] = {
   {"new", StrArray__new__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_StrArray_methods[] = {
+static const luaL_Reg obj_StrArray_methods[] = {
   {"free", StrArray__free__meth},
   {"str", StrArray__str__meth},
   {"get_array", StrArray__get_array__meth},
@@ -3716,7 +4328,7 @@ static const luaL_reg obj_StrArray_methods[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_StrArray_metas[] = {
+static const luaL_Reg obj_StrArray_metas[] = {
   {"__gc", StrArray__free__meth},
   {"__tostring", obj_simple_udata_default_tostring},
   {"__eq", obj_simple_udata_default_equal},
@@ -3735,16 +4347,20 @@ static const obj_const obj_StrArray_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_Repository_pub_funcs[] = {
+static const reg_impl obj_StrArray_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_Repository_pub_funcs[] = {
   {"open", Repository__open__meth},
   {"init", Repository__init__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Repository_methods[] = {
+static const luaL_Reg obj_Repository_methods[] = {
   {"head", Repository__head__meth},
   {"head_detached", Repository__head_detached__meth},
-  {"head_orphan", Repository__head_orphan__meth},
+  {"head_unborn", Repository__head_unborn__meth},
   {"is_empty", Repository__is_empty__meth},
   {"is_bare", Repository__is_bare__meth},
   {"path", Repository__path__meth},
@@ -3759,7 +4375,7 @@ static const luaL_reg obj_Repository_methods[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Repository_metas[] = {
+static const luaL_Reg obj_Repository_metas[] = {
   {"__gc", Repository__delete__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -3778,13 +4394,17 @@ static const obj_const obj_Repository_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_Config_pub_funcs[] = {
+static const reg_impl obj_Repository_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_Config_pub_funcs[] = {
   {"new", Config__new__meth},
   {"open", Config__open__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Config_methods[] = {
+static const luaL_Reg obj_Config_methods[] = {
   {"free", Config__free__meth},
   {"add_file_ondisk", Config__add_file_ondisk__meth},
   {"get_int32", Config__get_int32__meth},
@@ -3795,11 +4415,12 @@ static const luaL_reg obj_Config_methods[] = {
   {"set_bool", Config__set_bool__meth},
   {"get_string", Config__get_string__meth},
   {"set_string", Config__set_string__meth},
-  {"delete", Config__delete__meth},
+  {"delete_entry", Config__delete_entry__meth},
+  {"delete_multivar", Config__delete_multivar__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Config_metas[] = {
+static const luaL_Reg obj_Config_metas[] = {
   {"__gc", Config__free__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -3818,11 +4439,15 @@ static const obj_const obj_Config_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_OdbObject_pub_funcs[] = {
+static const reg_impl obj_Config_implements[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_OdbObject_methods[] = {
+static const luaL_Reg obj_OdbObject_pub_funcs[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_OdbObject_methods[] = {
   {"free", OdbObject__free__meth},
   {"id", OdbObject__id__meth},
   {"data", OdbObject__data__meth},
@@ -3831,7 +4456,7 @@ static const luaL_reg obj_OdbObject_methods[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_OdbObject_metas[] = {
+static const luaL_Reg obj_OdbObject_metas[] = {
   {"__gc", OdbObject__free__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -3850,19 +4475,23 @@ static const obj_const obj_OdbObject_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_OID_pub_funcs[] = {
+static const reg_impl obj_OdbObject_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_OID_pub_funcs[] = {
   {"hex", OID__hex__meth},
   {"raw", OID__raw__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_OID_methods[] = {
+static const luaL_Reg obj_OID_methods[] = {
   {"pathfmt", OID__pathfmt__meth},
   {"fmt", OID__fmt__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_OID_metas[] = {
+static const luaL_Reg obj_OID_metas[] = {
   {"__tostring", OID____str____meth},
   {"__eq", OID____eq____meth},
   {NULL, NULL}
@@ -3880,26 +4509,30 @@ static const obj_const obj_OID_constants[] = {
 #ifdef GIT_OID_RAWSZ
   {"RAWSZ", NULL, GIT_OID_RAWSZ, CONST_NUMBER},
 #endif
-#ifdef GIT_OID_MINPREFIXLEN
-  {"MINPREFIXLEN", NULL, GIT_OID_MINPREFIXLEN, CONST_NUMBER},
-#endif
 #ifdef GIT_OID_HEXSZ
   {"HEXSZ", NULL, GIT_OID_HEXSZ, CONST_NUMBER},
+#endif
+#ifdef GIT_OID_MINPREFIXLEN
+  {"MINPREFIXLEN", NULL, GIT_OID_MINPREFIXLEN, CONST_NUMBER},
 #endif
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_OID_Shorten_pub_funcs[] = {
+static const reg_impl obj_OID_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_OID_Shorten_pub_funcs[] = {
   {"new", OID_Shorten__new__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_OID_Shorten_methods[] = {
+static const luaL_Reg obj_OID_Shorten_methods[] = {
   {"add", OID_Shorten__add__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_OID_Shorten_metas[] = {
+static const luaL_Reg obj_OID_Shorten_metas[] = {
   {"__gc", OID_Shorten__delete__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -3918,7 +4551,11 @@ static const obj_const obj_OID_Shorten_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_ODB_pub_funcs[] = {
+static const reg_impl obj_OID_Shorten_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_ODB_pub_funcs[] = {
   {"new", ODB__new__meth},
   {"open", ODB__open__meth},
   {"hash", ODB__hash__func},
@@ -3926,7 +4563,7 @@ static const luaL_reg obj_ODB_pub_funcs[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_ODB_methods[] = {
+static const luaL_Reg obj_ODB_methods[] = {
   {"free", ODB__free__meth},
   {"add_backend", ODB__add_backend__meth},
   {"add_alternate", ODB__add_alternate__meth},
@@ -3938,7 +4575,7 @@ static const luaL_reg obj_ODB_methods[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_ODB_metas[] = {
+static const luaL_Reg obj_ODB_metas[] = {
   {"__gc", ODB__free__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -3957,16 +4594,20 @@ static const obj_const obj_ODB_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_ODBBackend_pub_funcs[] = {
+static const reg_impl obj_ODB_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_ODBBackend_pub_funcs[] = {
   {"new", ODBBackend__new__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_ODBBackend_methods[] = {
+static const luaL_Reg obj_ODBBackend_methods[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_ODBBackend_metas[] = {
+static const luaL_Reg obj_ODBBackend_metas[] = {
   {"__gc", ODBBackend__delete__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -3985,32 +4626,34 @@ static const obj_const obj_ODBBackend_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_Index_pub_funcs[] = {
+static const reg_impl obj_ODBBackend_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_Index_pub_funcs[] = {
   {"bare", Index__bare__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Index_methods[] = {
+static const luaL_Reg obj_Index_methods[] = {
   {"clear", Index__clear__meth},
   {"read", Index__read__meth},
   {"write", Index__write__meth},
   {"find", Index__find__meth},
-  {"uniq", Index__uniq__meth},
+  {"add_bypath", Index__add_bypath__meth},
   {"add", Index__add__meth},
-  {"add2", Index__add2__meth},
-  {"append", Index__append__meth},
-  {"append2", Index__append2__meth},
   {"remove", Index__remove__meth},
-  {"get", Index__get__meth},
+  {"get_byindex", Index__get_byindex__meth},
+  {"get_bypath", Index__get_bypath__meth},
   {"entrycount", Index__entrycount__meth},
-  {"entrycount_unmerged", Index__entrycount_unmerged__meth},
-  {"get_unmerged_bypath", Index__get_unmerged_bypath__meth},
-  {"get_unmerged_byindex", Index__get_unmerged_byindex__meth},
+  {"reuc_entrycount", Index__reuc_entrycount__meth},
+  {"reuc_get_bypath", Index__reuc_get_bypath__meth},
+  {"reuc_get_byindex", Index__reuc_get_byindex__meth},
   {"read_tree", Index__read_tree__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Index_metas[] = {
+static const luaL_Reg obj_Index_metas[] = {
   {"__gc", Index__delete__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -4029,12 +4672,16 @@ static const obj_const obj_Index_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_IndexEntry_pub_funcs[] = {
+static const reg_impl obj_Index_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_IndexEntry_pub_funcs[] = {
   {"new", IndexEntry__new__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_IndexEntry_methods[] = {
+static const luaL_Reg obj_IndexEntry_methods[] = {
   {"stage", IndexEntry__stage__meth},
   {"ctime", IndexEntry__ctime__meth},
   {"set_ctime", IndexEntry__set_ctime__meth},
@@ -4048,13 +4695,13 @@ static const luaL_reg obj_IndexEntry_methods[] = {
   {"uid", IndexEntry__uid__meth},
   {"gid", IndexEntry__gid__meth},
   {"file_size", IndexEntry__file_size__meth},
-  {"oid", IndexEntry__oid__meth},
+  {"id", IndexEntry__id__meth},
   {"flags", IndexEntry__flags__meth},
   {"flags_extended", IndexEntry__flags_extended__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_IndexEntry_metas[] = {
+static const luaL_Reg obj_IndexEntry_metas[] = {
   {"__gc", IndexEntry__delete__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -4070,26 +4717,30 @@ static const obj_field obj_IndexEntry_fields[] = {
 };
 
 static const obj_const obj_IndexEntry_constants[] = {
-  {"EXTENDED", NULL, 16384, CONST_NUMBER},
   {"STAGEMASK", NULL, 12288, CONST_NUMBER},
-  {"VALID", NULL, 32768, CONST_NUMBER},
-  {"NAMEMASK", NULL, 4095, CONST_NUMBER},
   {"STAGESHIFT", NULL, 12, CONST_NUMBER},
+  {"NAMEMASK", NULL, 4095, CONST_NUMBER},
+  {"EXTENDED", NULL, 16384, CONST_NUMBER},
+  {"VALID", NULL, 32768, CONST_NUMBER},
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_IndexEntryUnmerged_pub_funcs[] = {
+static const reg_impl obj_IndexEntry_implements[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_IndexEntryUnmerged_methods[] = {
+static const luaL_Reg obj_IndexEntryUnmerged_pub_funcs[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_IndexEntryUnmerged_methods[] = {
   {"mode", IndexEntryUnmerged__mode__meth},
   {"oid", IndexEntryUnmerged__oid__meth},
   {"path", IndexEntryUnmerged__path__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_IndexEntryUnmerged_metas[] = {
+static const luaL_Reg obj_IndexEntryUnmerged_metas[] = {
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
   {NULL, NULL}
@@ -4107,13 +4758,17 @@ static const obj_const obj_IndexEntryUnmerged_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_Object_pub_funcs[] = {
+static const reg_impl obj_IndexEntryUnmerged_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_Object_pub_funcs[] = {
   {"type2string", Object__type2string__func},
   {"string2type", Object__string2type__func},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Object_methods[] = {
+static const luaL_Reg obj_Object_methods[] = {
   {"free", Object__free__meth},
   {"id", Object__id__meth},
   {"type", Object__type__meth},
@@ -4121,7 +4776,7 @@ static const luaL_reg obj_Object_methods[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Object_metas[] = {
+static const luaL_Reg obj_Object_metas[] = {
   {"__gc", Object__free__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -4140,24 +4795,28 @@ static const obj_const obj_Object_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_Blob_pub_funcs[] = {
-  {"lookup", Blob__lookup__meth},
-  {"fromfile", Blob__fromfile__func},
-  {"frombuffer", Blob__frombuffer__func},
+static const reg_impl obj_Object_implements[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Blob_methods[] = {
-  {"type", Object__type__meth},
-  {"free", Object__free__meth},
+static const luaL_Reg obj_Blob_pub_funcs[] = {
+  {"lookup", Blob__lookup__meth},
+  {"from_disk", Blob__from_disk__func},
+  {"from_buffer", Blob__from_buffer__func},
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_Blob_methods[] = {
   {"id", Object__id__meth},
   {"owner", Object__owner__meth},
+  {"free", Object__free__meth},
+  {"type", Object__type__meth},
   {"rawcontent", Blob__rawcontent__meth},
   {"rawsize", Blob__rawsize__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Blob_metas[] = {
+static const luaL_Reg obj_Blob_metas[] = {
   {"__gc", Object__free__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -4177,20 +4836,24 @@ static const obj_const obj_Blob_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_Signature_pub_funcs[] = {
+static const reg_impl obj_Blob_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_Signature_pub_funcs[] = {
   {"new", Signature__new__meth},
   {"now", Signature__now__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Signature_methods[] = {
+static const luaL_Reg obj_Signature_methods[] = {
   {"name", Signature__name__meth},
   {"email", Signature__email__meth},
   {"when", Signature__when__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Signature_metas[] = {
+static const luaL_Reg obj_Signature_metas[] = {
   {"__gc", Signature__delete__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -4209,16 +4872,20 @@ static const obj_const obj_Signature_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_Commit_pub_funcs[] = {
+static const reg_impl obj_Signature_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_Commit_pub_funcs[] = {
   {"lookup", Commit__lookup__meth},
   {"create", Commit__create__func},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Commit_methods[] = {
-  {"type", Object__type__meth},
-  {"free", Object__free__meth},
+static const luaL_Reg obj_Commit_methods[] = {
   {"owner", Object__owner__meth},
+  {"free", Object__free__meth},
+  {"type", Object__type__meth},
   {"id", Commit__id__meth},
   {"message_encoding", Commit__message_encoding__meth},
   {"message", Commit__message__meth},
@@ -4232,7 +4899,7 @@ static const luaL_reg obj_Commit_methods[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Commit_metas[] = {
+static const luaL_Reg obj_Commit_metas[] = {
   {"__gc", Object__free__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -4252,23 +4919,27 @@ static const obj_const obj_Commit_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_Tree_pub_funcs[] = {
+static const reg_impl obj_Commit_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_Tree_pub_funcs[] = {
   {"lookup", Tree__lookup__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Tree_methods[] = {
-  {"type", Object__type__meth},
-  {"free", Object__free__meth},
+static const luaL_Reg obj_Tree_methods[] = {
   {"id", Object__id__meth},
   {"owner", Object__owner__meth},
+  {"free", Object__free__meth},
+  {"type", Object__type__meth},
   {"entrycount", Tree__entrycount__meth},
   {"entry_byname", Tree__entry_byname__meth},
   {"entry_byindex", Tree__entry_byindex__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Tree_metas[] = {
+static const luaL_Reg obj_Tree_metas[] = {
   {"__gc", Object__free__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -4288,19 +4959,23 @@ static const obj_const obj_Tree_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_TreeEntry_pub_funcs[] = {
+static const reg_impl obj_Tree_implements[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_TreeEntry_methods[] = {
+static const luaL_Reg obj_TreeEntry_pub_funcs[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_TreeEntry_methods[] = {
   {"name", TreeEntry__name__meth},
-  {"attributes", TreeEntry__attributes__meth},
+  {"filemode", TreeEntry__filemode__meth},
   {"id", TreeEntry__id__meth},
   {"object", TreeEntry__object__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_TreeEntry_metas[] = {
+static const luaL_Reg obj_TreeEntry_metas[] = {
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
   {NULL, NULL}
@@ -4318,16 +4993,20 @@ static const obj_const obj_TreeEntry_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_Tag_pub_funcs[] = {
+static const reg_impl obj_TreeEntry_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_Tag_pub_funcs[] = {
   {"lookup", Tag__lookup__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Tag_methods[] = {
-  {"type", Object__type__meth},
-  {"free", Object__free__meth},
+static const luaL_Reg obj_Tag_methods[] = {
   {"id", Object__id__meth},
   {"owner", Object__owner__meth},
+  {"free", Object__free__meth},
+  {"type", Object__type__meth},
   {"target", Tag__target__meth},
   {"name", Tag__name__meth},
   {"tagger", Tag__tagger__meth},
@@ -4335,7 +5014,7 @@ static const luaL_reg obj_Tag_methods[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Tag_metas[] = {
+static const luaL_Reg obj_Tag_metas[] = {
   {"__gc", Object__free__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -4355,12 +5034,16 @@ static const obj_const obj_Tag_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_RevWalk_pub_funcs[] = {
+static const reg_impl obj_Tag_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_RevWalk_pub_funcs[] = {
   {"new", RevWalk__new__meth},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_RevWalk_methods[] = {
+static const luaL_Reg obj_RevWalk_methods[] = {
   {"close", RevWalk__close__meth},
   {"reset", RevWalk__reset__meth},
   {"push", RevWalk__push__meth},
@@ -4371,7 +5054,7 @@ static const luaL_reg obj_RevWalk_methods[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_RevWalk_metas[] = {
+static const luaL_Reg obj_RevWalk_metas[] = {
   {"__gc", RevWalk__close__meth},
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
@@ -4387,23 +5070,24 @@ static const obj_field obj_RevWalk_fields[] = {
 };
 
 static const obj_const obj_RevWalk_constants[] = {
-  {"SORT_NONE", NULL, 0, CONST_NUMBER},
   {"SORT_TIME", NULL, 2, CONST_NUMBER},
   {"SORT_REVERSE", NULL, 4, CONST_NUMBER},
   {"SORT_TOPOLOGICAL", NULL, 1, CONST_NUMBER},
+  {"SORT_NONE", NULL, 0, CONST_NUMBER},
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg obj_Reference_pub_funcs[] = {
+static const reg_impl obj_RevWalk_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg obj_Reference_pub_funcs[] = {
   {"lookup", Reference__lookup__meth},
-  {"packall", Reference__packall__func},
   {"list", Reference__list__func},
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Reference_methods[] = {
-  {"oid", Reference__oid__meth},
-  {"set_oid", Reference__set_oid__meth},
+static const luaL_Reg obj_Reference_methods[] = {
   {"target", Reference__target__meth},
   {"set_target", Reference__set_target__meth},
   {"type", Reference__type__meth},
@@ -4415,7 +5099,7 @@ static const luaL_reg obj_Reference_methods[] = {
   {NULL, NULL}
 };
 
-static const luaL_reg obj_Reference_metas[] = {
+static const luaL_Reg obj_Reference_metas[] = {
   {"__tostring", obj_udata_default_tostring},
   {"__eq", obj_udata_default_equal},
   {NULL, NULL}
@@ -4433,7 +5117,11 @@ static const obj_const obj_Reference_constants[] = {
   {NULL, NULL, 0.0 , 0}
 };
 
-static const luaL_reg git2_function[] = {
+static const reg_impl obj_Reference_implements[] = {
+  {NULL, NULL}
+};
+
+static const luaL_Reg git2_function[] = {
   {"version", git2__version__func},
   {NULL, NULL}
 };
@@ -4442,32 +5130,32 @@ static const obj_const git2_constants[] = {
 #ifdef GIT_REVWALKOVER
   {"REVWALKOVER", NULL, GIT_REVWALKOVER, CONST_NUMBER},
 #endif
-#ifdef GIT_ERROR
-  {"ERROR", NULL, GIT_ERROR, CONST_NUMBER},
+#ifdef GIT_OK
+  {"OK", NULL, GIT_OK, CONST_NUMBER},
 #endif
   {"REF_INVALID", NULL, 0, CONST_NUMBER},
+  {"REF_OID", NULL, 1, CONST_NUMBER},
 #ifdef GIT_PASSTHROUGH
   {"PASSTHROUGH", NULL, GIT_PASSTHROUGH, CONST_NUMBER},
 #endif
   {"REF_SYMBOLIC", NULL, 2, CONST_NUMBER},
-#ifdef GIT_EAMBIGUOUS
-  {"EAMBIGUOUS", NULL, GIT_EAMBIGUOUS, CONST_NUMBER},
-#endif
-#ifdef GIT_OK
-  {"OK", NULL, GIT_OK, CONST_NUMBER},
-#endif
-  {"REF_PACKED", NULL, 4, CONST_NUMBER},
   {"REF_HAS_PEEL", NULL, 8, CONST_NUMBER},
 #ifdef GIT_EBUFS
   {"EBUFS", NULL, GIT_EBUFS, CONST_NUMBER},
 #endif
+  {"REF_PACKED", NULL, 4, CONST_NUMBER},
   {"REF_LISTALL", NULL, 7, CONST_NUMBER},
 #ifdef GIT_EEXISTS
   {"EEXISTS", NULL, GIT_EEXISTS, CONST_NUMBER},
 #endif
-  {"REF_OID", NULL, 1, CONST_NUMBER},
+#ifdef GIT_EAMBIGUOUS
+  {"EAMBIGUOUS", NULL, GIT_EAMBIGUOUS, CONST_NUMBER},
+#endif
 #ifdef GIT_ENOTFOUND
   {"ENOTFOUND", NULL, GIT_ENOTFOUND, CONST_NUMBER},
+#endif
+#ifdef GIT_ERROR
+  {"ERROR", NULL, GIT_ERROR, CONST_NUMBER},
 #endif
   {NULL, NULL, 0.0 , 0}
 };
@@ -4475,27 +5163,27 @@ static const obj_const git2_constants[] = {
 
 
 static const reg_sub_module reg_sub_modules[] = {
-  { &(obj_type_StrArray), REG_OBJECT, obj_StrArray_pub_funcs, obj_StrArray_methods, obj_StrArray_metas, obj_StrArray_bases, obj_StrArray_fields, obj_StrArray_constants, 0},
-  { &(obj_type_Repository), REG_OBJECT, obj_Repository_pub_funcs, obj_Repository_methods, obj_Repository_metas, obj_Repository_bases, obj_Repository_fields, obj_Repository_constants, 0},
-  { &(obj_type_Config), REG_OBJECT, obj_Config_pub_funcs, obj_Config_methods, obj_Config_metas, obj_Config_bases, obj_Config_fields, obj_Config_constants, 0},
-  { &(obj_type_OdbObject), REG_OBJECT, obj_OdbObject_pub_funcs, obj_OdbObject_methods, obj_OdbObject_metas, obj_OdbObject_bases, obj_OdbObject_fields, obj_OdbObject_constants, 0},
-  { &(obj_type_OID), REG_OBJECT, obj_OID_pub_funcs, obj_OID_methods, obj_OID_metas, obj_OID_bases, obj_OID_fields, obj_OID_constants, 0},
-  { &(obj_type_OID_Shorten), REG_OBJECT, obj_OID_Shorten_pub_funcs, obj_OID_Shorten_methods, obj_OID_Shorten_metas, obj_OID_Shorten_bases, obj_OID_Shorten_fields, obj_OID_Shorten_constants, 0},
-  { &(obj_type_ODB), REG_OBJECT, obj_ODB_pub_funcs, obj_ODB_methods, obj_ODB_metas, obj_ODB_bases, obj_ODB_fields, obj_ODB_constants, 0},
-  { &(obj_type_ODBBackend), REG_OBJECT, obj_ODBBackend_pub_funcs, obj_ODBBackend_methods, obj_ODBBackend_metas, obj_ODBBackend_bases, obj_ODBBackend_fields, obj_ODBBackend_constants, 0},
-  { &(obj_type_Index), REG_OBJECT, obj_Index_pub_funcs, obj_Index_methods, obj_Index_metas, obj_Index_bases, obj_Index_fields, obj_Index_constants, 0},
-  { &(obj_type_IndexEntry), REG_OBJECT, obj_IndexEntry_pub_funcs, obj_IndexEntry_methods, obj_IndexEntry_metas, obj_IndexEntry_bases, obj_IndexEntry_fields, obj_IndexEntry_constants, 0},
-  { &(obj_type_IndexEntryUnmerged), REG_OBJECT, obj_IndexEntryUnmerged_pub_funcs, obj_IndexEntryUnmerged_methods, obj_IndexEntryUnmerged_metas, obj_IndexEntryUnmerged_bases, obj_IndexEntryUnmerged_fields, obj_IndexEntryUnmerged_constants, 0},
-  { &(obj_type_Object), REG_OBJECT, obj_Object_pub_funcs, obj_Object_methods, obj_Object_metas, obj_Object_bases, obj_Object_fields, obj_Object_constants, 0},
-  { &(obj_type_Blob), REG_OBJECT, obj_Blob_pub_funcs, obj_Blob_methods, obj_Blob_metas, obj_Blob_bases, obj_Blob_fields, obj_Blob_constants, 0},
-  { &(obj_type_Signature), REG_OBJECT, obj_Signature_pub_funcs, obj_Signature_methods, obj_Signature_metas, obj_Signature_bases, obj_Signature_fields, obj_Signature_constants, 0},
-  { &(obj_type_Commit), REG_OBJECT, obj_Commit_pub_funcs, obj_Commit_methods, obj_Commit_metas, obj_Commit_bases, obj_Commit_fields, obj_Commit_constants, 0},
-  { &(obj_type_Tree), REG_OBJECT, obj_Tree_pub_funcs, obj_Tree_methods, obj_Tree_metas, obj_Tree_bases, obj_Tree_fields, obj_Tree_constants, 0},
-  { &(obj_type_TreeEntry), REG_OBJECT, obj_TreeEntry_pub_funcs, obj_TreeEntry_methods, obj_TreeEntry_metas, obj_TreeEntry_bases, obj_TreeEntry_fields, obj_TreeEntry_constants, 0},
-  { &(obj_type_Tag), REG_OBJECT, obj_Tag_pub_funcs, obj_Tag_methods, obj_Tag_metas, obj_Tag_bases, obj_Tag_fields, obj_Tag_constants, 0},
-  { &(obj_type_RevWalk), REG_OBJECT, obj_RevWalk_pub_funcs, obj_RevWalk_methods, obj_RevWalk_metas, obj_RevWalk_bases, obj_RevWalk_fields, obj_RevWalk_constants, 0},
-  { &(obj_type_Reference), REG_OBJECT, obj_Reference_pub_funcs, obj_Reference_methods, obj_Reference_metas, obj_Reference_bases, obj_Reference_fields, obj_Reference_constants, 0},
-  {NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0}
+  { &(obj_type_StrArray), REG_OBJECT, obj_StrArray_pub_funcs, obj_StrArray_methods, obj_StrArray_metas, obj_StrArray_bases, obj_StrArray_fields, obj_StrArray_constants, obj_StrArray_implements, 0},
+  { &(obj_type_Repository), REG_OBJECT, obj_Repository_pub_funcs, obj_Repository_methods, obj_Repository_metas, obj_Repository_bases, obj_Repository_fields, obj_Repository_constants, obj_Repository_implements, 0},
+  { &(obj_type_Config), REG_OBJECT, obj_Config_pub_funcs, obj_Config_methods, obj_Config_metas, obj_Config_bases, obj_Config_fields, obj_Config_constants, obj_Config_implements, 0},
+  { &(obj_type_OdbObject), REG_OBJECT, obj_OdbObject_pub_funcs, obj_OdbObject_methods, obj_OdbObject_metas, obj_OdbObject_bases, obj_OdbObject_fields, obj_OdbObject_constants, obj_OdbObject_implements, 0},
+  { &(obj_type_OID), REG_OBJECT, obj_OID_pub_funcs, obj_OID_methods, obj_OID_metas, obj_OID_bases, obj_OID_fields, obj_OID_constants, obj_OID_implements, 0},
+  { &(obj_type_OID_Shorten), REG_OBJECT, obj_OID_Shorten_pub_funcs, obj_OID_Shorten_methods, obj_OID_Shorten_metas, obj_OID_Shorten_bases, obj_OID_Shorten_fields, obj_OID_Shorten_constants, obj_OID_Shorten_implements, 0},
+  { &(obj_type_ODB), REG_OBJECT, obj_ODB_pub_funcs, obj_ODB_methods, obj_ODB_metas, obj_ODB_bases, obj_ODB_fields, obj_ODB_constants, obj_ODB_implements, 0},
+  { &(obj_type_ODBBackend), REG_OBJECT, obj_ODBBackend_pub_funcs, obj_ODBBackend_methods, obj_ODBBackend_metas, obj_ODBBackend_bases, obj_ODBBackend_fields, obj_ODBBackend_constants, obj_ODBBackend_implements, 0},
+  { &(obj_type_Index), REG_OBJECT, obj_Index_pub_funcs, obj_Index_methods, obj_Index_metas, obj_Index_bases, obj_Index_fields, obj_Index_constants, obj_Index_implements, 0},
+  { &(obj_type_IndexEntry), REG_OBJECT, obj_IndexEntry_pub_funcs, obj_IndexEntry_methods, obj_IndexEntry_metas, obj_IndexEntry_bases, obj_IndexEntry_fields, obj_IndexEntry_constants, obj_IndexEntry_implements, 0},
+  { &(obj_type_IndexEntryUnmerged), REG_OBJECT, obj_IndexEntryUnmerged_pub_funcs, obj_IndexEntryUnmerged_methods, obj_IndexEntryUnmerged_metas, obj_IndexEntryUnmerged_bases, obj_IndexEntryUnmerged_fields, obj_IndexEntryUnmerged_constants, obj_IndexEntryUnmerged_implements, 0},
+  { &(obj_type_Object), REG_OBJECT, obj_Object_pub_funcs, obj_Object_methods, obj_Object_metas, obj_Object_bases, obj_Object_fields, obj_Object_constants, obj_Object_implements, 0},
+  { &(obj_type_Blob), REG_OBJECT, obj_Blob_pub_funcs, obj_Blob_methods, obj_Blob_metas, obj_Blob_bases, obj_Blob_fields, obj_Blob_constants, obj_Blob_implements, 0},
+  { &(obj_type_Signature), REG_OBJECT, obj_Signature_pub_funcs, obj_Signature_methods, obj_Signature_metas, obj_Signature_bases, obj_Signature_fields, obj_Signature_constants, obj_Signature_implements, 0},
+  { &(obj_type_Commit), REG_OBJECT, obj_Commit_pub_funcs, obj_Commit_methods, obj_Commit_metas, obj_Commit_bases, obj_Commit_fields, obj_Commit_constants, obj_Commit_implements, 0},
+  { &(obj_type_Tree), REG_OBJECT, obj_Tree_pub_funcs, obj_Tree_methods, obj_Tree_metas, obj_Tree_bases, obj_Tree_fields, obj_Tree_constants, obj_Tree_implements, 0},
+  { &(obj_type_TreeEntry), REG_OBJECT, obj_TreeEntry_pub_funcs, obj_TreeEntry_methods, obj_TreeEntry_metas, obj_TreeEntry_bases, obj_TreeEntry_fields, obj_TreeEntry_constants, obj_TreeEntry_implements, 0},
+  { &(obj_type_Tag), REG_OBJECT, obj_Tag_pub_funcs, obj_Tag_methods, obj_Tag_metas, obj_Tag_bases, obj_Tag_fields, obj_Tag_constants, obj_Tag_implements, 0},
+  { &(obj_type_RevWalk), REG_OBJECT, obj_RevWalk_pub_funcs, obj_RevWalk_methods, obj_RevWalk_metas, obj_RevWalk_bases, obj_RevWalk_fields, obj_RevWalk_constants, obj_RevWalk_implements, 0},
+  { &(obj_type_Reference), REG_OBJECT, obj_Reference_pub_funcs, obj_Reference_methods, obj_Reference_metas, obj_Reference_bases, obj_Reference_fields, obj_Reference_constants, obj_Reference_implements, 0},
+  {NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0}
 };
 
 
@@ -4541,6 +5229,9 @@ LUA_NOBJ_API int luaopen_git2(lua_State *L) {
 	const luaL_Reg *submodules = submodule_libs;
 	int priv_table = -1;
 
+	/* register interfaces */
+	obj_register_interfaces(L, obj_interfaces);
+
 	/* private table to hold reference to object metatables. */
 	lua_newtable(L);
 	priv_table = lua_gettop(L);
@@ -4556,7 +5247,7 @@ LUA_NOBJ_API int luaopen_git2(lua_State *L) {
 	luaL_register(L, "git2", git2_function);
 #else
 	lua_newtable(L);
-	luaL_register(L, NULL, git2_function);
+	luaL_setfuncs(L, git2_function, 0);
 #endif
 
 	/* register module constants. */
@@ -4582,10 +5273,12 @@ LUA_NOBJ_API int luaopen_git2(lua_State *L) {
 
 #if LUAJIT_FFI
 	if(nobj_check_ffi_support(L)) {
-		nobj_try_loading_ffi(L, "git2", git2_ffi_lua_code,
+		nobj_try_loading_ffi(L, "git2.nobj.ffi.lua", git2_ffi_lua_code,
 			git2_ffi_export, priv_table);
 	}
 #endif
+
+  git_libgit2_init();
 
 
 
