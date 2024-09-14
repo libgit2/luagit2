@@ -16,10 +16,9 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_entry_attributes">git_tree_entry_attributes</a>:<p><p>
 -- @return <code>integer</code>.
--- @name TreeEntry:attributes
-function TreeEntry:attributes()
+-- @name TreeEntry:filemode
+function TreeEntry:filemode()
 end
 
 --- object method.

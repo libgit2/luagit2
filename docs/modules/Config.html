@@ -1,19 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
-    <title>Reference</title>
+    <title>Config: Module Index</title>
     <link rel="stylesheet" href="../luadoc.css" type="text/css" />
-	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
+    <!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
 </head>
 
 <body>
 <div id="container">
 
 <div id="product">
-	<div id="product_logo"></div>
-	<div id="product_name"><big><b></b></big></div>
-	<div id="product_description"></div>
+    <div id="product_logo"></div>
+    <div id="product_name"><big><b></b></big></div>
+    <div id="product_description"></div>
 </div> <!-- id="product" -->
 
 <div id="main">
@@ -142,70 +143,75 @@
 <h2>Functions</h2>
 <table class="function_list">
 
-	<tr>
-	<td class="name" nowrap><a href="#Config.new">Config.new</a>&nbsp;()</td>
-	<td class="summary">Create a new Config object.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config.new">Config.new</a>&nbsp;()</td>
+    <td class="summary">Create a new Config object.</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config.open">Config.open</a>&nbsp;(path)</td>
-	<td class="summary">Create a new Config object.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config.open">Config.open</a>&nbsp;(path)</td>
+    <td class="summary">Create a new Config object.</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config:add_file_ondisk">Config:add_file_ondisk</a>&nbsp;(path, priority)</td>
-	<td class="summary">object method.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config:add_file_ondisk">Config:add_file_ondisk</a>&nbsp;(path, level, repo, force)</td>
+    <td class="summary">object method.</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config:delete">Config:delete</a>&nbsp;(name)</td>
-	<td class="summary">object method.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config:delete_entry">Config:delete_entry</a>&nbsp;(name)</td>
+    <td class="summary">object method.</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config:free">Config:free</a>&nbsp;()</td>
-	<td class="summary">Destroy this object (will be called by Garbage Collector).</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config:delete_multivar">Config:delete_multivar</a>&nbsp;(name, regexp)</td>
+    <td class="summary">object method.</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config:get_bool">Config:get_bool</a>&nbsp;(name)</td>
-	<td class="summary">object method.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config:free">Config:free</a>&nbsp;()</td>
+    <td class="summary">Destroy this object (will be called by Garbage Collector).</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config:get_int32">Config:get_int32</a>&nbsp;(name)</td>
-	<td class="summary">object method.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config:get_bool">Config:get_bool</a>&nbsp;(name)</td>
+    <td class="summary">object method.</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config:get_int64">Config:get_int64</a>&nbsp;(name)</td>
-	<td class="summary">object method.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config:get_int32">Config:get_int32</a>&nbsp;(name)</td>
+    <td class="summary">object method.</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config:get_string">Config:get_string</a>&nbsp;(name)</td>
-	<td class="summary">object method.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config:get_int64">Config:get_int64</a>&nbsp;(name)</td>
+    <td class="summary">object method.</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config:set_bool">Config:set_bool</a>&nbsp;(value, name)</td>
-	<td class="summary">object method.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config:get_string">Config:get_string</a>&nbsp;(name)</td>
+    <td class="summary">object method.</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config:set_int32">Config:set_int32</a>&nbsp;(name, value)</td>
-	<td class="summary">object method.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config:set_bool">Config:set_bool</a>&nbsp;(value, name)</td>
+    <td class="summary">object method.</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config:set_int64">Config:set_int64</a>&nbsp;(name, value)</td>
-	<td class="summary">object method.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config:set_int32">Config:set_int32</a>&nbsp;(name, value)</td>
+    <td class="summary">object method.</td>
+    </tr>
 
-	<tr>
-	<td class="name" nowrap><a href="#Config:set_string">Config:set_string</a>&nbsp;(name, value)</td>
-	<td class="summary">object method.</td>
-	</tr>
+    <tr>
+    <td class="name" nowrap><a href="#Config:set_int64">Config:set_int64</a>&nbsp;(name, value)</td>
+    <td class="summary">object method.</td>
+    </tr>
+
+    <tr>
+    <td class="name" nowrap><a href="#Config:set_string">Config:set_string</a>&nbsp;(name, value)</td>
+    <td class="summary">object method.</td>
+    </tr>
 
 </table>
 
@@ -285,7 +291,7 @@ Create a new Config object.  <p>Calls <a href="http://libgit2.github.com/libgit2
 
 
 
-<dt><a name="Config:add_file_ondisk"></a><strong>Config:add_file_ondisk</strong>&nbsp;(path, priority)</dt>
+<dt><a name="Config:add_file_ondisk"></a><strong>Config:add_file_ondisk</strong>&nbsp;(path, level, repo, force)</dt>
 <dd>
 object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_add_file_ondisk">git_config_add_file_ondisk</a>:<p><p>The on-disk file pointed at by `path` will be opened and parsed; it's expected to be a native Git config file following the default Git config syntax (see man git-config).<p> Note that the configuration object will free the file automatically.<p> Further queries on this config object will access each of the config file instances in order (instances with a higher priority will be accessed first).
 
@@ -298,7 +304,15 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 	</li>
 	
 	<li>
-	  priority: the priority the backend should have.  Must be of type <code>integer</code>.
+	  level: Must be of type <code>integer</code>.
+	</li>
+	
+	<li>
+	  repo: Must be of type <a href="Repository.html">Repository</a>.
+	</li>
+	
+	<li>
+	  force: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -324,16 +338,55 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 
 
-<dt><a name="Config:delete"></a><strong>Config:delete</strong>&nbsp;(name)</dt>
+<dt><a name="Config:delete_entry"></a><strong>Config:delete_entry</strong>&nbsp;(name)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_delete">git_config_delete</a>:<p><p>
+object method. 
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  name: the variable to delete.  Must be of type <code>string</code>.
+	  name: Must be of type <code>string</code>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return values:</h3>
+<ol>
+	
+	<li><code>true</code> if no error.
+	
+	<li>Error string.
+	
+</ol>
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Config:delete_multivar"></a><strong>Config:delete_multivar</strong>&nbsp;(name, regexp)</dt>
+<dd>
+object method. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  name: Must be of type <code>string</code>.
+	</li>
+	
+	<li>
+	  regexp: Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -682,9 +735,9 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 </div> <!-- id="main" -->
 
 <div id="about">
-	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+    <p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
 </div> <!-- id="about" -->
 
-</div> <!-- id="container" -->	
+</div> <!-- id="container" -->
 </body>
 </html>

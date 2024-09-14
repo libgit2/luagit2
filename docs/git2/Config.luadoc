@@ -45,11 +45,13 @@ end
 --  of the config file instances in order (instances with
 --  a higher priority will be accessed first).
 -- @param path path to the configuration file (backend) to add.  Must be of type <code>string</code>.
--- @param priority the priority the backend should have.  Must be of type <code>integer</code>.
+-- @param level Must be of type <code>integer</code>.
+-- @param repo Must be of type <a href="Repository.html">Repository</a>.
+-- @param force Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
 -- @name Config:add_file_ondisk
-function Config:add_file_ondisk(path, priority)
+function Config:add_file_ondisk(path, level, repo, force)
 end
 
 --- object method.
@@ -137,11 +139,20 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_delete">git_config_delete</a>:<p><p>
--- @param name the variable to delete.  Must be of type <code>string</code>.
+-- @param name Must be of type <code>string</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
--- @name Config:delete
-function Config:delete(name)
+-- @name Config:delete_entry
+function Config:delete_entry(name)
+end
+
+--- object method.
+--
+-- @param name Must be of type <code>string</code>.
+-- @param regexp Must be of type <code>string</code>.
+-- @return <code>true</code> if no error.
+-- @return Error string.
+-- @name Config:delete_multivar
+function Config:delete_multivar(name, regexp)
 end
 

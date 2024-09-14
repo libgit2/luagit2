@@ -29,10 +29,11 @@ end
 --- object method.
 --
 -- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_read">git_index_read</a>:<p><p>
+-- @param force Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
 -- @name Index:read
-function Index:read()
+function Index:read(force)
 end
 
 --- object method.
@@ -47,17 +48,20 @@ end
 --- object method.
 --
 -- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_find">git_index_find</a>:<p><p>
+-- @param at_pos Must be of type <code>lightuserdata</code>.
 -- @param path path to search.  Must be of type <code>string</code>.
 -- @return <code>integer</code>.
 -- @name Index:find
-function Index:find(path)
+function Index:find(at_pos, path)
 end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_uniq">git_index_uniq</a>:<p><p>
--- @name Index:uniq
-function Index:uniq()
+-- @param path Must be of type <code>string</code>.
+-- @return <code>true</code> if no error.
+-- @return Error string.
+-- @name Index:add_bypath
+function Index:add_bypath(path)
 end
 
 --- object method.
@@ -66,64 +70,39 @@ end
 --  working folder and must be readable.<p> This method will fail in bare index instances.<p> This forces the file to be added to the index, not looking
 --  at gitignore rules.  Those rules can be evaluated through
 --  the git_status APIs (in status.h) before calling this.
--- @param path filename to add.  Must be of type <code>string</code>.
--- @param stage stage for the entry.  Must be of type <code>integer</code>.
+-- @param source_entry Must be of type <a href="IndexEntry.html">IndexEntry</a>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
 -- @name Index:add
-function Index:add(path, stage)
-end
-
---- object method.
---
--- @param source_entry Must be of type <a href="IndexEntry.html">IndexEntry</a>.
--- @return <code>true</code> if no error.
--- @return Error string.
--- @name Index:add2
-function Index:add2(source_entry)
-end
-
---- object method.
---
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_append">git_index_append</a>:<p><p>A new entry will always be inserted into the index;
---  if the index already contains an entry for such
---  path, the old entry will **not** be replaced.<p> The file `path` must be relative to the repository's
---  working folder and must be readable.<p> This method will fail in bare index instances.
--- @param path filename to add.  Must be of type <code>string</code>.
--- @param stage stage for the entry.  Must be of type <code>integer</code>.
--- @return <code>true</code> if no error.
--- @return Error string.
--- @name Index:append
-function Index:append(path, stage)
-end
-
---- object method.
---
--- @param source_entry Must be of type <a href="IndexEntry.html">IndexEntry</a>.
--- @return <code>true</code> if no error.
--- @return Error string.
--- @name Index:append2
-function Index:append2(source_entry)
+function Index:add(source_entry)
 end
 
 --- object method.
 --
 -- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_remove">git_index_remove</a>:<p><p>
--- @param position position of the entry to remove.  Must be of type <code>integer</code>.
+-- @param path Must be of type <code>string</code>.
+-- @param stage Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
 -- @name Index:remove
-function Index:remove(position)
+function Index:remove(path, stage)
 end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_get">git_index_get</a>:<p><p>This entry can be modified, and the changes will be written
---  back to disk on the next write() call.<p> The entry should not be freed by the caller.
--- @param n the position of the entry.  Must be of type <code>integer</code>.
+-- @param n Must be of type <code>integer</code>.
 -- @return <a href="IndexEntry.html">IndexEntry</a>.
--- @name Index:get
-function Index:get(n)
+-- @name Index:get_byindex
+function Index:get_byindex(n)
+end
+
+--- object method.
+--
+-- @param path Must be of type <code>string</code>.
+-- @param stage Must be of type <code>integer</code>.
+-- @return <a href="IndexEntry.html">IndexEntry</a>.
+-- @name Index:get_bypath
+function Index:get_bypath(path, stage)
 end
 
 --- object method.
@@ -136,30 +115,25 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_entrycount_unmerged">git_index_entrycount_unmerged</a>:<p><p>
 -- @return <code>integer</code>.
--- @name Index:entrycount_unmerged
-function Index:entrycount_unmerged()
+-- @name Index:reuc_entrycount
+function Index:reuc_entrycount()
 end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_get_unmerged_bypath">git_index_get_unmerged_bypath</a>:<p><p>The returned entry is read-only and should not be modified
---  of freed by the caller.
--- @param path path to search.  Must be of type <code>string</code>.
+-- @param path Must be of type <code>string</code>.
 -- @return <a href="IndexEntryUnmerged.html">IndexEntryUnmerged</a>.
--- @name Index:get_unmerged_bypath
-function Index:get_unmerged_bypath(path)
+-- @name Index:reuc_get_bypath
+function Index:reuc_get_bypath(path)
 end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_get_unmerged_byindex">git_index_get_unmerged_byindex</a>:<p><p>The returned entry is read-only and should not be modified
---  of freed by the caller.
--- @param n the position of the entry.  Must be of type <code>integer</code>.
+-- @param n Must be of type <code>integer</code>.
 -- @return <a href="IndexEntryUnmerged.html">IndexEntryUnmerged</a>.
--- @name Index:get_unmerged_byindex
-function Index:get_unmerged_byindex(n)
+-- @name Index:reuc_get_byindex
+function Index:reuc_get_byindex(n)
 end
 
 --- object method.

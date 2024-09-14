@@ -113,8 +113,8 @@ end
 --- object method.
 --
 -- @return <a href="OID.html">OID</a>.
--- @name IndexEntry:oid
-function IndexEntry:oid()
+-- @name IndexEntry:id
+function IndexEntry:id()
 end
 
 --- object method.

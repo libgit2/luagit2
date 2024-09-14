@@ -50,11 +50,9 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_head_orphan">git_repository_head_orphan</a>:<p><p>An orphan branch is one named from HEAD but which doesn't exist in
---  the refs namespace, because it doesn't have any commit to point to.
 -- @return <code>boolean</code>.
--- @name Repository:head_orphan
-function Repository:head_orphan()
+-- @name Repository:head_unborn
+function Repository:head_unborn()
 end
 
 --- object method.
@@ -100,10 +98,11 @@ end
 --  all the common workdir operations (checkout, status, index
 --  manipulation, etc).
 -- @param workdir The path to a working directory.  Must be of type <code>string</code>.
+-- @param update_gitlink Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
 -- @name Repository:set_workdir
-function Repository:set_workdir(workdir)
+function Repository:set_workdir(workdir, update_gitlink)
 end
 
 --- object method.

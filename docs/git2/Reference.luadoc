@@ -19,28 +19,8 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_oid">git_reference_oid</a>:<p><p>Only available if the reference is direct (i.e. not symbolic)
--- @return <a href="OID.html">OID</a>.
--- @name Reference:oid
-function Reference:oid()
-end
-
---- object method.
---
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_set_oid">git_reference_set_oid</a>:<p><p>The reference must be a direct reference, otherwise
---  this method will fail.<p> The reference will be automatically updated in
---  memory and on disk.
--- @param oid Must be of type <a href="OID.html">OID</a>.
--- @return <code>true</code> if no error.
--- @return Error string.
--- @name Reference:set_oid
-function Reference:set_oid(oid)
-end
-
---- object method.
---
 -- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_target">git_reference_target</a>:<p><p>Only available if the reference is symbolic
--- @return <code>string</code>.
+-- @return <a href="OID.html">OID</a>.
 -- @name Reference:target
 function Reference:target()
 end
@@ -50,11 +30,12 @@ end
 -- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_set_target">git_reference_set_target</a>:<p><p>The reference must be a symbolic reference, otherwise
 --  this method will fail.<p> The reference will be automatically updated in
 --  memory and on disk.
--- @param target The new target for the reference.  Must be of type <code>string</code>.
--- @return <code>true</code> if no error.
+-- @param oid Must be of type <a href="OID.html">OID</a>.
+-- @param log_message Must be of type <code>string</code>.
+-- @return <a href="Reference.html">Reference</a> or <code>nil</code> on error.
 -- @return Error string.
 -- @name Reference:set_target
-function Reference:set_target(target)
+function Reference:set_target(oid, log_message)
 end
 
 --- object method.
@@ -106,11 +87,12 @@ end
 --  reflog is enabled for the repository. We only rename
 --  the reflog if it exists.
 -- @param new_name The new name for the reference.  Must be of type <code>string</code>.
--- @param force Overwrite an existing reference.  Must be of type <code>boolean</code>.
--- @return <code>true</code> if no error.
+-- @param force Overwrite an existing reference.  Must be of type <code>integer</code>.
+-- @param log_message Must be of type <code>string</code>.
+-- @return <a href="Reference.html">Reference</a> or <code>nil</code> on error.
 -- @return Error string.
 -- @name Reference:rename
-function Reference:rename(new_name, force)
+function Reference:rename(new_name, force, log_message)
 end
 
 --- object method.
@@ -125,24 +107,10 @@ end
 
 --- module function.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_packall">git_reference_packall</a>:<p><p>This method will load into the cache all the loose
---  references on the repository and update the
---  `packed-refs` file with them.<p> Once the `packed-refs` file has been written properly,
---  the loose references will be removed from disk.
--- @param repo Repository where the loose refs will be packed.  Must be of type <a href="Repository.html">Repository</a>.
--- @return <code>true</code> if no error.
--- @return Error string.
--- @name Reference.packall
-function Reference.packall(repo)
-end
-
---- module function.
---
 -- @param repo Must be of type <a href="Repository.html">Repository</a>.
--- @param list_flags Must be of type <code>integer</code>.
 -- @return <a href="StrArray.html">StrArray</a> or <code>nil</code> on error.
 -- @return Error string.
 -- @name Reference.list
-function Reference.list(repo, list_flags)
+function Reference.list(repo)
 end
 
