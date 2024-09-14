@@ -10,8 +10,6 @@ set(BUILD_SHARED_LIBS TRUE)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 set(INSTALL_CMOD share/lua/cmod CACHE PATH "Directory to install Lua binary modules (configure lua via LUA_CPATH)")
-set(LUA_NATIVE_OBJECTS_PATH ../LuaNativeObjects CACHE PATH
-				"Directory to LuaNativeObjects bindings generator.")
 set(USE_PRE_GENERATED_BINDINGS TRUE CACHE BOOL
 				"Set this to FALSE to re-generate bindings using LuaNativeObjects")
 
@@ -28,7 +26,7 @@ include_directories(${LUA_INCLUDE_DIR})
 
 ## LibGit2
 include(FindPkgConfig)
-pkg_search_module(GIT2 REQUIRED libgit2=0.17.0)
+pkg_search_module(GIT2 REQUIRED libgit2>=0.17.0)
 add_definitions(${GIT2_CFLAGS})
 link_directories(${GIT2_LIBRARY_DIRS})
 include_directories(${GIT2_INCLUDE_DIRS})

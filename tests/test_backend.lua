@@ -10,7 +10,7 @@ end
 local git2 = require"git2"
 require"utils"
 
-print(dump(git2))
+--print(dump(git2))
 local function dump_obj(obj)
 	print('dump OdbObject:', obj)
 	if obj == nil then
@@ -29,7 +29,7 @@ end
 local db = assert(git2.ODB.new())
 print("=============================================== new db=", db)
 print("dump ODB interface")
-print(dbg_dump(db))
+--print(dbg_dump(db))
 
 -- create backend
 local obj_cache = {}

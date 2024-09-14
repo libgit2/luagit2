@@ -228,6 +228,10 @@ static void odb_backend_free_cb(git_odb_backend *backend)
 	REF_CB(exists)
 	REF_CB(free)
 #undef REF_CB
+
+#ifdef GIT_ODB_BACKEND_VERSION
+  ${this}->backend.version = GIT_ODB_BACKEND_VERSION;
+#endif
 ]]
 	},
 	destructor {

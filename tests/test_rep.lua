@@ -11,21 +11,21 @@ local git2 = require"git2"
 require"utils"
 
 print("dump git2 interface")
-print(dbg_dump(git2))
+-- print(dbg_dump(git2))
 
 local rep = assert(git2.Repository(git_path))
 
 print("dump Repository interface")
-print(dbg_dump(rep))
+-- print(dbg_dump(rep))
 
 local oid = git2.OID.hex("d5a93c463d4cca0068750eb6af7b4b54eea8599b")
 print("dump OID interface")
-print(dbg_dump(oid))
+-- print(dbg_dump(oid))
 print('convert OID value to string = <' .. tostring(oid) .. '>')
 
 local db = rep:odb()
 print("dump Database interface")
-print(dbg_dump(db))
+-- print(dbg_dump(db))
 
 print()
 print('test writing to the object database:')
@@ -36,7 +36,7 @@ print("read written object out of the database.")
 local odb_obj = db:read(oid)
 print()
 print("dump OdbObject interface")
-print(dbg_dump(odb_obj))
+-- print(dbg_dump(odb_obj))
 local function dump_odb_obj(obj)
 	-- check obj type
 	if obj == nil or not tostring(obj):match('^OdbObject: ') then
@@ -81,7 +81,7 @@ print("test parsing a commit object: ", commit_id)
 local commit1, err = git2.Commit.lookup(rep, commit_id)
 print(commit1, err)
 print("dump Commit interface")
-print(dbg_dump(commit1))
+--print(dbg_dump(commit1))
 local function dump_signature(pre, sig)
 	print(pre .. '.name = ', sig:name())
 	print(pre .. '.email = ', sig:email())
@@ -89,7 +89,7 @@ local function dump_signature(pre, sig)
 end
 local function dump_blob(blob)
 	print("dump Blob interface")
-	print(dbg_dump(blob))
+	--print(dbg_dump(blob))
 	print('blob.rawcontent.size =', blob:rawsize())
 	print('blob.rawcontents =', blob:rawcontent())
 end
@@ -142,7 +142,7 @@ dump_commit(commit1)
 
 local index = rep:index()
 print("dump Index interface")
-print(dbg_dump(index))
+--print(dbg_dump(index))
 local function dump_index_entry(entry)
 	if entry == nil then
 		return
@@ -177,7 +177,7 @@ dump_index(index)
 
 local revwalk = git2.RevWalk(rep)
 print("dump RevWalk interface")
-print(dbg_dump(revwalk))
+--print(dbg_dump(revwalk))
 print('sorting:', revwalk:sorting(revwalk.SORT_TOPOLOGICAL + revwalk.SORT_REVERSE))
 local head_id = git2.OID.hex("5c697d74eb692d650799ca1b0a10254d7130953d")
 local head = assert(git2.Commit.lookup(rep, head_id))
@@ -194,7 +194,7 @@ end
 local tag_id = git2.OID.hex('82dfe36284d77b608ccc9d96e0ffa5782cb7c835')
 local tag = git2.Tag.lookup(rep, tag_id)
 print("dump Tag interface")
-print(dbg_dump(tag))
+--print(dbg_dump(tag))
 local function dump_tag(tag)
 	if tag == nil then
 		return
