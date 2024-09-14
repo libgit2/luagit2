@@ -1,7 +1,7 @@
 #
 # Lua bindings for libgit2
 #
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.18)
 
 project(lua-git2 C)
 
@@ -10,16 +10,14 @@ set(BUILD_SHARED_LIBS TRUE)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 set(INSTALL_CMOD share/lua/cmod CACHE PATH "Directory to install Lua binary modules (configure lua via LUA_CPATH)")
-set(USE_PRE_GENERATED_BINDINGS TRUE CACHE BOOL
-				"Set this to FALSE to re-generate bindings using LuaNativeObjects")
 
 set(COMMON_CFLAGS "${CFLAGS}")
 set(COMMON_LIBS)
 
-## Lua 5.1.x
-include(FindLua51)
-if(NOT ${LUA51_FOUND})
-    message(FATAL_ERROR "The FindLua51 module could not find lua :-(")
+## Lua 5.x
+include(FindLua)
+if(NOT ${LUA_FOUND})
+    message(FATAL_ERROR "The FindLua module could not find lua :-(")
 endif()
 set(COMMON_LIBS "${COMMON_LIBS};${LUA_LIBRARIES}")
 include_directories(${LUA_INCLUDE_DIR})
