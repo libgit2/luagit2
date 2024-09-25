@@ -40,7 +40,11 @@ typedef git_commit Commit;
 		var_out{"GitError", "err"},
 		c_source "pre" [[
 	int parent_count = 0;
+#if LIBGIT2_VER_MAJOR == 1 && LIBGIT2_VER_MINOR == 8
+	git_commit **parents;
+#else
 	const git_commit **parents;
+#endif
 	int n;
 ]],
 		c_source[[
