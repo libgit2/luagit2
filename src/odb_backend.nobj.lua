@@ -154,27 +154,20 @@ static int odb_backend_write_cb(git_odb_backend *backend, const git_oid *oid, co
 {
 	ODBBackend *lua_backend = (ODBBackend *)backend;
 	lua_State *L = lua_backend->L;
-	int err;
 
 	/* get Lua callback function. */
 	lua_rawgeti(L, LUA_REGISTRYINDEX, lua_backend->write);
 
+  /* push oid */
+	obj_type_OID_push(L, *((OID *)oid));
 	/* push data onto stack. */
 	lua_pushlstring(L, data, len);
 	/* push otype */
 	lua_pushstring(L, git_object_type2string(type));
 
 	/* call Lua function. */
-	lua_call(L, 2, 2);
-	// TODO: this is bork
-	if(!lua_isnil(L, -2)) {
-		//*oid = obj_type_OID_check(L,-2);
-		err = GIT_OK;
-	} else {
-		err = lua_tointeger(L, -1);
-	}
-
-	return err;
+	lua_call(L, 3, 1);
+	return lua_tointeger(L, -1);
 }
 
 static int odb_backend_exists_cb(git_odb_backend *backend, const git_oid *oid)

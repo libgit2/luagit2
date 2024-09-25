@@ -70,9 +70,8 @@ on_read_header = function(oid)
 	end
 	return obj.len, obj.otype
 end,
-on_write = function(data, otype)
-	local oid = git2.ODB.hash(data, git2.Object.string2type(otype))
-	print("------------------- write callback:", data, otype)
+on_write = function(oid, data, otype)
+	print("------------------- write callback:", oid, data, otype)
 	if not oid then
 		return nil, -1
 	end
