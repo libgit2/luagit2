@@ -1745,27 +1745,20 @@ static int odb_backend_write_cb(git_odb_backend *backend, const git_oid *oid, co
 {
 	ODBBackend *lua_backend = (ODBBackend *)backend;
 	lua_State *L = lua_backend->L;
-	int err;
 
 	/* get Lua callback function. */
 	lua_rawgeti(L, LUA_REGISTRYINDEX, lua_backend->write);
 
+  /* push oid */
+	obj_type_OID_push(L, *((OID *)oid));
 	/* push data onto stack. */
 	lua_pushlstring(L, data, len);
 	/* push otype */
 	lua_pushstring(L, git_object_type2string(type));
 
 	/* call Lua function. */
-	lua_call(L, 2, 2);
-	// TODO: this is bork
-	if(!lua_isnil(L, -2)) {
-		//*oid = obj_type_OID_check(L,-2);
-		err = GIT_OK;
-	} else {
-		err = lua_tointeger(L, -1);
-	}
-
-	return err;
+	lua_call(L, 3, 1);
+	return lua_tointeger(L, -1);
 }
 
 static int odb_backend_exists_cb(git_odb_backend *backend, const git_oid *oid)
@@ -3183,7 +3176,7 @@ static int IndexEntry__delete__meth(lua_State *L) {
   this_idx1 = obj_type_IndexEntry_delete(L,1,&(this_flags_idx1));
   if(!(this_flags_idx1 & OBJ_UDATA_FLAG_OWN)) { return 0; }
 	if(this_idx1->path != NULL) {
-		free(this_idx1->path);
+		free((void *)this_idx1->path);
 	}
 	free(this_idx1);
 
@@ -3274,7 +3267,7 @@ static int IndexEntry__set_path__meth(lua_State *L) {
   this_idx1 = obj_type_IndexEntry_check(L,1);
   val_idx2 = luaL_checklstring(L,2,&(val_len_idx2));
 	if(this_idx1->path != NULL) {
-		free(this_idx1->path);
+		free((void *)this_idx1->path);
 	}
     char * path_buf = malloc(val_len_idx2);
 	strncpy(path_buf, val_idx2, val_len_idx2);
@@ -3494,14 +3487,14 @@ static void dyn_caster_Object(void **obj, obj_type **type) {
   case GIT_OBJ_BLOB:
     *type = &(obj_type_Blob);
     break;
-  case GIT_OBJ_COMMIT:
-    *type = &(obj_type_Commit);
+  case GIT_OBJ_TREE:
+    *type = &(obj_type_Tree);
     break;
   case GIT_OBJ_TAG:
     *type = &(obj_type_Tag);
     break;
-  case GIT_OBJ_TREE:
-    *type = &(obj_type_Tree);
+  case GIT_OBJ_COMMIT:
+    *type = &(obj_type_Commit);
     break;
   default:
     break;
@@ -3710,7 +3703,11 @@ static int Commit__create__func(lua_State *L) {
   Commit * parent_idx9;
   GitError err_idx1 = GIT_OK;
 	int parent_count = 0;
+#if LIBGIT2_VER_MAJOR == 1 && LIBGIT2_VER_MINOR == 8
+	git_commit **parents;
+#else
 	const git_commit **parents;
+#endif
 	int n;
 
   oid_idx1 = obj_type_OID_check(L,1);
@@ -4717,11 +4714,11 @@ static const obj_field obj_IndexEntry_fields[] = {
 };
 
 static const obj_const obj_IndexEntry_constants[] = {
-  {"STAGEMASK", NULL, 12288, CONST_NUMBER},
-  {"STAGESHIFT", NULL, 12, CONST_NUMBER},
-  {"NAMEMASK", NULL, 4095, CONST_NUMBER},
   {"EXTENDED", NULL, 16384, CONST_NUMBER},
+  {"NAMEMASK", NULL, 4095, CONST_NUMBER},
+  {"STAGEMASK", NULL, 12288, CONST_NUMBER},
   {"VALID", NULL, 32768, CONST_NUMBER},
+  {"STAGESHIFT", NULL, 12, CONST_NUMBER},
   {NULL, NULL, 0.0 , 0}
 };
 
@@ -4807,10 +4804,10 @@ static const luaL_Reg obj_Blob_pub_funcs[] = {
 };
 
 static const luaL_Reg obj_Blob_methods[] = {
-  {"id", Object__id__meth},
   {"owner", Object__owner__meth},
-  {"free", Object__free__meth},
+  {"id", Object__id__meth},
   {"type", Object__type__meth},
+  {"free", Object__free__meth},
   {"rawcontent", Blob__rawcontent__meth},
   {"rawsize", Blob__rawsize__meth},
   {NULL, NULL}
@@ -4884,8 +4881,8 @@ static const luaL_Reg obj_Commit_pub_funcs[] = {
 
 static const luaL_Reg obj_Commit_methods[] = {
   {"owner", Object__owner__meth},
-  {"free", Object__free__meth},
   {"type", Object__type__meth},
+  {"free", Object__free__meth},
   {"id", Commit__id__meth},
   {"message_encoding", Commit__message_encoding__meth},
   {"message", Commit__message__meth},
@@ -4929,10 +4926,10 @@ static const luaL_Reg obj_Tree_pub_funcs[] = {
 };
 
 static const luaL_Reg obj_Tree_methods[] = {
-  {"id", Object__id__meth},
   {"owner", Object__owner__meth},
-  {"free", Object__free__meth},
+  {"id", Object__id__meth},
   {"type", Object__type__meth},
+  {"free", Object__free__meth},
   {"entrycount", Tree__entrycount__meth},
   {"entry_byname", Tree__entry_byname__meth},
   {"entry_byindex", Tree__entry_byindex__meth},
@@ -5003,10 +5000,10 @@ static const luaL_Reg obj_Tag_pub_funcs[] = {
 };
 
 static const luaL_Reg obj_Tag_methods[] = {
-  {"id", Object__id__meth},
   {"owner", Object__owner__meth},
-  {"free", Object__free__meth},
+  {"id", Object__id__meth},
   {"type", Object__type__meth},
+  {"free", Object__free__meth},
   {"target", Tag__target__meth},
   {"name", Tag__name__meth},
   {"tagger", Tag__tagger__meth},
@@ -5070,10 +5067,10 @@ static const obj_field obj_RevWalk_fields[] = {
 };
 
 static const obj_const obj_RevWalk_constants[] = {
+  {"SORT_NONE", NULL, 0, CONST_NUMBER},
+  {"SORT_TOPOLOGICAL", NULL, 1, CONST_NUMBER},
   {"SORT_TIME", NULL, 2, CONST_NUMBER},
   {"SORT_REVERSE", NULL, 4, CONST_NUMBER},
-  {"SORT_TOPOLOGICAL", NULL, 1, CONST_NUMBER},
-  {"SORT_NONE", NULL, 0, CONST_NUMBER},
   {NULL, NULL, 0.0 , 0}
 };
 
@@ -5127,35 +5124,35 @@ static const luaL_Reg git2_function[] = {
 };
 
 static const obj_const git2_constants[] = {
-#ifdef GIT_REVWALKOVER
-  {"REVWALKOVER", NULL, GIT_REVWALKOVER, CONST_NUMBER},
-#endif
+  {"REF_OID", NULL, 1, CONST_NUMBER},
 #ifdef GIT_OK
   {"OK", NULL, GIT_OK, CONST_NUMBER},
 #endif
-  {"REF_INVALID", NULL, 0, CONST_NUMBER},
-  {"REF_OID", NULL, 1, CONST_NUMBER},
-#ifdef GIT_PASSTHROUGH
-  {"PASSTHROUGH", NULL, GIT_PASSTHROUGH, CONST_NUMBER},
-#endif
-  {"REF_SYMBOLIC", NULL, 2, CONST_NUMBER},
-  {"REF_HAS_PEEL", NULL, 8, CONST_NUMBER},
-#ifdef GIT_EBUFS
-  {"EBUFS", NULL, GIT_EBUFS, CONST_NUMBER},
-#endif
-  {"REF_PACKED", NULL, 4, CONST_NUMBER},
-  {"REF_LISTALL", NULL, 7, CONST_NUMBER},
 #ifdef GIT_EEXISTS
   {"EEXISTS", NULL, GIT_EEXISTS, CONST_NUMBER},
 #endif
-#ifdef GIT_EAMBIGUOUS
-  {"EAMBIGUOUS", NULL, GIT_EAMBIGUOUS, CONST_NUMBER},
+  {"REF_PACKED", NULL, 4, CONST_NUMBER},
+  {"REF_SYMBOLIC", NULL, 2, CONST_NUMBER},
+  {"REF_HAS_PEEL", NULL, 8, CONST_NUMBER},
+#ifdef GIT_ERROR
+  {"ERROR", NULL, GIT_ERROR, CONST_NUMBER},
 #endif
 #ifdef GIT_ENOTFOUND
   {"ENOTFOUND", NULL, GIT_ENOTFOUND, CONST_NUMBER},
 #endif
-#ifdef GIT_ERROR
-  {"ERROR", NULL, GIT_ERROR, CONST_NUMBER},
+#ifdef GIT_EBUFS
+  {"EBUFS", NULL, GIT_EBUFS, CONST_NUMBER},
+#endif
+  {"REF_INVALID", NULL, 0, CONST_NUMBER},
+#ifdef GIT_REVWALKOVER
+  {"REVWALKOVER", NULL, GIT_REVWALKOVER, CONST_NUMBER},
+#endif
+#ifdef GIT_EAMBIGUOUS
+  {"EAMBIGUOUS", NULL, GIT_EAMBIGUOUS, CONST_NUMBER},
+#endif
+  {"REF_LISTALL", NULL, 7, CONST_NUMBER},
+#ifdef GIT_PASSTHROUGH
+  {"PASSTHROUGH", NULL, GIT_PASSTHROUGH, CONST_NUMBER},
 #endif
   {NULL, NULL, 0.0 , 0}
 };
