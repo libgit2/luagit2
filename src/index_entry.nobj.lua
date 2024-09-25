@@ -37,7 +37,7 @@ typedef git_index_entry IndexEntry;
 	destructor {
 		c_source [[
 	if(${this}->path != NULL) {
-		free(${this}->path);
+		free((void *)${this}->path);
 	}
 	free(${this});
 ]]
@@ -94,7 +94,7 @@ typedef git_index_entry IndexEntry;
 		var_in{"const char *", "val"},
 		c_source [[
 	if(${this}->path != NULL) {
-		free(${this}->path);
+		free((void *)${this}->path);
 	}
     char * path_buf = malloc(${val_len});
 	strncpy(path_buf, ${val}, ${val_len});
