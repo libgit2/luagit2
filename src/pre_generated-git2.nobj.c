@@ -20,12 +20,10 @@
 #define luaL_Reg luaL_reg
 #endif
 
-/* some Lua 5.1 compatibility support. */
-#if !defined(LUA_VERSION_NUM) || (LUA_VERSION_NUM == 501)
 /*
-** Adapted from Lua 5.2.0
+** Adapted from Lua 5.2.0 luaL_setfuncs.
 */
-static void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
+static void nobj_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
   luaL_checkstack(L, nup, "too many upvalues");
   for (; l->name != NULL; l++) {  /* fill the table with given functions */
     int i;
@@ -37,6 +35,9 @@ static void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
   }
   lua_pop(L, nup);  /* remove upvalues */
 }
+
+/* some Lua 5.1 compatibility support. */
+#if !defined(LUA_VERSION_NUM) || (LUA_VERSION_NUM == 501)
 
 #define lua_load_no_mode(L, reader, data, source) \
 	lua_load(L, reader, data, source)
@@ -1209,7 +1210,7 @@ static void obj_type_register_package(lua_State *L, const reg_sub_module *type_r
 	/* create public functions table. */
 	if(reg_list != NULL && reg_list[0].name != NULL) {
 		/* register functions */
-		luaL_setfuncs(L, reg_list, 0);
+		nobj_setfuncs(L, reg_list, 0);
 	}
 
 	obj_type_register_constants(L, type_reg->constants, -1, type_reg->bidirectional_consts);
@@ -1224,17 +1225,17 @@ static void obj_type_register_meta(lua_State *L, const reg_sub_module *type_reg)
 	reg_list = type_reg->pub_funcs;
 	if(reg_list != NULL && reg_list[0].name != NULL) {
 		/* register functions */
-		luaL_setfuncs(L, reg_list, 0);
+		nobj_setfuncs(L, reg_list, 0);
 	}
 
 	obj_type_register_constants(L, type_reg->constants, -1, type_reg->bidirectional_consts);
 
 	/* register methods. */
-	luaL_setfuncs(L, type_reg->methods, 0);
+	nobj_setfuncs(L, type_reg->methods, 0);
 
 	/* create metatable table. */
 	lua_newtable(L);
-	luaL_setfuncs(L, type_reg->metas, 0); /* fill metatable */
+	nobj_setfuncs(L, type_reg->metas, 0); /* fill metatable */
 	/* setmetatable on meta-object. */
 	lua_setmetatable(L, -2);
 
@@ -1259,7 +1260,7 @@ static void obj_type_register(lua_State *L, const reg_sub_module *type_reg, int 
 	reg_list = type_reg->pub_funcs;
 	if(reg_list != NULL && reg_list[0].name != NULL) {
 		/* register "constructors" as to object's public API */
-		luaL_setfuncs(L, reg_list, 0); /* fill public API table. */
+		nobj_setfuncs(L, reg_list, 0); /* fill public API table. */
 
 		/* make public API table callable as the default constructor. */
 		lua_newtable(L); /* create metatable */
@@ -1289,7 +1290,7 @@ static void obj_type_register(lua_State *L, const reg_sub_module *type_reg, int 
 #endif
 	}
 
-	luaL_setfuncs(L, type_reg->methods, 0); /* fill methods table. */
+	nobj_setfuncs(L, type_reg->methods, 0); /* fill methods table. */
 
 	luaL_newmetatable(L, type->name); /* create metatable */
 	lua_pushliteral(L, ".name");
@@ -1307,7 +1308,7 @@ static void obj_type_register(lua_State *L, const reg_sub_module *type_reg, int 
 	lua_pushvalue(L, -2); /* dup metatable. */
 	lua_rawset(L, priv_table);    /* priv_table["<object_name>"] = metatable */
 
-	luaL_setfuncs(L, type_reg->metas, 0); /* fill metatable */
+	nobj_setfuncs(L, type_reg->metas, 0); /* fill metatable */
 
 	/* add obj_bases to metatable. */
 	while(base->id >= 0) {
@@ -3484,17 +3485,17 @@ static int Object__string2type__func(lua_State *L) {
 static void dyn_caster_Object(void **obj, obj_type **type) {
   Object * base_obj = (Object *)*obj;
   switch(git_object_type(base_obj)) {
-  case GIT_OBJ_BLOB:
-    *type = &(obj_type_Blob);
-    break;
-  case GIT_OBJ_TREE:
-    *type = &(obj_type_Tree);
-    break;
   case GIT_OBJ_TAG:
     *type = &(obj_type_Tag);
     break;
   case GIT_OBJ_COMMIT:
     *type = &(obj_type_Commit);
+    break;
+  case GIT_OBJ_BLOB:
+    *type = &(obj_type_Blob);
+    break;
+  case GIT_OBJ_TREE:
+    *type = &(obj_type_Tree);
     break;
   default:
     break;
@@ -4503,14 +4504,14 @@ static const obj_field obj_OID_fields[] = {
 };
 
 static const obj_const obj_OID_constants[] = {
+#ifdef GIT_OID_MINPREFIXLEN
+  {"MINPREFIXLEN", NULL, GIT_OID_MINPREFIXLEN, CONST_NUMBER},
+#endif
 #ifdef GIT_OID_RAWSZ
   {"RAWSZ", NULL, GIT_OID_RAWSZ, CONST_NUMBER},
 #endif
 #ifdef GIT_OID_HEXSZ
   {"HEXSZ", NULL, GIT_OID_HEXSZ, CONST_NUMBER},
-#endif
-#ifdef GIT_OID_MINPREFIXLEN
-  {"MINPREFIXLEN", NULL, GIT_OID_MINPREFIXLEN, CONST_NUMBER},
 #endif
   {NULL, NULL, 0.0 , 0}
 };
@@ -4715,10 +4716,10 @@ static const obj_field obj_IndexEntry_fields[] = {
 
 static const obj_const obj_IndexEntry_constants[] = {
   {"EXTENDED", NULL, 16384, CONST_NUMBER},
-  {"NAMEMASK", NULL, 4095, CONST_NUMBER},
   {"STAGEMASK", NULL, 12288, CONST_NUMBER},
   {"VALID", NULL, 32768, CONST_NUMBER},
   {"STAGESHIFT", NULL, 12, CONST_NUMBER},
+  {"NAMEMASK", NULL, 4095, CONST_NUMBER},
   {NULL, NULL, 0.0 , 0}
 };
 
@@ -4804,10 +4805,10 @@ static const luaL_Reg obj_Blob_pub_funcs[] = {
 };
 
 static const luaL_Reg obj_Blob_methods[] = {
-  {"owner", Object__owner__meth},
-  {"id", Object__id__meth},
   {"type", Object__type__meth},
   {"free", Object__free__meth},
+  {"id", Object__id__meth},
+  {"owner", Object__owner__meth},
   {"rawcontent", Blob__rawcontent__meth},
   {"rawsize", Blob__rawsize__meth},
   {NULL, NULL}
@@ -4880,9 +4881,9 @@ static const luaL_Reg obj_Commit_pub_funcs[] = {
 };
 
 static const luaL_Reg obj_Commit_methods[] = {
-  {"owner", Object__owner__meth},
   {"type", Object__type__meth},
   {"free", Object__free__meth},
+  {"owner", Object__owner__meth},
   {"id", Commit__id__meth},
   {"message_encoding", Commit__message_encoding__meth},
   {"message", Commit__message__meth},
@@ -4926,10 +4927,10 @@ static const luaL_Reg obj_Tree_pub_funcs[] = {
 };
 
 static const luaL_Reg obj_Tree_methods[] = {
-  {"owner", Object__owner__meth},
-  {"id", Object__id__meth},
   {"type", Object__type__meth},
   {"free", Object__free__meth},
+  {"id", Object__id__meth},
+  {"owner", Object__owner__meth},
   {"entrycount", Tree__entrycount__meth},
   {"entry_byname", Tree__entry_byname__meth},
   {"entry_byindex", Tree__entry_byindex__meth},
@@ -5000,10 +5001,10 @@ static const luaL_Reg obj_Tag_pub_funcs[] = {
 };
 
 static const luaL_Reg obj_Tag_methods[] = {
-  {"owner", Object__owner__meth},
-  {"id", Object__id__meth},
   {"type", Object__type__meth},
   {"free", Object__free__meth},
+  {"id", Object__id__meth},
+  {"owner", Object__owner__meth},
   {"target", Tag__target__meth},
   {"name", Tag__name__meth},
   {"tagger", Tag__tagger__meth},
@@ -5067,10 +5068,10 @@ static const obj_field obj_RevWalk_fields[] = {
 };
 
 static const obj_const obj_RevWalk_constants[] = {
-  {"SORT_NONE", NULL, 0, CONST_NUMBER},
-  {"SORT_TOPOLOGICAL", NULL, 1, CONST_NUMBER},
-  {"SORT_TIME", NULL, 2, CONST_NUMBER},
   {"SORT_REVERSE", NULL, 4, CONST_NUMBER},
+  {"SORT_NONE", NULL, 0, CONST_NUMBER},
+  {"SORT_TIME", NULL, 2, CONST_NUMBER},
+  {"SORT_TOPOLOGICAL", NULL, 1, CONST_NUMBER},
   {NULL, NULL, 0.0 , 0}
 };
 
@@ -5124,35 +5125,35 @@ static const luaL_Reg git2_function[] = {
 };
 
 static const obj_const git2_constants[] = {
-  {"REF_OID", NULL, 1, CONST_NUMBER},
-#ifdef GIT_OK
-  {"OK", NULL, GIT_OK, CONST_NUMBER},
-#endif
-#ifdef GIT_EEXISTS
-  {"EEXISTS", NULL, GIT_EEXISTS, CONST_NUMBER},
-#endif
-  {"REF_PACKED", NULL, 4, CONST_NUMBER},
-  {"REF_SYMBOLIC", NULL, 2, CONST_NUMBER},
+  {"REF_INVALID", NULL, 0, CONST_NUMBER},
   {"REF_HAS_PEEL", NULL, 8, CONST_NUMBER},
-#ifdef GIT_ERROR
-  {"ERROR", NULL, GIT_ERROR, CONST_NUMBER},
-#endif
-#ifdef GIT_ENOTFOUND
-  {"ENOTFOUND", NULL, GIT_ENOTFOUND, CONST_NUMBER},
+#ifdef GIT_REVWALKOVER
+  {"REVWALKOVER", NULL, GIT_REVWALKOVER, CONST_NUMBER},
 #endif
 #ifdef GIT_EBUFS
   {"EBUFS", NULL, GIT_EBUFS, CONST_NUMBER},
 #endif
-  {"REF_INVALID", NULL, 0, CONST_NUMBER},
-#ifdef GIT_REVWALKOVER
-  {"REVWALKOVER", NULL, GIT_REVWALKOVER, CONST_NUMBER},
+#ifdef GIT_ENOTFOUND
+  {"ENOTFOUND", NULL, GIT_ENOTFOUND, CONST_NUMBER},
 #endif
-#ifdef GIT_EAMBIGUOUS
-  {"EAMBIGUOUS", NULL, GIT_EAMBIGUOUS, CONST_NUMBER},
+  {"REF_PACKED", NULL, 4, CONST_NUMBER},
+#ifdef GIT_EEXISTS
+  {"EEXISTS", NULL, GIT_EEXISTS, CONST_NUMBER},
+#endif
+#ifdef GIT_OK
+  {"OK", NULL, GIT_OK, CONST_NUMBER},
 #endif
   {"REF_LISTALL", NULL, 7, CONST_NUMBER},
+  {"REF_OID", NULL, 1, CONST_NUMBER},
 #ifdef GIT_PASSTHROUGH
   {"PASSTHROUGH", NULL, GIT_PASSTHROUGH, CONST_NUMBER},
+#endif
+#ifdef GIT_ERROR
+  {"ERROR", NULL, GIT_ERROR, CONST_NUMBER},
+#endif
+  {"REF_SYMBOLIC", NULL, 2, CONST_NUMBER},
+#ifdef GIT_EAMBIGUOUS
+  {"EAMBIGUOUS", NULL, GIT_EAMBIGUOUS, CONST_NUMBER},
 #endif
   {NULL, NULL, 0.0 , 0}
 };
@@ -5244,7 +5245,7 @@ LUA_NOBJ_API int luaopen_git2(lua_State *L) {
 	luaL_register(L, "git2", git2_function);
 #else
 	lua_newtable(L);
-	luaL_setfuncs(L, git2_function, 0);
+	nobj_setfuncs(L, git2_function, 0);
 #endif
 
 	/* register module constants. */
