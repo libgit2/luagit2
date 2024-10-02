@@ -13,7 +13,7 @@ description	= {
 	maintainer = "Robert G. Jakabosky",
 }
 dependencies = {
-	'lua >= 5.1',
+	'lua >= 5.1, < 5.5',
 }
 external_dependencies = {
 	GIT2 = {
