@@ -11,9 +11,14 @@ Currently supports version >= 0.17
 Installing
 ----------
 
-### Install lua-git2:
+### Install lua-git2 release 0.1:
 
-	luarocks install https://raw.github.com/libgit2/luagit2/master/lua-git2-scm-0.rockspec
+	luarocks install lua-git2
+
+
+### Install lua-git2 from github:
+
+	luarocks install https://raw.githubusercontent.com/libgit2/luagit2/refs/heads/master/rockspecs/lua-git2-scm-0.rockspec
 
 
 To re-generating the bindings
