@@ -1,7 +1,7 @@
 #!/usr/bin/env lua
 
 package	= 'lua-git2'
-version	= '0.1'
+version	= '0.1-1'
 source	= {
 	url	= 'git://github.com/libgit2/luagit2.git',
   branch = "v0.1"
