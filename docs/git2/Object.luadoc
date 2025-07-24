@@ -8,7 +8,7 @@ module("Object")
 
 --- Destroy this object (will be called by Garbage Collector).
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing
 --  object; note that git_objects are owned and cached by the repository
 --  so the object may or may not be freed after this library call,
 --  depending on how agressive is the caching mechanism used
@@ -21,7 +21,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
 -- @return <a href="OID.html">OID</a>.
 -- @name Object:id
 function Object:id()
@@ -29,7 +29,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
 -- @return <code>string</code>.
 -- @name Object:type
 function Object:type()
@@ -37,7 +37,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the
 --  returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without
 --  affecting the object.
 -- @return <a href="Repository.html">Repository</a>.

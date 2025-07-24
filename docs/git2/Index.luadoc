@@ -8,7 +8,7 @@ module("Index")
 
 --- Create a new Index object.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_open">git_index_open</a>:<p><p>Since there is no ODB or working directory behind this index,
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_open">git_index_open</a>:<p><p>Since there is no ODB or working directory behind this index,
 --  any Index methods which rely on these (e.g. index_add) will
 --  fail with the GIT_EBAREINDEX error code.<p> If you need to access the index of an actual repository,
 --  use the `git_repository_index` wrapper.<p> The index must be freed once it's no longer in use.
@@ -21,14 +21,14 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_clear">git_index_clear</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_clear">git_index_clear</a>:<p><p>
 -- @name Index:clear
 function Index:clear()
 end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_read">git_index_read</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_read">git_index_read</a>:<p><p>
 -- @param force Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
 -- @return Error string.
@@ -38,7 +38,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_write">git_index_write</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_write">git_index_write</a>:<p><p>
 -- @return <code>true</code> if no error.
 -- @return Error string.
 -- @name Index:write
@@ -47,7 +47,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_find">git_index_find</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_find">git_index_find</a>:<p><p>
 -- @param at_pos Must be of type <code>lightuserdata</code>.
 -- @param path path to search.  Must be of type <code>string</code>.
 -- @return <code>integer</code>.
@@ -66,7 +66,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_add">git_index_add</a>:<p><p>The file `path` must be relative to the repository's
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_add">git_index_add</a>:<p><p>The file `path` must be relative to the repository's
 --  working folder and must be readable.<p> This method will fail in bare index instances.<p> This forces the file to be added to the index, not looking
 --  at gitignore rules.  Those rules can be evaluated through
 --  the git_status APIs (in status.h) before calling this.
@@ -79,7 +79,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_remove">git_index_remove</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_remove">git_index_remove</a>:<p><p>
 -- @param path Must be of type <code>string</code>.
 -- @param stage Must be of type <code>integer</code>.
 -- @return <code>true</code> if no error.
@@ -107,7 +107,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_entrycount">git_index_entrycount</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_entrycount">git_index_entrycount</a>:<p><p>
 -- @return <code>integer</code>.
 -- @name Index:entrycount
 function Index:entrycount()
@@ -138,7 +138,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_read_tree">git_index_read_tree</a>:<p><p>The current index contents will be replaced by the specified tree.
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_read_tree">git_index_read_tree</a>:<p><p>The current index contents will be replaced by the specified tree.
 -- @param tree tree to read.  Must be of type <a href="Tree.html">Tree</a>.
 -- @return <code>true</code> if no error.
 -- @return Error string.

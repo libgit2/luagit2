@@ -15,7 +15,7 @@ c_source "module_init_src" [[
 ]],
 
 doc[[
-See <a href="http://libgit2.github.com/libgit2/#HEAD">libgit2 API docs</a>.
+See <a href="http://libgit2.github.io/libgit2/#HEAD">libgit2 API docs</a>.
 ]],
 
 -- Error codes
@@ -99,7 +99,7 @@ c_call = function(self, rec, parent)
 	if not func then return end
 	-- copy C function description
 	parent:add_record(doc(
-		'<p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/' ..
+		'<p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/' ..
 		func.group .. '/' .. rec.cfunc .. '">' .. rec.cfunc .. '</a>:<p>' ..
 		'<p>' .. func.comments:gsub("\n\n", "<p>")
 	))

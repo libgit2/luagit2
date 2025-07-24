@@ -236,7 +236,7 @@
 
 <dt><a name="Index.bare"></a><strong>Index.bare</strong>&nbsp;(index_path)</dt>
 <dd>
-Create a new Index object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_open">git_index_open</a>:<p><p>Since there is no ODB or working directory behind this index, any Index methods which rely on these (e.g. index_add) will fail with the GIT_EBAREINDEX error code.<p> If you need to access the index of an actual repository, use the `git_repository_index` wrapper.<p> The index must be freed once it's no longer in use.
+Create a new Index object.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_open">git_index_open</a>:<p><p>Since there is no ODB or working directory behind this index, any Index methods which rely on these (e.g. index_add) will fail with the GIT_EBAREINDEX error code.<p> If you need to access the index of an actual repository, use the `git_repository_index` wrapper.<p> The index must be freed once it's no longer in use.
 
 
 <h3>Parameters</h3>
@@ -271,7 +271,7 @@ Create a new Index object.  <p>Calls <a href="http://libgit2.github.com/libgit2/
 
 <dt><a name="Index:add"></a><strong>Index:add</strong>&nbsp;(source_entry)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_add">git_index_add</a>:<p><p>The file `path` must be relative to the repository's working folder and must be readable.<p> This method will fail in bare index instances.<p> This forces the file to be added to the index, not looking at gitignore rules.  Those rules can be evaluated through the git_status APIs (in status.h) before calling this.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_add">git_index_add</a>:<p><p>The file `path` must be relative to the repository's working folder and must be readable.<p> This method will fail in bare index instances.<p> This forces the file to be added to the index, not looking at gitignore rules.  Those rules can be evaluated through the git_status APIs (in status.h) before calling this.
 
 
 <h3>Parameters</h3>
@@ -341,7 +341,7 @@ object method.
 
 <dt><a name="Index:clear"></a><strong>Index:clear</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_clear">git_index_clear</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_clear">git_index_clear</a>:<p><p>
 
 
 
@@ -358,7 +358,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Index:entrycount"></a><strong>Index:entrycount</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_entrycount">git_index_entrycount</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_entrycount">git_index_entrycount</a>:<p><p>
 
 
 
@@ -378,7 +378,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Index:find"></a><strong>Index:find</strong>&nbsp;(at_pos, path)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_find">git_index_find</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_find">git_index_find</a>:<p><p>
 
 
 <h3>Parameters</h3>
@@ -473,7 +473,7 @@ object method.
 
 <dt><a name="Index:read"></a><strong>Index:read</strong>&nbsp;(force)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_read">git_index_read</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_read">git_index_read</a>:<p><p>
 
 
 <h3>Parameters</h3>
@@ -508,7 +508,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Index:read_tree"></a><strong>Index:read_tree</strong>&nbsp;(tree)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_read_tree">git_index_read_tree</a>:<p><p>The current index contents will be replaced by the specified tree.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_read_tree">git_index_read_tree</a>:<p><p>The current index contents will be replaced by the specified tree.
 
 
 <h3>Parameters</h3>
@@ -543,7 +543,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Index:remove"></a><strong>Index:remove</strong>&nbsp;(path, stage)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_remove">git_index_remove</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_remove">git_index_remove</a>:<p><p>
 
 
 <h3>Parameters</h3>
@@ -660,7 +660,7 @@ object method.
 
 <dt><a name="Index:write"></a><strong>Index:write</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_write">git_index_write</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_write">git_index_write</a>:<p><p>
 
 
 

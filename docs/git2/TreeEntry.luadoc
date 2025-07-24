@@ -8,7 +8,7 @@ module("TreeEntry")
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_entry_name">git_tree_entry_name</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/tree/git_tree_entry_name">git_tree_entry_name</a>:<p><p>
 -- @return <code>string</code>.
 -- @name TreeEntry:name
 function TreeEntry:name()
@@ -30,7 +30,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_entry_to_object">git_tree_entry_to_object</a>:<p><p>@param object pointer to the converted object
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/tree/git_tree_entry_to_object">git_tree_entry_to_object</a>:<p><p>@param object pointer to the converted object
 -- @param repo repository where to lookup the pointed object.  Must be of type <a href="Repository.html">Repository</a>.
 -- @return <a href="Object.html">Object</a> or <code>nil</code> on error.
 -- @return Error string.

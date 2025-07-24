@@ -8,7 +8,7 @@ module("ODB")
 
 --- Create a new ODB object.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_new">git_odb_new</a>:<p><p>Before the ODB can be used for read/writing, a custom database
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_new">git_odb_new</a>:<p><p>Before the ODB can be used for read/writing, a custom database
 --  backend must be manually added using `git_odb_add_backend()`
 -- @return <a href="ODB.html">ODB</a> or <code>nil</code> on error.
 -- @return Error string.
@@ -18,7 +18,7 @@ end
 
 --- Create a new ODB object.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_open">git_odb_open</a>:<p><p>- git_odb_backend_loose: read and write loose object files
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_open">git_odb_open</a>:<p><p>- git_odb_backend_loose: read and write loose object files
 -- 		from disk, assuming `objects_dir` as the Objects folder<p>	- git_odb_backend_pack: read objects from packfiles,
 -- 		assuming `objects_dir` as the Objects folder which
 -- 		contains a 'pack/' folder with the corresponding data
@@ -31,7 +31,7 @@ end
 
 --- Destroy this object (will be called by Garbage Collector).
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_free">git_odb_free</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_free">git_odb_free</a>:<p><p>
 -- @name ODB:free
 function ODB:free()
 end
@@ -58,7 +58,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_read">git_odb_read</a>:<p><p>This method queries all available ODB backends
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_read">git_odb_read</a>:<p><p>This method queries all available ODB backends
 --  trying to read the given OID.<p> The returned object is reference counted and
 --  internally cached, so it should be closed
 --  by the user once it's no longer in use.<p> @return
@@ -73,7 +73,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_read_prefix">git_odb_read_prefix</a>:<p><p>This method queries all available ODB backends
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_read_prefix">git_odb_read_prefix</a>:<p><p>This method queries all available ODB backends
 --  trying to match the 'len' first hexadecimal
 --  characters of the 'short_id'.
 --  The remaining (GIT_OID_HEXSZ-len)*4 bits of
@@ -94,7 +94,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_read_header">git_odb_read_header</a>:<p><p>The header includes the length and the type of an object.<p> Note that most backends do not support reading only the header
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_read_header">git_odb_read_header</a>:<p><p>The header includes the length and the type of an object.<p> Note that most backends do not support reading only the header
 --  of an object, so the whole object will be read and then the
 --  header will be returned.<p> @return
 --  - 0 if the object was read;
@@ -109,7 +109,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_exists">git_odb_exists</a>:<p><p>@return
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_exists">git_odb_exists</a>:<p><p>@return
 --  - 1, if the object was found
 --  - 0, otherwise
 -- @param id the object to search for..  Must be of type <a href="OID.html">OID</a>.
@@ -121,7 +121,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_write">git_odb_write</a>:<p><p>This method writes a full object straight into the ODB.
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_write">git_odb_write</a>:<p><p>This method writes a full object straight into the ODB.
 --  For most cases, it is preferred to write objects through a write
 --  stream, which is both faster and less memory intensive, specially
 --  for big objects.<p> This method is provided for compatibility with custom backends
@@ -136,7 +136,7 @@ end
 
 --- module function.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_hash">git_odb_hash</a>:<p><p>The resulting SHA-1 OID will the itentifier for the data
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_hash">git_odb_hash</a>:<p><p>The resulting SHA-1 OID will the itentifier for the data
 --  buffer as if the data buffer it were to written to the ODB.
 -- @param data data to hash.  Must be of type <code>string</code>.
 -- @param otype Must be of type <code>integer</code>.
@@ -148,7 +148,7 @@ end
 
 --- module function.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_hashfile">git_odb_hashfile</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_hashfile">git_odb_hashfile</a>:<p><p>
 -- @param path file to read and determine object id for.  Must be of type <code>string</code>.
 -- @param otype Must be of type <code>integer</code>.
 -- @return <a href="OID.html">OID</a> or <code>nil</code> on error.
