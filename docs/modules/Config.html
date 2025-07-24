@@ -231,7 +231,7 @@
 
 <dt><a name="Config.new"></a><strong>Config.new</strong>&nbsp;()</dt>
 <dd>
-Create a new Config object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_new">git_config_new</a>:<p><p>This object is empty, so you have to add a file to it before you can do anything with it.
+Create a new Config object.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/config/git_config_new">git_config_new</a>:<p><p>This object is empty, so you have to add a file to it before you can do anything with it.
 
 
 
@@ -257,7 +257,7 @@ Create a new Config object.  <p>Calls <a href="http://libgit2.github.com/libgit2
 
 <dt><a name="Config.open"></a><strong>Config.open</strong>&nbsp;(path)</dt>
 <dd>
-Create a new Config object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_open_ondisk">git_config_open_ondisk</a>:<p><p>This method is a simple utility wrapper for the following sequence of calls: - git_config_new - git_config_add_file_ondisk
+Create a new Config object.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/config/git_config_open_ondisk">git_config_open_ondisk</a>:<p><p>This method is a simple utility wrapper for the following sequence of calls: - git_config_new - git_config_add_file_ondisk
 
 
 <h3>Parameters</h3>
@@ -292,7 +292,7 @@ Create a new Config object.  <p>Calls <a href="http://libgit2.github.com/libgit2
 
 <dt><a name="Config:add_file_ondisk"></a><strong>Config:add_file_ondisk</strong>&nbsp;(path, level, repo, force)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_add_file_ondisk">git_config_add_file_ondisk</a>:<p><p>The on-disk file pointed at by `path` will be opened and parsed; it's expected to be a native Git config file following the default Git config syntax (see man git-config).<p> Note that the configuration object will free the file automatically.<p> Further queries on this config object will access each of the config file instances in order (instances with a higher priority will be accessed first).
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/config/git_config_add_file_ondisk">git_config_add_file_ondisk</a>:<p><p>The on-disk file pointed at by `path` will be opened and parsed; it's expected to be a native Git config file following the default Git config syntax (see man git-config).<p> Note that the configuration object will free the file automatically.<p> Further queries on this config object will access each of the config file instances in order (instances with a higher priority will be accessed first).
 
 
 <h3>Parameters</h3>
@@ -413,7 +413,7 @@ object method.
 
 <dt><a name="Config:free"></a><strong>Config:free</strong>&nbsp;()</dt>
 <dd>
-Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_free">git_config_free</a>:<p><p>
+Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/config/git_config_free">git_config_free</a>:<p><p>
 
 
 
@@ -430,7 +430,7 @@ Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="ht
 
 <dt><a name="Config:get_bool"></a><strong>Config:get_bool</strong>&nbsp;(name)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_get_bool">git_config_get_bool</a>:<p><p>This function uses the usual C convention of 0 being false and anything else true.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/config/git_config_get_bool">git_config_get_bool</a>:<p><p>This function uses the usual C convention of 0 being false and anything else true.
 
 
 <h3>Parameters</h3>
@@ -535,7 +535,7 @@ object method.
 
 <dt><a name="Config:get_string"></a><strong>Config:get_string</strong>&nbsp;(name)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_get_string">git_config_get_string</a>:<p><p>The string is owned by the variable and should not be freed by the user.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/config/git_config_get_string">git_config_get_string</a>:<p><p>The string is owned by the variable and should not be freed by the user.
 
 
 <h3>Parameters</h3>
@@ -570,7 +570,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Config:set_bool"></a><strong>Config:set_bool</strong>&nbsp;(value, name)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_set_bool">git_config_set_bool</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/config/git_config_set_bool">git_config_set_bool</a>:<p><p>
 
 
 <h3>Parameters</h3>
@@ -687,7 +687,7 @@ object method.
 
 <dt><a name="Config:set_string"></a><strong>Config:set_string</strong>&nbsp;(name, value)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/config/git_config_set_string">git_config_set_string</a>:<p><p>A copy of the string is made and the user is free to use it afterwards.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/config/git_config_set_string">git_config_set_string</a>:<p><p>A copy of the string is made and the user is free to use it afterwards.
 
 
 <h3>Parameters</h3>

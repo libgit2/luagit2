@@ -241,7 +241,7 @@
 
 <dt><a name="Repository.init"></a><strong>Repository.init</strong>&nbsp;(path, is_bare)</dt>
 <dd>
-Create a new Repository object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_init">git_repository_init</a>:<p><p>TODO: - Reinit the repository
+Create a new Repository object.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_init">git_repository_init</a>:<p><p>TODO: - Reinit the repository
 
 
 <h3>Parameters</h3>
@@ -280,7 +280,7 @@ Create a new Repository object.  <p>Calls <a href="http://libgit2.github.com/lib
 
 <dt><a name="Repository.open"></a><strong>Repository.open</strong>&nbsp;(path)</dt>
 <dd>
-Create a new Repository object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_open">git_repository_open</a>:<p><p>The 'path' argument must point to either a git repository folder, or an existing work dir.<p> The method will automatically detect if 'path' is a normal or bare repository or fail is 'path' is neither.
+Create a new Repository object.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_open">git_repository_open</a>:<p><p>The 'path' argument must point to either a git repository folder, or an existing work dir.<p> The method will automatically detect if 'path' is a normal or bare repository or fail is 'path' is neither.
 
 
 <h3>Parameters</h3>
@@ -315,7 +315,7 @@ Create a new Repository object.  <p>Calls <a href="http://libgit2.github.com/lib
 
 <dt><a name="Repository:config"></a><strong>Repository:config</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_config">git_repository_config</a>:<p><p>If a configuration file has not been set, the default config set for the repository will be returned, including global and system configurations (if they are available).<p> The configuration file must be freed once it's no longer being used by the user.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_config">git_repository_config</a>:<p><p>If a configuration file has not been set, the default config set for the repository will be returned, including global and system configurations (if they are available).<p> The configuration file must be freed once it's no longer being used by the user.
 
 
 
@@ -341,7 +341,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Repository:head"></a><strong>Repository:head</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_head">git_repository_head</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_head">git_repository_head</a>:<p><p>
 
 
 
@@ -367,7 +367,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Repository:head_detached"></a><strong>Repository:head_detached</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_head_detached">git_repository_head_detached</a>:<p><p>A repository's HEAD is detached when it points directly to a commit instead of a branch.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_head_detached">git_repository_head_detached</a>:<p><p>A repository's HEAD is detached when it points directly to a commit instead of a branch.
 
 
 
@@ -407,7 +407,7 @@ object method.
 
 <dt><a name="Repository:index"></a><strong>Repository:index</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_index">git_repository_index</a>:<p><p>If a custom index has not been set, the default index for the repository will be returned (the one located in `.git/index`).<p> The index must be freed once it's no longer being used by the user.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_index">git_repository_index</a>:<p><p>If a custom index has not been set, the default index for the repository will be returned (the one located in `.git/index`).<p> The index must be freed once it's no longer being used by the user.
 
 
 
@@ -433,7 +433,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Repository:is_bare"></a><strong>Repository:is_bare</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_is_bare">git_repository_is_bare</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_is_bare">git_repository_is_bare</a>:<p><p>
 
 
 
@@ -453,7 +453,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Repository:is_empty"></a><strong>Repository:is_empty</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_is_empty">git_repository_is_empty</a>:<p><p>An empty repository has just been initialized and contains no commits.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_is_empty">git_repository_is_empty</a>:<p><p>An empty repository has just been initialized and contains no commits.
 
 
 
@@ -473,7 +473,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Repository:odb"></a><strong>Repository:odb</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_odb">git_repository_odb</a>:<p><p>If a custom ODB has not been set, the default database for the repository will be returned (the one located in `.git/objects`).<p> The ODB must be freed once it's no longer being used by the user.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_odb">git_repository_odb</a>:<p><p>If a custom ODB has not been set, the default database for the repository will be returned (the one located in `.git/objects`).<p> The ODB must be freed once it's no longer being used by the user.
 
 
 
@@ -499,7 +499,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Repository:path"></a><strong>Repository:path</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_path">git_repository_path</a>:<p><p>This is the path of the `.git` folder for normal repositories, or of the repository itself for bare repositories.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_path">git_repository_path</a>:<p><p>This is the path of the `.git` folder for normal repositories, or of the repository itself for bare repositories.
 
 
 
@@ -519,7 +519,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Repository:set_config"></a><strong>Repository:set_config</strong>&nbsp;(config)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_set_config">git_repository_set_config</a>:<p><p>This configuration file will be used for all configuration queries involving this repository.<p> The repository will keep a reference to the config file; the user must still free the config after setting it to the repository, or it will leak.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_set_config">git_repository_set_config</a>:<p><p>This configuration file will be used for all configuration queries involving this repository.<p> The repository will keep a reference to the config file; the user must still free the config after setting it to the repository, or it will leak.
 
 
 <h3>Parameters</h3>
@@ -545,7 +545,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Repository:set_index"></a><strong>Repository:set_index</strong>&nbsp;(index)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_set_index">git_repository_set_index</a>:<p><p>This index will be used for all index-related operations involving this repository.<p> The repository will keep a reference to the index file; the user must still free the index after setting it to the repository, or it will leak.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_set_index">git_repository_set_index</a>:<p><p>This index will be used for all index-related operations involving this repository.<p> The repository will keep a reference to the index file; the user must still free the index after setting it to the repository, or it will leak.
 
 
 <h3>Parameters</h3>
@@ -571,7 +571,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Repository:set_odb"></a><strong>Repository:set_odb</strong>&nbsp;(odb)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_set_odb">git_repository_set_odb</a>:<p><p>The ODB will be used for all object-related operations involving this repository.<p> The repository will keep a reference to the ODB; the user must still free the ODB object after setting it to the repository, or it will leak.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_set_odb">git_repository_set_odb</a>:<p><p>The ODB will be used for all object-related operations involving this repository.<p> The repository will keep a reference to the ODB; the user must still free the ODB object after setting it to the repository, or it will leak.
 
 
 <h3>Parameters</h3>
@@ -597,7 +597,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Repository:set_workdir"></a><strong>Repository:set_workdir</strong>&nbsp;(workdir, update_gitlink)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_set_workdir">git_repository_set_workdir</a>:<p><p>The working directory doesn't need to be the same one that contains the `.git` folder for this repository.<p> If this repository is bare, setting its working directory will turn it into a normal repository, capable of performing all the common workdir operations (checkout, status, index manipulation, etc).
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_set_workdir">git_repository_set_workdir</a>:<p><p>The working directory doesn't need to be the same one that contains the `.git` folder for this repository.<p> If this repository is bare, setting its working directory will turn it into a normal repository, capable of performing all the common workdir operations (checkout, status, index manipulation, etc).
 
 
 <h3>Parameters</h3>
@@ -636,7 +636,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Repository:workdir"></a><strong>Repository:workdir</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/repository/git_repository_workdir">git_repository_workdir</a>:<p><p>If the repository is bare, this function will always return NULL.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/repository/git_repository_workdir">git_repository_workdir</a>:<p><p>If the repository is bare, this function will always return NULL.
 
 
 

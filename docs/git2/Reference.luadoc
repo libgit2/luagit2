@@ -8,7 +8,7 @@ module("Reference")
 
 --- Create a new Reference object.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_lookup">git_reference_lookup</a>:<p><p>The generated reference must be freed by the user.
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/reference/git_reference_lookup">git_reference_lookup</a>:<p><p>The generated reference must be freed by the user.
 -- @param repo the repository to look up the reference.  Must be of type <a href="Repository.html">Repository</a>.
 -- @param name the long name for the reference (e.g. HEAD, ref/heads/master, refs/tags/v0.1.0, ...).  Must be of type <code>string</code>.
 -- @return <a href="Reference.html">Reference</a> or <code>nil</code> on error.
@@ -19,7 +19,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_target">git_reference_target</a>:<p><p>Only available if the reference is symbolic
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/reference/git_reference_target">git_reference_target</a>:<p><p>Only available if the reference is symbolic
 -- @return <a href="OID.html">OID</a>.
 -- @name Reference:target
 function Reference:target()
@@ -27,7 +27,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_set_target">git_reference_set_target</a>:<p><p>The reference must be a symbolic reference, otherwise
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/reference/git_reference_set_target">git_reference_set_target</a>:<p><p>The reference must be a symbolic reference, otherwise
 --  this method will fail.<p> The reference will be automatically updated in
 --  memory and on disk.
 -- @param oid Must be of type <a href="OID.html">OID</a>.
@@ -40,7 +40,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_type">git_reference_type</a>:<p><p>Either direct (GIT_REF_OID) or symbolic (GIT_REF_SYMBOLIC)
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/reference/git_reference_type">git_reference_type</a>:<p><p>Either direct (GIT_REF_OID) or symbolic (GIT_REF_SYMBOLIC)
 -- @return <code>integer</code>.
 -- @name Reference:type
 function Reference:type()
@@ -48,7 +48,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_name">git_reference_name</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/reference/git_reference_name">git_reference_name</a>:<p><p>
 -- @return <code>string</code>.
 -- @name Reference:name
 function Reference:name()
@@ -56,7 +56,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_resolve">git_reference_resolve</a>:<p><p>Thie method iteratively peels a symbolic reference
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/reference/git_reference_resolve">git_reference_resolve</a>:<p><p>Thie method iteratively peels a symbolic reference
 --  until it resolves to a direct reference to an OID.<p> The peeled reference is returned in the `resolved_ref`
 --  argument, and must be freed manually once it's no longer
 --  needed.<p> If a direct reference is passed as an argument,
@@ -70,7 +70,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_owner">git_reference_owner</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/reference/git_reference_owner">git_reference_owner</a>:<p><p>
 -- @return <a href="Repository.html">Repository</a>.
 -- @name Reference:owner
 function Reference:owner()
@@ -78,7 +78,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_rename">git_reference_rename</a>:<p><p>This method works for both direct and symbolic references.
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/reference/git_reference_rename">git_reference_rename</a>:<p><p>This method works for both direct and symbolic references.
 --  The new name will be checked for validity and may be
 --  modified into a normalized form.<p> The given git_reference will be updated in place.<p> The reference will be immediately renamed in-memory
 --  and on disk.<p> If the `force` flag is not enabled, and there's already
@@ -97,7 +97,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/reference/git_reference_delete">git_reference_delete</a>:<p><p>This method works for both direct and symbolic references.<p> The reference will be immediately removed on disk and from
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/reference/git_reference_delete">git_reference_delete</a>:<p><p>This method works for both direct and symbolic references.<p> The reference will be immediately removed on disk and from
 --  memory. The given reference pointer will no longer be valid.
 -- @return <code>true</code> if no error.
 -- @return Error string.

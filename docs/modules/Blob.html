@@ -284,7 +284,7 @@ module function.
 
 <dt><a name="Blob.lookup"></a><strong>Blob.lookup</strong>&nbsp;(repo, id)</dt>
 <dd>
-Create a new Blob object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_lookup">git_blob_lookup</a>:<p><p>
+Create a new Blob object.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/blob/git_blob_lookup">git_blob_lookup</a>:<p><p>
 
 
 <h3>Parameters</h3>
@@ -323,7 +323,7 @@ Create a new Blob object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#
 
 <dt><a name="Blob:rawcontent"></a><strong>Blob:rawcontent</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_rawcontent">git_blob_rawcontent</a>:<p><p>A pointer to the raw content of a blob is returned; this pointer is owned internally by the object and shall not be free'd. The pointer may be invalidated at a later time. <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_rawsize">git_blob_rawsize</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/blob/git_blob_rawcontent">git_blob_rawcontent</a>:<p><p>A pointer to the raw content of a blob is returned; this pointer is owned internally by the object and shall not be free'd. The pointer may be invalidated at a later time. <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/blob/git_blob_rawsize">git_blob_rawsize</a>:<p><p>
 
 
 
@@ -343,7 +343,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Blob:rawsize"></a><strong>Blob:rawsize</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_rawsize">git_blob_rawsize</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/blob/git_blob_rawsize">git_blob_rawsize</a>:<p><p>
 
 
 
@@ -363,7 +363,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Object:free"></a><strong>Object:free</strong>&nbsp;()</dt>
 <dd>
-Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing object; note that git_objects are owned and cached by the repository so the object may or may not be freed after this library call, depending on how agressive is the caching mechanism used by the repository.<p> IMPORTANT: It *is* necessary to call this method when you stop using an object. Failure to do so will cause a memory leak.
+Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing object; note that git_objects are owned and cached by the repository so the object may or may not be freed after this library call, depending on how agressive is the caching mechanism used by the repository.<p> IMPORTANT: It *is* necessary to call this method when you stop using an object. Failure to do so will cause a memory leak.
 
 
 
@@ -380,7 +380,7 @@ Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="ht
 
 <dt><a name="Object:id"></a><strong>Object:id</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
 
 
 
@@ -400,7 +400,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Object:owner"></a><strong>Object:owner</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without affecting the object.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without affecting the object.
 
 
 
@@ -420,7 +420,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Object:type"></a><strong>Object:type</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
 
 
 

@@ -8,7 +8,7 @@ module("OdbObject")
 
 --- Destroy this object (will be called by Garbage Collector).
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_object_free">git_odb_object_free</a>:<p><p>This method must always be called once a `git_odb_object` is no
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_object_free">git_odb_object_free</a>:<p><p>This method must always be called once a `git_odb_object` is no
 --  longer needed, otherwise memory will leak.
 -- @name OdbObject:free
 function OdbObject:free()
@@ -16,7 +16,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_object_id">git_odb_object_id</a>:<p><p>This is the OID from which the object was read from
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_object_id">git_odb_object_id</a>:<p><p>This is the OID from which the object was read from
 -- @return <a href="OID.html">OID</a>.
 -- @name OdbObject:id
 function OdbObject:id()
@@ -24,9 +24,9 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_object_data">git_odb_object_data</a>:<p><p>This is the uncompressed, raw data as read from the ODB,
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_object_data">git_odb_object_data</a>:<p><p>This is the uncompressed, raw data as read from the ODB,
 --  without the leading header.<p> This pointer is owned by the object and shall not be free'd.
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_object_size">git_odb_object_size</a>:<p><p>This is the real size of the `data` buffer, not the
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_object_size">git_odb_object_size</a>:<p><p>This is the real size of the `data` buffer, not the
 --  actual size of the object.
 -- @return <code>string</code>.
 -- @name OdbObject:data
@@ -35,7 +35,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_object_size">git_odb_object_size</a>:<p><p>This is the real size of the `data` buffer, not the
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_object_size">git_odb_object_size</a>:<p><p>This is the real size of the `data` buffer, not the
 --  actual size of the object.
 -- @return <code>integer</code>.
 -- @name OdbObject:size
@@ -44,7 +44,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/odb/git_odb_object_type">git_odb_object_type</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/odb/git_odb_object_type">git_odb_object_type</a>:<p><p>
 -- @return <code>string</code>.
 -- @name OdbObject:type
 function OdbObject:type()
