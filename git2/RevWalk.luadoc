@@ -8,7 +8,7 @@ module("RevWalk")
 
 --- Create a new RevWalk object.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_new">git_revwalk_new</a>:<p><p>This revision walker uses a custom memory pool and an internal
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/revwalk/git_revwalk_new">git_revwalk_new</a>:<p><p>This revision walker uses a custom memory pool and an internal
 --  commit cache, so it is relatively expensive to allocate.<p> For maximum performance, this revision walker should be
 --  reused for different walks.<p> This revision walker is *not* thread safe: it may only be
 --  used to walk a repository on a single thread; however,
@@ -23,14 +23,14 @@ end
 
 --- Destroy this object (will be called by Garbage Collector).
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_free">git_revwalk_free</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/revwalk/git_revwalk_free">git_revwalk_free</a>:<p><p>
 -- @name RevWalk:close
 function RevWalk:close()
 end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_reset">git_revwalk_reset</a>:<p><p>This will clear all the pushed and hidden commits, and
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/revwalk/git_revwalk_reset">git_revwalk_reset</a>:<p><p>This will clear all the pushed and hidden commits, and
 --  leave the walker in a blank state (just like at
 --  creation) ready to receive new commit pushes and
 --  start a new walk.<p> The revision walk is automatically reset when a walk
@@ -41,7 +41,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_push">git_revwalk_push</a>:<p><p>The given OID must belong to a commit on the walked
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/revwalk/git_revwalk_push">git_revwalk_push</a>:<p><p>The given OID must belong to a commit on the walked
 --  repository.<p> The given commit will be used as one of the roots
 --  when starting the revision walk. At least one commit
 --  must be pushed the repository before a walk can
@@ -55,7 +55,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_hide">git_revwalk_hide</a>:<p><p>The given OID must belong to a commit on the walked
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/revwalk/git_revwalk_hide">git_revwalk_hide</a>:<p><p>The given OID must belong to a commit on the walked
 --  repository.<p> The resolved commit and all its parents will be hidden from the
 --  output on the revision walk.
 -- @param id Must be of type <a href="OID.html">OID</a>.
@@ -67,7 +67,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_next">git_revwalk_next</a>:<p><p>The initial call to this method is *not* blocking when
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/revwalk/git_revwalk_next">git_revwalk_next</a>:<p><p>The initial call to this method is *not* blocking when
 --  iterating through a repo with a time-sorting mode.<p> Iterating with Topological or inverted modes makes the initial
 --  call blocking to preprocess the commit list, but this block should be
 --  mostly unnoticeable on most repositories (topological preprocessing
@@ -80,7 +80,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_sorting">git_revwalk_sorting</a>:<p><p>Changing the sorting mode resets the walker.
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/revwalk/git_revwalk_sorting">git_revwalk_sorting</a>:<p><p>Changing the sorting mode resets the walker.
 -- @param sort_mode combination of GIT_SORT_XXX flags.  Must be of type <code>integer</code>.
 -- @name RevWalk:sorting
 function RevWalk:sorting(sort_mode)
@@ -88,7 +88,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/revwalk/git_revwalk_repository">git_revwalk_repository</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/revwalk/git_revwalk_repository">git_revwalk_repository</a>:<p><p>
 -- @return <a href="Repository.html">Repository</a>.
 -- @name RevWalk:repository
 function RevWalk:repository()

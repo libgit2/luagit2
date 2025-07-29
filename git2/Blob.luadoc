@@ -9,7 +9,7 @@ module("Blob")
 
 --- Create a new Blob object.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_lookup">git_blob_lookup</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/blob/git_blob_lookup">git_blob_lookup</a>:<p><p>
 -- @param repo the repo to use when locating the blob..  Must be of type <a href="Repository.html">Repository</a>.
 -- @param id identity of the blob to locate..  Must be of type <a href="OID.html">OID</a>.
 -- @return <a href="Blob.html">Blob</a> or <code>nil</code> on error.
@@ -20,33 +20,31 @@ end
 
 --- module function.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_create_fromfile">git_blob_create_fromfile</a>:<p><p>
--- @param repo repository where the blob will be written.  this repository cannot be bare.  Must be of type <a href="Repository.html">Repository</a>.
--- @param path file from which the blob will be created,  relative to the repository's working dir.  Must be of type <code>string</code>.
+-- @param repo Must be of type <a href="Repository.html">Repository</a>.
+-- @param path Must be of type <code>string</code>.
 -- @return <a href="OID.html">OID</a> or <code>nil</code> on error.
 -- @return Error string.
--- @name Blob.fromfile
-function Blob.fromfile(repo, path)
+-- @name Blob.from_disk
+function Blob.from_disk(repo, path)
 end
 
 --- module function.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_create_frombuffer">git_blob_create_frombuffer</a>:<p><p>
--- @param repo repository where to blob will be written.  Must be of type <a href="Repository.html">Repository</a>.
--- @param buffer data to be written into the blob.  Must be of type <code>string</code>.
+-- @param repo Must be of type <a href="Repository.html">Repository</a>.
+-- @param buffer Must be of type <code>string</code>.
 -- @return <a href="OID.html">OID</a> or <code>nil</code> on error.
 -- @return Error string.
--- @name Blob.frombuffer
-function Blob.frombuffer(repo, buffer)
+-- @name Blob.from_buffer
+function Blob.from_buffer(repo, buffer)
 end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_rawcontent">git_blob_rawcontent</a>:<p><p>A pointer to the raw content of a blob is returned;
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/blob/git_blob_rawcontent">git_blob_rawcontent</a>:<p><p>A pointer to the raw content of a blob is returned;
 --  this pointer is owned internally by the object and shall
 --  not be free'd. The pointer may be invalidated at a later
 --  time.
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_rawsize">git_blob_rawsize</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/blob/git_blob_rawsize">git_blob_rawsize</a>:<p><p>
 -- @return <code>string</code>.
 -- @name Blob:rawcontent
 function Blob:rawcontent()
@@ -54,7 +52,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/blob/git_blob_rawsize">git_blob_rawsize</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/blob/git_blob_rawsize">git_blob_rawsize</a>:<p><p>
 -- @return <code>integer</code>.
 -- @name Blob:rawsize
 function Blob:rawsize()
@@ -62,7 +60,7 @@ end
 
 --- Destroy this object (will be called by Garbage Collector).
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing
 --  object; note that git_objects are owned and cached by the repository
 --  so the object may or may not be freed after this library call,
 --  depending on how agressive is the caching mechanism used
@@ -75,7 +73,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
 -- @return <a href="OID.html">OID</a>.
 -- @name Object:id
 function Object:id()
@@ -83,7 +81,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
 -- @return <code>string</code>.
 -- @name Object:type
 function Object:type()
@@ -91,7 +89,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the
 --  returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without
 --  affecting the object.
 -- @return <a href="Repository.html">Repository</a>.

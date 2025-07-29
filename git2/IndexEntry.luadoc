@@ -15,7 +15,7 @@ end
 
 --- object method.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_entry_stage">git_index_entry_stage</a>:<p><p>This entry is calculated from the entrie's flag
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_entry_stage">git_index_entry_stage</a>:<p><p>This entry is calculated from the entrie's flag
 --  attribute like this:<p>	(entry->flags & GIT_IDXENTRY_STAGEMASK) >> GIT_IDXENTRY_STAGESHIFT<p> @returns the stage number
 -- @return <code>integer</code>.
 -- @name IndexEntry:stage
@@ -113,8 +113,8 @@ end
 --- object method.
 --
 -- @return <a href="OID.html">OID</a>.
--- @name IndexEntry:oid
-function IndexEntry:oid()
+-- @name IndexEntry:id
+function IndexEntry:id()
 end
 
 --- object method.

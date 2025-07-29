@@ -8,7 +8,7 @@ module("Signature")
 
 --- Create a new Signature object.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/signature/git_signature_new">git_signature_new</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/signature/git_signature_new">git_signature_new</a>:<p><p>
 -- @param name name of the person.  Must be of type <code>string</code>.
 -- @param email email of the person.  Must be of type <code>string</code>.
 -- @param time time when the action happened.  Must be of type <code>integer</code>.
@@ -21,7 +21,7 @@ end
 
 --- Create a new Signature object.
 --
--- <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/signature/git_signature_now">git_signature_now</a>:<p><p>
+-- <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/signature/git_signature_now">git_signature_now</a>:<p><p>
 -- @param name name of the person.  Must be of type <code>string</code>.
 -- @param email email of the person.  Must be of type <code>string</code>.
 -- @return <a href="Signature.html">Signature</a> or <code>nil</code> on error.

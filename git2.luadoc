@@ -4,7 +4,7 @@
 
 --- Module git2.
 --
--- See <a href="http://libgit2.github.com/libgit2/#HEAD">libgit2 API docs</a>.
+-- See <a href="http://libgit2.github.io/libgit2/#HEAD">libgit2 API docs</a>.
 -- 
 -- <br />Class <a href="StrArray.html">StrArray</a>
 -- <br />Class <a href="Repository.html">Repository</a>

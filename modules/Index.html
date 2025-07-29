@@ -148,22 +148,12 @@
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#Index:add">Index:add</a>&nbsp;(path, stage)</td>
+	<td class="name" nowrap><a href="#Index:add">Index:add</a>&nbsp;(source_entry)</td>
 	<td class="summary">object method.</td>
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#Index:add2">Index:add2</a>&nbsp;(source_entry)</td>
-	<td class="summary">object method.</td>
-	</tr>
-
-	<tr>
-	<td class="name" nowrap><a href="#Index:append">Index:append</a>&nbsp;(path, stage)</td>
-	<td class="summary">object method.</td>
-	</tr>
-
-	<tr>
-	<td class="name" nowrap><a href="#Index:append2">Index:append2</a>&nbsp;(source_entry)</td>
+	<td class="name" nowrap><a href="#Index:add_bypath">Index:add_bypath</a>&nbsp;(path)</td>
 	<td class="summary">object method.</td>
 	</tr>
 
@@ -178,32 +168,22 @@
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#Index:entrycount_unmerged">Index:entrycount_unmerged</a>&nbsp;()</td>
+	<td class="name" nowrap><a href="#Index:find">Index:find</a>&nbsp;(at_pos, path)</td>
 	<td class="summary">object method.</td>
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#Index:find">Index:find</a>&nbsp;(path)</td>
+	<td class="name" nowrap><a href="#Index:get_byindex">Index:get_byindex</a>&nbsp;(n)</td>
 	<td class="summary">object method.</td>
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#Index:get">Index:get</a>&nbsp;(n)</td>
+	<td class="name" nowrap><a href="#Index:get_bypath">Index:get_bypath</a>&nbsp;(path, stage)</td>
 	<td class="summary">object method.</td>
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#Index:get_unmerged_byindex">Index:get_unmerged_byindex</a>&nbsp;(n)</td>
-	<td class="summary">object method.</td>
-	</tr>
-
-	<tr>
-	<td class="name" nowrap><a href="#Index:get_unmerged_bypath">Index:get_unmerged_bypath</a>&nbsp;(path)</td>
-	<td class="summary">object method.</td>
-	</tr>
-
-	<tr>
-	<td class="name" nowrap><a href="#Index:read">Index:read</a>&nbsp;()</td>
+	<td class="name" nowrap><a href="#Index:read">Index:read</a>&nbsp;(force)</td>
 	<td class="summary">object method.</td>
 	</tr>
 
@@ -213,12 +193,22 @@
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#Index:remove">Index:remove</a>&nbsp;(position)</td>
+	<td class="name" nowrap><a href="#Index:remove">Index:remove</a>&nbsp;(path, stage)</td>
 	<td class="summary">object method.</td>
 	</tr>
 
 	<tr>
-	<td class="name" nowrap><a href="#Index:uniq">Index:uniq</a>&nbsp;()</td>
+	<td class="name" nowrap><a href="#Index:reuc_entrycount">Index:reuc_entrycount</a>&nbsp;()</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Index:reuc_get_byindex">Index:reuc_get_byindex</a>&nbsp;(n)</td>
+	<td class="summary">object method.</td>
+	</tr>
+
+	<tr>
+	<td class="name" nowrap><a href="#Index:reuc_get_bypath">Index:reuc_get_bypath</a>&nbsp;(path)</td>
 	<td class="summary">object method.</td>
 	</tr>
 
@@ -246,7 +236,7 @@
 
 <dt><a name="Index.bare"></a><strong>Index.bare</strong>&nbsp;(index_path)</dt>
 <dd>
-Create a new Index object.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_open">git_index_open</a>:<p><p>Since there is no ODB or working directory behind this index, any Index methods which rely on these (e.g. index_add) will fail with the GIT_EBAREINDEX error code.<p> If you need to access the index of an actual repository, use the `git_repository_index` wrapper.<p> The index must be freed once it's no longer in use.
+Create a new Index object.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_open">git_index_open</a>:<p><p>Since there is no ODB or working directory behind this index, any Index methods which rely on these (e.g. index_add) will fail with the GIT_EBAREINDEX error code.<p> If you need to access the index of an actual repository, use the `git_repository_index` wrapper.<p> The index must be freed once it's no longer in use.
 
 
 <h3>Parameters</h3>
@@ -279,48 +269,9 @@ Create a new Index object.  <p>Calls <a href="http://libgit2.github.com/libgit2/
 
 
 
-<dt><a name="Index:add"></a><strong>Index:add</strong>&nbsp;(path, stage)</dt>
+<dt><a name="Index:add"></a><strong>Index:add</strong>&nbsp;(source_entry)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_add">git_index_add</a>:<p><p>The file `path` must be relative to the repository's working folder and must be readable.<p> This method will fail in bare index instances.<p> This forces the file to be added to the index, not looking at gitignore rules.  Those rules can be evaluated through the git_status APIs (in status.h) before calling this.
-
-
-<h3>Parameters</h3>
-<ul>
-	
-	<li>
-	  path: filename to add.  Must be of type <code>string</code>.
-	</li>
-	
-	<li>
-	  stage: stage for the entry.  Must be of type <code>integer</code>.
-	</li>
-	
-</ul>
-
-
-
-
-
-
-<h3>Return values:</h3>
-<ol>
-	
-	<li><code>true</code> if no error.
-	
-	<li>Error string.
-	
-</ol>
-
-
-
-</dd>
-
-
-
-
-<dt><a name="Index:add2"></a><strong>Index:add2</strong>&nbsp;(source_entry)</dt>
-<dd>
-object method. 
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_add">git_index_add</a>:<p><p>The file `path` must be relative to the repository's working folder and must be readable.<p> This method will fail in bare index instances.<p> This forces the file to be added to the index, not looking at gitignore rules.  Those rules can be evaluated through the git_status APIs (in status.h) before calling this.
 
 
 <h3>Parameters</h3>
@@ -353,46 +304,7 @@ object method.
 
 
 
-<dt><a name="Index:append"></a><strong>Index:append</strong>&nbsp;(path, stage)</dt>
-<dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_append">git_index_append</a>:<p><p>A new entry will always be inserted into the index; if the index already contains an entry for such path, the old entry will **not** be replaced.<p> The file `path` must be relative to the repository's working folder and must be readable.<p> This method will fail in bare index instances.
-
-
-<h3>Parameters</h3>
-<ul>
-	
-	<li>
-	  path: filename to add.  Must be of type <code>string</code>.
-	</li>
-	
-	<li>
-	  stage: stage for the entry.  Must be of type <code>integer</code>.
-	</li>
-	
-</ul>
-
-
-
-
-
-
-<h3>Return values:</h3>
-<ol>
-	
-	<li><code>true</code> if no error.
-	
-	<li>Error string.
-	
-</ol>
-
-
-
-</dd>
-
-
-
-
-<dt><a name="Index:append2"></a><strong>Index:append2</strong>&nbsp;(source_entry)</dt>
+<dt><a name="Index:add_bypath"></a><strong>Index:add_bypath</strong>&nbsp;(path)</dt>
 <dd>
 object method. 
 
@@ -401,7 +313,7 @@ object method.
 <ul>
 	
 	<li>
-	  source_entry: Must be of type <a href="IndexEntry.html">IndexEntry</a>.
+	  path: Must be of type <code>string</code>.
 	</li>
 	
 </ul>
@@ -429,7 +341,7 @@ object method.
 
 <dt><a name="Index:clear"></a><strong>Index:clear</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_clear">git_index_clear</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_clear">git_index_clear</a>:<p><p>
 
 
 
@@ -446,7 +358,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Index:entrycount"></a><strong>Index:entrycount</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_entrycount">git_index_entrycount</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_entrycount">git_index_entrycount</a>:<p><p>
 
 
 
@@ -464,33 +376,17 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 
 
-<dt><a name="Index:entrycount_unmerged"></a><strong>Index:entrycount_unmerged</strong>&nbsp;()</dt>
+<dt><a name="Index:find"></a><strong>Index:find</strong>&nbsp;(at_pos, path)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_entrycount_unmerged">git_index_entrycount_unmerged</a>:<p><p>
-
-
-
-
-
-
-
-<h3>Return value:</h3>
-<code>integer</code>.
-
-
-
-</dd>
-
-
-
-
-<dt><a name="Index:find"></a><strong>Index:find</strong>&nbsp;(path)</dt>
-<dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_find">git_index_find</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_find">git_index_find</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
+	
+	<li>
+	  at_pos: Must be of type <code>lightuserdata</code>.
+	</li>
 	
 	<li>
 	  path: path to search.  Must be of type <code>string</code>.
@@ -513,16 +409,16 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 
 
-<dt><a name="Index:get"></a><strong>Index:get</strong>&nbsp;(n)</dt>
+<dt><a name="Index:get_byindex"></a><strong>Index:get_byindex</strong>&nbsp;(n)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_get">git_index_get</a>:<p><p>This entry can be modified, and the changes will be written back to disk on the next write() call.<p> The entry should not be freed by the caller.
+object method. 
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  n: the position of the entry.  Must be of type <code>integer</code>.
+	  n: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -542,16 +438,20 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 
 
-<dt><a name="Index:get_unmerged_byindex"></a><strong>Index:get_unmerged_byindex</strong>&nbsp;(n)</dt>
+<dt><a name="Index:get_bypath"></a><strong>Index:get_bypath</strong>&nbsp;(path, stage)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_get_unmerged_byindex">git_index_get_unmerged_byindex</a>:<p><p>The returned entry is read-only and should not be modified of freed by the caller.
+object method. 
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  n: the position of the entry.  Must be of type <code>integer</code>.
+	  path: Must be of type <code>string</code>.
+	</li>
+	
+	<li>
+	  stage: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -562,7 +462,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 
 <h3>Return value:</h3>
-<a href="IndexEntryUnmerged.html">IndexEntryUnmerged</a>.
+<a href="IndexEntry.html">IndexEntry</a>.
 
 
 
@@ -571,39 +471,19 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 
 
-<dt><a name="Index:get_unmerged_bypath"></a><strong>Index:get_unmerged_bypath</strong>&nbsp;(path)</dt>
+<dt><a name="Index:read"></a><strong>Index:read</strong>&nbsp;(force)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_get_unmerged_bypath">git_index_get_unmerged_bypath</a>:<p><p>The returned entry is read-only and should not be modified of freed by the caller.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_read">git_index_read</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  path: path to search.  Must be of type <code>string</code>.
+	  force: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
-
-
-
-
-
-
-<h3>Return value:</h3>
-<a href="IndexEntryUnmerged.html">IndexEntryUnmerged</a>.
-
-
-
-</dd>
-
-
-
-
-<dt><a name="Index:read"></a><strong>Index:read</strong>&nbsp;()</dt>
-<dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_read">git_index_read</a>:<p><p>
-
 
 
 
@@ -628,7 +508,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Index:read_tree"></a><strong>Index:read_tree</strong>&nbsp;(tree)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_read_tree">git_index_read_tree</a>:<p><p>The current index contents will be replaced by the specified tree.
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_read_tree">git_index_read_tree</a>:<p><p>The current index contents will be replaced by the specified tree.
 
 
 <h3>Parameters</h3>
@@ -661,16 +541,20 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 
 
-<dt><a name="Index:remove"></a><strong>Index:remove</strong>&nbsp;(position)</dt>
+<dt><a name="Index:remove"></a><strong>Index:remove</strong>&nbsp;(path, stage)</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_remove">git_index_remove</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_remove">git_index_remove</a>:<p><p>
 
 
 <h3>Parameters</h3>
 <ul>
 	
 	<li>
-	  position: position of the entry to remove.  Must be of type <code>integer</code>.
+	  path: Must be of type <code>string</code>.
+	</li>
+	
+	<li>
+	  stage: Must be of type <code>integer</code>.
 	</li>
 	
 </ul>
@@ -696,15 +580,76 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 
 
-<dt><a name="Index:uniq"></a><strong>Index:uniq</strong>&nbsp;()</dt>
+<dt><a name="Index:reuc_entrycount"></a><strong>Index:reuc_entrycount</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_uniq">git_index_uniq</a>:<p><p>
+object method. 
 
 
 
 
 
 
+
+<h3>Return value:</h3>
+<code>integer</code>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Index:reuc_get_byindex"></a><strong>Index:reuc_get_byindex</strong>&nbsp;(n)</dt>
+<dd>
+object method. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  n: Must be of type <code>integer</code>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return value:</h3>
+<a href="IndexEntryUnmerged.html">IndexEntryUnmerged</a>.
+
+
+
+</dd>
+
+
+
+
+<dt><a name="Index:reuc_get_bypath"></a><strong>Index:reuc_get_bypath</strong>&nbsp;(path)</dt>
+<dd>
+object method. 
+
+
+<h3>Parameters</h3>
+<ul>
+	
+	<li>
+	  path: Must be of type <code>string</code>.
+	</li>
+	
+</ul>
+
+
+
+
+
+
+<h3>Return value:</h3>
+<a href="IndexEntryUnmerged.html">IndexEntryUnmerged</a>.
 
 
 
@@ -715,7 +660,7 @@ object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/
 
 <dt><a name="Index:write"></a><strong>Index:write</strong>&nbsp;()</dt>
 <dd>
-object method.  <p>Calls <a href="http://libgit2.github.com/libgit2/#HEAD/group/index/git_index_write">git_index_write</a>:<p><p>
+object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/index/git_index_write">git_index_write</a>:<p><p>
 
 
 
