@@ -1,13 +1,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
     <title>Reference</title>
-    <link rel="stylesheet" href="../luadoc.css" type="text/css" />
-	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
 </head>
-
 <body>
+
 <div id="container">
 
 <div id="product">
@@ -16,345 +16,243 @@
 	<div id="product_description"></div>
 </div> <!-- id="product" -->
 
+
 <div id="main">
 
+
+<!-- Menu -->
+
 <div id="navigation">
+<br/>
+<h1>ldoc</h1>
 
 
-<h1>LuaDoc</h1>
 <ul>
-	
-	<li><a href="../index.html">Index</a></li>
-	
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
 </ul>
 
 
-<!-- Module list -->
-
-<h1>Modules</h1>
-<ul>
-
-	<li>
-		<a href="../modules/Blob.html">Blob</a>
-	</li>
-
-	<li>
-		<a href="../modules/Commit.html">Commit</a>
-	</li>
-
-	<li>
-		<a href="../modules/Config.html">Config</a>
-	</li>
-
-	<li>
-		<a href="../modules/Index.html">Index</a>
-	</li>
-
-	<li>
-		<a href="../modules/IndexEntry.html">IndexEntry</a>
-	</li>
-
-	<li>
-		<a href="../modules/IndexEntryUnmerged.html">IndexEntryUnmerged</a>
-	</li>
-
-	<li>
-		<a href="../modules/ODB.html">ODB</a>
-	</li>
-
-	<li>
-		<a href="../modules/ODBBackend.html">ODBBackend</a>
-	</li>
-
-	<li><strong>OID</strong></li>
-	
-	<li>
-		<a href="../modules/OID_Shorten.html">OID_Shorten</a>
-	</li>
-
-	<li>
-		<a href="../modules/Object.html">Object</a>
-	</li>
-
-	<li>
-		<a href="../modules/OdbObject.html">OdbObject</a>
-	</li>
-
-	<li>
-		<a href="../modules/Reference.html">Reference</a>
-	</li>
-
-	<li>
-		<a href="../modules/Repository.html">Repository</a>
-	</li>
-
-	<li>
-		<a href="../modules/RevWalk.html">RevWalk</a>
-	</li>
-
-	<li>
-		<a href="../modules/Signature.html">Signature</a>
-	</li>
-
-	<li>
-		<a href="../modules/StrArray.html">StrArray</a>
-	</li>
-
-	<li>
-		<a href="../modules/Tag.html">Tag</a>
-	</li>
-
-	<li>
-		<a href="../modules/Tree.html">Tree</a>
-	</li>
-
-	<li>
-		<a href="../modules/TreeEntry.html">TreeEntry</a>
-	</li>
-
-	<li>
-		<a href="../modules/git2.html">git2</a>
-	</li>
-
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/git2.html">git2</a></li>
+  <li><a href="../modules/Blob.html">Blob</a></li>
+  <li><a href="../modules/Commit.html">Commit</a></li>
+  <li><a href="../modules/Config.html">Config</a></li>
+  <li><a href="../modules/Index.html">Index</a></li>
+  <li><a href="../modules/IndexEntry.html">IndexEntry</a></li>
+  <li><a href="../modules/IndexEntryUnmerged.html">IndexEntryUnmerged</a></li>
+  <li><a href="../modules/ODB.html">ODB</a></li>
+  <li><a href="../modules/ODBBackend.html">ODBBackend</a></li>
+  <li><strong>OID</strong></li>
+  <li><a href="../modules/OID_Shorten.html">OID_Shorten</a></li>
+  <li><a href="../modules/Object.html">Object</a></li>
+  <li><a href="../modules/OdbObject.html">OdbObject</a></li>
+  <li><a href="../modules/Reference.html">Reference</a></li>
+  <li><a href="../modules/Repository.html">Repository</a></li>
+  <li><a href="../modules/RevWalk.html">RevWalk</a></li>
+  <li><a href="../modules/Signature.html">Signature</a></li>
+  <li><a href="../modules/StrArray.html">StrArray</a></li>
+  <li><a href="../modules/Tag.html">Tag</a></li>
+  <li><a href="../modules/Tree.html">Tree</a></li>
+  <li><a href="../modules/TreeEntry.html">TreeEntry</a></li>
 </ul>
 
-
-
-<!-- File list -->
-
-
-
-
-
-
-</div><!-- id="navigation" -->
+</div>
 
 <div id="content">
 
 <h1>Module <code>OID</code></h1>
-
-<p>Class "OID". </p>
-
-
+<p>Class "OID".</p>
+<p></p>
 
 
-
-<h2>Functions</h2>
+<h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
-
 	<tr>
-	<td class="name" nowrap><a href="#OID.hex">OID.hex</a>&nbsp;(str)</td>
+	<td class="name" nowrap><a href="#hex">hex (str)</a></td>
 	<td class="summary">Create a new OID object.</td>
 	</tr>
-
 	<tr>
-	<td class="name" nowrap><a href="#OID.raw">OID.raw</a>&nbsp;(raw)</td>
+	<td class="name" nowrap><a href="#raw">raw (raw)</a></td>
 	<td class="summary">Create a new OID object.</td>
 	</tr>
-
 	<tr>
-	<td class="name" nowrap><a href="#OID:fmt">OID:fmt</a>&nbsp;()</td>
+	<td class="name" nowrap><a href="#pathfmt">pathfmt ()</a></td>
 	<td class="summary">object method.</td>
 	</tr>
-
 	<tr>
-	<td class="name" nowrap><a href="#OID:pathfmt">OID:pathfmt</a>&nbsp;()</td>
+	<td class="name" nowrap><a href="#fmt">fmt ()</a></td>
 	<td class="summary">object method.</td>
 	</tr>
-
 	<tr>
-	<td class="name" nowrap><a href="#OID_mt:__eq">OID_mt:__eq</a>&nbsp;(id)</td>
+	<td class="name" nowrap><a href="#OID_mt:__tostring">OID_mt:__tostring ()</a></td>
 	<td class="summary">object meta method.</td>
 	</tr>
-
 	<tr>
-	<td class="name" nowrap><a href="#OID_mt:__tostring">OID_mt:__tostring</a>&nbsp;()</td>
+	<td class="name" nowrap><a href="#OID_mt:__eq">OID_mt:__eq (id)</a></td>
 	<td class="summary">object meta method.</td>
 	</tr>
-
 </table>
 
-
-
-
-
-
 <br/>
 <br/>
 
 
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
 
-<h2><a name="functions"></a>Functions</h2>
-<dl class="function">
-
-
-
-<dt><a name="OID.hex"></a><strong>OID.hex</strong>&nbsp;(str)</dt>
-<dd>
-Create a new OID object.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/oid/git_oid_fromstrn">git_oid_fromstrn</a>:<p><p>If N is odd, N-1 characters will be parsed instead. The remaining space in the git_oid will be set to zero.
-
-
-<h3>Parameters</h3>
-<ul>
-	
-	<li>
-	  str: input hex string of at least size `length`.  Must be of type <code>string</code>.
-	</li>
-	
-</ul>
+    <dl class="function">
+    <dt>
+    <a name = "hex"></a>
+    <strong>hex (str)</strong>
+    </dt>
+    <dd>
+    Create a new OID object.
+<p> <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/oid/git_oid_fromstrn">git_oid_fromstrn</a>:<p><p>If N is odd, N-1 characters will be parsed instead.
+  The remaining space in the git_oid will be set to zero.
 
 
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+         input hex string of at least size `length`.  Must be of type <code>string</code>.
+        </li>
+    </ul>
 
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        <a href="OID.html">OID</a> or <code>nil</code> on error.</li>
+        <li>
+        Error string.</li>
+    </ol>
 
-
-
-<h3>Return values:</h3>
-<ol>
-	
-	<li><a href="OID.html">OID</a> or <code>nil</code> on error.
-	
-	<li>Error string.
-	
-</ol>
 
 
 
 </dd>
+    <dt>
+    <a name = "raw"></a>
+    <strong>raw (raw)</strong>
+    </dt>
+    <dd>
+    Create a new OID object.
+<p> <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/oid/git_oid_fromraw">git_oid_fromraw</a>:<p><p>
 
 
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">raw</span>
+         the raw input bytes to be copied..  Must be of type <code>string</code>.
+        </li>
+    </ul>
 
+    <h3>Returns:</h3>
+    <ol>
 
-<dt><a name="OID.raw"></a><strong>OID.raw</strong>&nbsp;(raw)</dt>
-<dd>
-Create a new OID object.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/oid/git_oid_fromraw">git_oid_fromraw</a>:<p><p>
+        <a href="OID.html">OID</a>.
+    </ol>
 
-
-<h3>Parameters</h3>
-<ul>
-	
-	<li>
-	  raw: the raw input bytes to be copied..  Must be of type <code>string</code>.
-	</li>
-	
-</ul>
-
-
-
-
-
-
-<h3>Return value:</h3>
-<a href="OID.html">OID</a>.
 
 
 
 </dd>
+    <dt>
+    <a name = "pathfmt"></a>
+    <strong>pathfmt ()</strong>
+    </dt>
+    <dd>
+    object method.
 
 
 
+    <h3>Returns:</h3>
+    <ol>
 
-<dt><a name="OID:fmt"></a><strong>OID:fmt</strong>&nbsp;()</dt>
-<dd>
-object method. 
+        <code>string</code>.
+    </ol>
 
-
-
-
-
-
-
-<h3>Return value:</h3>
-<code>string</code>.
 
 
 
 </dd>
+    <dt>
+    <a name = "fmt"></a>
+    <strong>fmt ()</strong>
+    </dt>
+    <dd>
+    object method.
 
 
 
+    <h3>Returns:</h3>
+    <ol>
 
-<dt><a name="OID:pathfmt"></a><strong>OID:pathfmt</strong>&nbsp;()</dt>
-<dd>
-object method. 
+        <code>string</code>.
+    </ol>
 
-
-
-
-
-
-
-<h3>Return value:</h3>
-<code>string</code>.
 
 
 
 </dd>
+    <dt>
+    <a name = "OID_mt:__tostring"></a>
+    <strong>OID_mt:__tostring ()</strong>
+    </dt>
+    <dd>
+    object meta method.
 
 
 
+    <h3>Returns:</h3>
+    <ol>
 
-<dt><a name="OID_mt:__eq"></a><strong>OID_mt:__eq</strong>&nbsp;(id)</dt>
-<dd>
-object meta method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/oid/git_oid_cmp">git_oid_cmp</a>:<p><p>
+        <code>string</code>.
+    </ol>
 
-
-<h3>Parameters</h3>
-<ul>
-	
-	<li>
-	  id: Must be of type <a href="OID.html">OID</a>.
-	</li>
-	
-</ul>
-
-
-
-
-
-
-<h3>Return value:</h3>
-<code>integer</code>.
 
 
 
 </dd>
+    <dt>
+    <a name = "OID_mt:__eq"></a>
+    <strong>OID_mt:__eq (id)</strong>
+    </dt>
+    <dd>
+    object meta method.
+<p> <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/oid/git_oid_cmp">git_oid_cmp</a>:<p><p>
 
 
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">id</span>
+         Must be of type <a href="OID.html">OID</a>.
+        </li>
+    </ul>
 
+    <h3>Returns:</h3>
+    <ol>
 
-<dt><a name="OID_mt:__tostring"></a><strong>OID_mt:__tostring</strong>&nbsp;()</dt>
-<dd>
-object meta method. 
+        <code>integer</code>.
+    </ol>
 
-
-
-
-
-
-
-<h3>Return value:</h3>
-<code>string</code>.
 
 
 
 </dd>
-
-
 </dl>
 
 
-
-
-
-
 </div> <!-- id="content" -->
-
 </div> <!-- id="main" -->
-
 <div id="about">
-	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-09-21 20:56:42 </i>
 </div> <!-- id="about" -->
-
-</div> <!-- id="container" -->	
+</div> <!-- id="container" -->
 </body>
 </html>

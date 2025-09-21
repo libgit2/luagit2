@@ -1,13 +1,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
     <title>Reference</title>
-    <link rel="stylesheet" href="../luadoc.css" type="text/css" />
-	<!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/-->
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
 </head>
-
 <body>
+
 <div id="container">
 
 <div id="product">
@@ -16,194 +16,221 @@
 	<div id="product_description"></div>
 </div> <!-- id="product" -->
 
+
 <div id="main">
 
+
+<!-- Menu -->
+
 <div id="navigation">
+<br/>
+<h1>ldoc</h1>
 
 
-<h1>LuaDoc</h1>
 <ul>
-	
-	<li><a href="../index.html">Index</a></li>
-	
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
 </ul>
 
 
-<!-- Module list -->
-
-<h1>Modules</h1>
-<ul>
-
-	<li>
-		<a href="../modules/Blob.html">Blob</a>
-	</li>
-
-	<li>
-		<a href="../modules/Commit.html">Commit</a>
-	</li>
-
-	<li>
-		<a href="../modules/Config.html">Config</a>
-	</li>
-
-	<li>
-		<a href="../modules/Index.html">Index</a>
-	</li>
-
-	<li>
-		<a href="../modules/IndexEntry.html">IndexEntry</a>
-	</li>
-
-	<li>
-		<a href="../modules/IndexEntryUnmerged.html">IndexEntryUnmerged</a>
-	</li>
-
-	<li>
-		<a href="../modules/ODB.html">ODB</a>
-	</li>
-
-	<li>
-		<a href="../modules/ODBBackend.html">ODBBackend</a>
-	</li>
-
-	<li>
-		<a href="../modules/OID.html">OID</a>
-	</li>
-
-	<li>
-		<a href="../modules/OID_Shorten.html">OID_Shorten</a>
-	</li>
-
-	<li>
-		<a href="../modules/Object.html">Object</a>
-	</li>
-
-	<li>
-		<a href="../modules/OdbObject.html">OdbObject</a>
-	</li>
-
-	<li>
-		<a href="../modules/Reference.html">Reference</a>
-	</li>
-
-	<li>
-		<a href="../modules/Repository.html">Repository</a>
-	</li>
-
-	<li>
-		<a href="../modules/RevWalk.html">RevWalk</a>
-	</li>
-
-	<li>
-		<a href="../modules/Signature.html">Signature</a>
-	</li>
-
-	<li>
-		<a href="../modules/StrArray.html">StrArray</a>
-	</li>
-
-	<li>
-		<a href="../modules/Tag.html">Tag</a>
-	</li>
-
-	<li><strong>Tree</strong></li>
-	
-	<li>
-		<a href="../modules/TreeEntry.html">TreeEntry</a>
-	</li>
-
-	<li>
-		<a href="../modules/git2.html">git2</a>
-	</li>
-
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/git2.html">git2</a></li>
+  <li><a href="../modules/Blob.html">Blob</a></li>
+  <li><a href="../modules/Commit.html">Commit</a></li>
+  <li><a href="../modules/Config.html">Config</a></li>
+  <li><a href="../modules/Index.html">Index</a></li>
+  <li><a href="../modules/IndexEntry.html">IndexEntry</a></li>
+  <li><a href="../modules/IndexEntryUnmerged.html">IndexEntryUnmerged</a></li>
+  <li><a href="../modules/ODB.html">ODB</a></li>
+  <li><a href="../modules/ODBBackend.html">ODBBackend</a></li>
+  <li><a href="../modules/OID.html">OID</a></li>
+  <li><a href="../modules/OID_Shorten.html">OID_Shorten</a></li>
+  <li><a href="../modules/Object.html">Object</a></li>
+  <li><a href="../modules/OdbObject.html">OdbObject</a></li>
+  <li><a href="../modules/Reference.html">Reference</a></li>
+  <li><a href="../modules/Repository.html">Repository</a></li>
+  <li><a href="../modules/RevWalk.html">RevWalk</a></li>
+  <li><a href="../modules/Signature.html">Signature</a></li>
+  <li><a href="../modules/StrArray.html">StrArray</a></li>
+  <li><a href="../modules/Tag.html">Tag</a></li>
+  <li><strong>Tree</strong></li>
+  <li><a href="../modules/TreeEntry.html">TreeEntry</a></li>
 </ul>
 
-
-
-<!-- File list -->
-
-
-
-
-
-
-</div><!-- id="navigation" -->
+</div>
 
 <div id="content">
 
 <h1>Module <code>Tree</code></h1>
-
-<p>Class "Tree".  Extends <a href="Object.html">Object</a><br /></p>
-
-
-
+<p>Class "Tree".</p>
+<p>
+<p> Extends <a href="Object.html">Object</a><br /></p>
 
 
-<h2>Functions</h2>
+<h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
-
 	<tr>
-	<td class="name" nowrap><a href="#Object:free">Object:free</a>&nbsp;()</td>
-	<td class="summary">Destroy this object (will be called by Garbage Collector).</td>
-	</tr>
-
-	<tr>
-	<td class="name" nowrap><a href="#Object:id">Object:id</a>&nbsp;()</td>
-	<td class="summary">object method.</td>
-	</tr>
-
-	<tr>
-	<td class="name" nowrap><a href="#Object:owner">Object:owner</a>&nbsp;()</td>
-	<td class="summary">object method.</td>
-	</tr>
-
-	<tr>
-	<td class="name" nowrap><a href="#Object:type">Object:type</a>&nbsp;()</td>
-	<td class="summary">object method.</td>
-	</tr>
-
-	<tr>
-	<td class="name" nowrap><a href="#Tree.lookup">Tree.lookup</a>&nbsp;(repo, id)</td>
+	<td class="name" nowrap><a href="#lookup">lookup (repo, id)</a></td>
 	<td class="summary">Create a new Tree object.</td>
 	</tr>
-
 	<tr>
-	<td class="name" nowrap><a href="#Tree:entry_byindex">Tree:entry_byindex</a>&nbsp;(index)</td>
+	<td class="name" nowrap><a href="#entrycount">entrycount ()</a></td>
 	<td class="summary">object method.</td>
 	</tr>
-
 	<tr>
-	<td class="name" nowrap><a href="#Tree:entry_byname">Tree:entry_byname</a>&nbsp;(filename)</td>
+	<td class="name" nowrap><a href="#entry_byname">entry_byname (filename)</a></td>
 	<td class="summary">object method.</td>
 	</tr>
-
 	<tr>
-	<td class="name" nowrap><a href="#Tree:entrycount">Tree:entrycount</a>&nbsp;()</td>
+	<td class="name" nowrap><a href="#entry_byindex">entry_byindex (index)</a></td>
 	<td class="summary">object method.</td>
 	</tr>
-
+	<tr>
+	<td class="name" nowrap><a href="#Object:free">Object:free ()</a></td>
+	<td class="summary">Destroy this object (will be called by Garbage Collector).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Object:id">Object:id ()</a></td>
+	<td class="summary">object method.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Object:type">Object:type ()</a></td>
+	<td class="summary">object method.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Object:owner">Object:owner ()</a></td>
+	<td class="summary">object method.</td>
+	</tr>
 </table>
 
-
-
-
-
-
 <br/>
 <br/>
 
 
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
 
-<h2><a name="functions"></a>Functions</h2>
-<dl class="function">
+    <dl class="function">
+    <dt>
+    <a name = "lookup"></a>
+    <strong>lookup (repo, id)</strong>
+    </dt>
+    <dd>
+    Create a new Tree object.
+<p> <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/tree/git_tree_lookup">git_tree_lookup</a>:<p><p>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">repo</span>
+         the repo to use when locating the tree..  Must be of type <a href="Repository.html">Repository</a>.
+        </li>
+        <li><span class="parameter">id</span>
+         identity of the tree to locate..  Must be of type <a href="OID.html">OID</a>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        <a href="Tree.html">Tree</a> or <code>nil</code> on error.</li>
+        <li>
+        Error string.</li>
+    </ol>
 
 
 
-<dt><a name="Object:free"></a><strong>Object:free</strong>&nbsp;()</dt>
-<dd>
-Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing object; note that git_objects are owned and cached by the repository so the object may or may not be freed after this library call, depending on how agressive is the caching mechanism used by the repository.<p> IMPORTANT: It *is* necessary to call this method when you stop using an object. Failure to do so will cause a memory leak.
+
+</dd>
+    <dt>
+    <a name = "entrycount"></a>
+    <strong>entrycount ()</strong>
+    </dt>
+    <dd>
+    object method.
+<p> <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/tree/git_tree_entrycount">git_tree_entrycount</a>:<p><p>
 
 
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <code>integer</code>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "entry_byname"></a>
+    <strong>entry_byname (filename)</strong>
+    </dt>
+    <dd>
+    object method.
+<p> <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/tree/git_tree_entry_byname">git_tree_entry_byname</a>:<p><p>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">filename</span>
+         the filename of the desired entry.  Must be of type <code>string</code>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="TreeEntry.html">TreeEntry</a>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "entry_byindex"></a>
+    <strong>entry_byindex (index)</strong>
+    </dt>
+    <dd>
+    object method.
+<p> <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/tree/git_tree_entry_byindex">git_tree_entry_byindex</a>:<p><p>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">index</span>
+         Must be of type <code>integer</code>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="TreeEntry.html">TreeEntry</a>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Object:free"></a>
+    <strong>Object:free ()</strong>
+    </dt>
+    <dd>
+    Destroy this object (will be called by Garbage Collector).
+<p> <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_free">git_object_free</a>:<p><p>This method instructs the library to close an existing
+  object; note that git_objects are owned and cached by the repository
+  so the object may or may not be freed after this library call,
+  depending on how agressive is the caching mechanism used
+  by the repository.<p> IMPORTANT:
+  It *is* necessary to call this method when you stop using
+  an object. Failure to do so will cause a memory leak.
 
 
 
@@ -212,200 +239,77 @@ Destroy this object (will be called by Garbage Collector).  <p>Calls <a href="ht
 
 
 </dd>
+    <dt>
+    <a name = "Object:id"></a>
+    <strong>Object:id ()</strong>
+    </dt>
+    <dd>
+    object method.
+<p> <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
 
 
 
+    <h3>Returns:</h3>
+    <ol>
 
-<dt><a name="Object:id"></a><strong>Object:id</strong>&nbsp;()</dt>
-<dd>
-object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_id">git_object_id</a>:<p><p>
+        <a href="OID.html">OID</a>.
+    </ol>
 
-
-
-
-
-
-
-<h3>Return value:</h3>
-<a href="OID.html">OID</a>.
 
 
 
 </dd>
+    <dt>
+    <a name = "Object:type"></a>
+    <strong>Object:type ()</strong>
+    </dt>
+    <dd>
+    object method.
+<p> <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
 
 
 
+    <h3>Returns:</h3>
+    <ol>
 
-<dt><a name="Object:owner"></a><strong>Object:owner</strong>&nbsp;()</dt>
-<dd>
-object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without affecting the object.
+        <code>string</code>.
+    </ol>
 
-
-
-
-
-
-
-<h3>Return value:</h3>
-<a href="Repository.html">Repository</a>.
 
 
 
 </dd>
+    <dt>
+    <a name = "Object:owner"></a>
+    <strong>Object:owner ()</strong>
+    </dt>
+    <dd>
+    object method.
+<p> <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_owner">git_object_owner</a>:<p><p>Freeing or calling `git_repository_close` on the
+  returned pointer will invalidate the actual object.<p> Any other operation may be run on the repository without
+  affecting the object.
 
 
 
+    <h3>Returns:</h3>
+    <ol>
 
-<dt><a name="Object:type"></a><strong>Object:type</strong>&nbsp;()</dt>
-<dd>
-object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/object/git_object_type">git_object_type</a>:<p><p>
+        <a href="Repository.html">Repository</a>.
+    </ol>
 
-
-
-
-
-
-
-<h3>Return value:</h3>
-<code>string</code>.
 
 
 
 </dd>
-
-
-
-
-<dt><a name="Tree.lookup"></a><strong>Tree.lookup</strong>&nbsp;(repo, id)</dt>
-<dd>
-Create a new Tree object.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/tree/git_tree_lookup">git_tree_lookup</a>:<p><p>
-
-
-<h3>Parameters</h3>
-<ul>
-	
-	<li>
-	  repo: the repo to use when locating the tree..  Must be of type <a href="Repository.html">Repository</a>.
-	</li>
-	
-	<li>
-	  id: identity of the tree to locate..  Must be of type <a href="OID.html">OID</a>.
-	</li>
-	
-</ul>
-
-
-
-
-
-
-<h3>Return values:</h3>
-<ol>
-	
-	<li><a href="Tree.html">Tree</a> or <code>nil</code> on error.
-	
-	<li>Error string.
-	
-</ol>
-
-
-
-</dd>
-
-
-
-
-<dt><a name="Tree:entry_byindex"></a><strong>Tree:entry_byindex</strong>&nbsp;(index)</dt>
-<dd>
-object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/tree/git_tree_entry_byindex">git_tree_entry_byindex</a>:<p><p>
-
-
-<h3>Parameters</h3>
-<ul>
-	
-	<li>
-	  index: Must be of type <code>integer</code>.
-	</li>
-	
-</ul>
-
-
-
-
-
-
-<h3>Return value:</h3>
-<a href="TreeEntry.html">TreeEntry</a>.
-
-
-
-</dd>
-
-
-
-
-<dt><a name="Tree:entry_byname"></a><strong>Tree:entry_byname</strong>&nbsp;(filename)</dt>
-<dd>
-object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/tree/git_tree_entry_byname">git_tree_entry_byname</a>:<p><p>
-
-
-<h3>Parameters</h3>
-<ul>
-	
-	<li>
-	  filename: the filename of the desired entry.  Must be of type <code>string</code>.
-	</li>
-	
-</ul>
-
-
-
-
-
-
-<h3>Return value:</h3>
-<a href="TreeEntry.html">TreeEntry</a>.
-
-
-
-</dd>
-
-
-
-
-<dt><a name="Tree:entrycount"></a><strong>Tree:entrycount</strong>&nbsp;()</dt>
-<dd>
-object method.  <p>Calls <a href="http://libgit2.github.io/libgit2/#HEAD/group/tree/git_tree_entrycount">git_tree_entrycount</a>:<p><p>
-
-
-
-
-
-
-
-<h3>Return value:</h3>
-<code>integer</code>.
-
-
-
-</dd>
-
-
 </dl>
 
 
-
-
-
-
 </div> <!-- id="content" -->
-
 </div> <!-- id="main" -->
-
 <div id="about">
-	<p><a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0!" height="31" width="88" /></a></p>
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-09-21 20:56:42 </i>
 </div> <!-- id="about" -->
-
-</div> <!-- id="container" -->	
+</div> <!-- id="container" -->
 </body>
 </html>

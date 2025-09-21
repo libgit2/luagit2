@@ -28,7 +28,7 @@ macro(GenLuaNativeObjects _src_files_var)
 				string(REGEX REPLACE ".nobj.lua" ".luadoc" _doc_file_out ${_src_file})
 				add_custom_target(${_doc_file_out} ALL
 					COMMAND ${LUA_NATIVE_OBJECTS_EXECUTABLE} -outpath docs -gen luadoc ${_src_file}
-					COMMAND luadoc -nofiles -d docs docs
+					COMMAND ldoc -d docs docs
 					WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 					DEPENDS ${_src_file}
 				)
