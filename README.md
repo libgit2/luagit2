@@ -30,7 +30,16 @@ By default CMake will use the pre-generated bindings that are include in the pro
 Build Dependencies
 ------------------
 
-Optional dependency for re-generating Lua bindings from `*.nobj.lua` files:
+Optional dependencies for re-generating Lua bindings from `*.nobj.lua` files:
 
-* [LuaNativeObjects](https://github.com/Neopallium/LuaNativeObjects), this is the bindings generator used to convert the `*.nobj.lua` files into a native Lua module.
+* [LuaNativeObjects](https://github.com/Neopallium/LuaNativeObjects), this is the bindings generator used to convert the `*.nobj.lua` files into a native Lua module. To use it, there are two options:
+	- clone the repository to ../LuaNativeObjects; or
+	- install the LuaRocks packages:
+		- `luanativeobjects`
+		- `luanativeobjects-luadoc` (only if also generating docs)
+- [`lua-json`](https://github.com/neoxic/lua-json)
+
+Optional dependency for generating docs:
+
+- [`ldoc`](https://lunarmodules.github.io/ldoc/)
 
