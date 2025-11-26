@@ -85,12 +85,15 @@ subfiles {
 --
 -- Load parsed libgit2 docs.
 --
-local json = require"json"
 local file = io.open("docs/libgit2.json", "r")
-local libgit2_docs = json.decode(file:read("*a"))
+local text = file:read("*a")
 file:close()
-
-local lg_funcs = libgit2_docs.functions
+local ok, json = pcall(require, "json")
+local lg_funcs = {}
+if ok then
+	local libgit2_docs = json.decode(text)
+	lg_funcs = libgit2_docs.functions
+end
 
 -- Copy docs from libgit2
 reg_stage_parser("pre_gen",{
