@@ -1,0 +1,38 @@
+---
+"on":
+  push:
+    paths-ignore:
+      - "**.md"
+      - doc/*
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - doc/*
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install libgit2-dev
+      - uses: lumen-oss/luarocks-tag-release@v7
+        env:
+          LUAROCKS_API_KEY: ${{secrets.LUAROCKS_API_KEY}}
+        if: "! startsWith(github.ref, 'refs/tags/')"
+        with:
+          extra_luarocks_args: |
+            --force
+          version: scm
+          template: template.rockspec
+      - uses: lumen-oss/luarocks-tag-release@v7
+        env:
+          LUAROCKS_API_KEY: ${{secrets.LUAROCKS_API_KEY}}
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          extra_luarocks_args: |
+            --force
+          template: template.rockspec
