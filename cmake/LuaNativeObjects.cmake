@@ -2,7 +2,7 @@
 # Lua Native Objects
 #
 
-find_program(LUA_NATIVE_OBJECTS_EXECUTABLE native_objects.lua
+find_program(LUA_NATIVE_OBJECTS_EXECUTABLE native_objects
 	PATHS ${CMAKE_SOURCE_DIR}/../LuaNativeObjects
 	DOC "LuaNativeObjects executable path")
 set(USE_PRE_GENERATED_BINDINGS TRUE CACHE BOOL
