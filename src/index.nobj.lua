@@ -47,9 +47,17 @@ typedef git_index Index;
 	method "add" {
 		c_method_call "GitError"  "git_index_add" { "IndexEntry *", "source_entry" }
 	},
+	method "add_all" {
+-- TODO: git_index_matched_path_cb
+		c_method_call "GitError"  "git_index_add_all" { "const StrArray *", "pathspec", "unsigned int", "flags", "void *", "callback", "void *", "payload" }
+	},
     -- TODO: add_conflict?
 	method "remove" {
 		c_method_call "GitError"  "git_index_remove" { "const char *", "path", "int", "stage" }
+	},
+	method "remove_all" {
+-- TODO: git_index_matched_path_cb
+		c_method_call "GitError"  "git_index_remove_all" { "const StrArray *", "pathspec", "void *", "callback", "void *", "payload" }
 	},
 	method "get_byindex" {
 		c_method_call "const IndexEntry *"  "git_index_get_byindex" { "size_t", "n" }

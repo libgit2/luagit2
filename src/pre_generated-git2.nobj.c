@@ -642,8 +642,8 @@ static void obj_type_register_implements(lua_State *L, const reg_impl *impls) {
 #define REG_MODULES_AS_GLOBALS 0
 #endif
 
-/* For Lua 5.2 don't register modules as globals. */
-#if LUA_VERSION_NUM == 502
+/* For Lua >=5.2 don't register modules as globals. */
+#if LUA_VERSION_NUM >= 502
 #undef REG_MODULES_AS_GLOBALS
 #define REG_MODULES_AS_GLOBALS 0
 #endif
@@ -3047,6 +3047,31 @@ static int Index__add__meth(lua_State *L) {
   return 2;
 }
 
+/* method: add_all */
+static int Index__add_all__meth(lua_State *L) {
+  Index * this_idx1;
+  const StrArray * pathspec_idx2;
+  unsigned int flags_idx3;
+  void * callback_idx4;
+  void * payload_idx5;
+  GitError rc_git_index_add_all_idx1 = GIT_OK;
+  this_idx1 = obj_type_Index_check(L,1);
+  pathspec_idx2 = obj_type_StrArray_check(L,2);
+  flags_idx3 = luaL_checkinteger(L,3);
+  callback_idx4 = lua_touserdata(L,4);
+  payload_idx5 = lua_touserdata(L,5);
+  rc_git_index_add_all_idx1 = git_index_add_all(this_idx1, pathspec_idx2, flags_idx3, callback_idx4, payload_idx5);
+  /* check for error. */
+  if((GIT_OK != rc_git_index_add_all_idx1)) {
+    lua_pushnil(L);
+      error_code__GitError__push(L, rc_git_index_add_all_idx1);
+  } else {
+    lua_pushboolean(L, 1);
+    lua_pushnil(L);
+  }
+  return 2;
+}
+
 /* method: remove */
 static int Index__remove__meth(lua_State *L) {
   Index * this_idx1;
@@ -3062,6 +3087,29 @@ static int Index__remove__meth(lua_State *L) {
   if((GIT_OK != rc_git_index_remove_idx1)) {
     lua_pushnil(L);
       error_code__GitError__push(L, rc_git_index_remove_idx1);
+  } else {
+    lua_pushboolean(L, 1);
+    lua_pushnil(L);
+  }
+  return 2;
+}
+
+/* method: remove_all */
+static int Index__remove_all__meth(lua_State *L) {
+  Index * this_idx1;
+  const StrArray * pathspec_idx2;
+  void * callback_idx3;
+  void * payload_idx4;
+  GitError rc_git_index_remove_all_idx1 = GIT_OK;
+  this_idx1 = obj_type_Index_check(L,1);
+  pathspec_idx2 = obj_type_StrArray_check(L,2);
+  callback_idx3 = lua_touserdata(L,3);
+  payload_idx4 = lua_touserdata(L,4);
+  rc_git_index_remove_all_idx1 = git_index_remove_all(this_idx1, pathspec_idx2, callback_idx3, payload_idx4);
+  /* check for error. */
+  if((GIT_OK != rc_git_index_remove_all_idx1)) {
+    lua_pushnil(L);
+      error_code__GitError__push(L, rc_git_index_remove_all_idx1);
   } else {
     lua_pushboolean(L, 1);
     lua_pushnil(L);
@@ -3485,11 +3533,11 @@ static int Object__string2type__func(lua_State *L) {
 static void dyn_caster_Object(void **obj, obj_type **type) {
   Object * base_obj = (Object *)*obj;
   switch(git_object_type(base_obj)) {
-  case GIT_OBJ_TAG:
-    *type = &(obj_type_Tag);
-    break;
   case GIT_OBJ_COMMIT:
     *type = &(obj_type_Commit);
+    break;
+  case GIT_OBJ_TAG:
+    *type = &(obj_type_Tag);
     break;
   case GIT_OBJ_BLOB:
     *type = &(obj_type_Blob);
@@ -4504,14 +4552,14 @@ static const obj_field obj_OID_fields[] = {
 };
 
 static const obj_const obj_OID_constants[] = {
-#ifdef GIT_OID_MINPREFIXLEN
-  {"MINPREFIXLEN", NULL, GIT_OID_MINPREFIXLEN, CONST_NUMBER},
-#endif
 #ifdef GIT_OID_RAWSZ
   {"RAWSZ", NULL, GIT_OID_RAWSZ, CONST_NUMBER},
 #endif
 #ifdef GIT_OID_HEXSZ
   {"HEXSZ", NULL, GIT_OID_HEXSZ, CONST_NUMBER},
+#endif
+#ifdef GIT_OID_MINPREFIXLEN
+  {"MINPREFIXLEN", NULL, GIT_OID_MINPREFIXLEN, CONST_NUMBER},
 #endif
   {NULL, NULL, 0.0 , 0}
 };
@@ -4640,7 +4688,9 @@ static const luaL_Reg obj_Index_methods[] = {
   {"find", Index__find__meth},
   {"add_bypath", Index__add_bypath__meth},
   {"add", Index__add__meth},
+  {"add_all", Index__add_all__meth},
   {"remove", Index__remove__meth},
+  {"remove_all", Index__remove_all__meth},
   {"get_byindex", Index__get_byindex__meth},
   {"get_bypath", Index__get_bypath__meth},
   {"entrycount", Index__entrycount__meth},
@@ -4715,8 +4765,8 @@ static const obj_field obj_IndexEntry_fields[] = {
 };
 
 static const obj_const obj_IndexEntry_constants[] = {
-  {"EXTENDED", NULL, 16384, CONST_NUMBER},
   {"STAGEMASK", NULL, 12288, CONST_NUMBER},
+  {"EXTENDED", NULL, 16384, CONST_NUMBER},
   {"VALID", NULL, 32768, CONST_NUMBER},
   {"STAGESHIFT", NULL, 12, CONST_NUMBER},
   {"NAMEMASK", NULL, 4095, CONST_NUMBER},
@@ -4805,10 +4855,10 @@ static const luaL_Reg obj_Blob_pub_funcs[] = {
 };
 
 static const luaL_Reg obj_Blob_methods[] = {
-  {"type", Object__type__meth},
-  {"free", Object__free__meth},
   {"id", Object__id__meth},
+  {"free", Object__free__meth},
   {"owner", Object__owner__meth},
+  {"type", Object__type__meth},
   {"rawcontent", Blob__rawcontent__meth},
   {"rawsize", Blob__rawsize__meth},
   {NULL, NULL}
@@ -4881,9 +4931,9 @@ static const luaL_Reg obj_Commit_pub_funcs[] = {
 };
 
 static const luaL_Reg obj_Commit_methods[] = {
-  {"type", Object__type__meth},
   {"free", Object__free__meth},
   {"owner", Object__owner__meth},
+  {"type", Object__type__meth},
   {"id", Commit__id__meth},
   {"message_encoding", Commit__message_encoding__meth},
   {"message", Commit__message__meth},
@@ -4927,10 +4977,10 @@ static const luaL_Reg obj_Tree_pub_funcs[] = {
 };
 
 static const luaL_Reg obj_Tree_methods[] = {
-  {"type", Object__type__meth},
-  {"free", Object__free__meth},
   {"id", Object__id__meth},
+  {"free", Object__free__meth},
   {"owner", Object__owner__meth},
+  {"type", Object__type__meth},
   {"entrycount", Tree__entrycount__meth},
   {"entry_byname", Tree__entry_byname__meth},
   {"entry_byindex", Tree__entry_byindex__meth},
@@ -5001,10 +5051,10 @@ static const luaL_Reg obj_Tag_pub_funcs[] = {
 };
 
 static const luaL_Reg obj_Tag_methods[] = {
-  {"type", Object__type__meth},
-  {"free", Object__free__meth},
   {"id", Object__id__meth},
+  {"free", Object__free__meth},
   {"owner", Object__owner__meth},
+  {"type", Object__type__meth},
   {"target", Tag__target__meth},
   {"name", Tag__name__meth},
   {"tagger", Tag__tagger__meth},
@@ -5070,8 +5120,8 @@ static const obj_field obj_RevWalk_fields[] = {
 static const obj_const obj_RevWalk_constants[] = {
   {"SORT_REVERSE", NULL, 4, CONST_NUMBER},
   {"SORT_NONE", NULL, 0, CONST_NUMBER},
-  {"SORT_TIME", NULL, 2, CONST_NUMBER},
   {"SORT_TOPOLOGICAL", NULL, 1, CONST_NUMBER},
+  {"SORT_TIME", NULL, 2, CONST_NUMBER},
   {NULL, NULL, 0.0 , 0}
 };
 
@@ -5125,35 +5175,35 @@ static const luaL_Reg git2_function[] = {
 };
 
 static const obj_const git2_constants[] = {
-  {"REF_INVALID", NULL, 0, CONST_NUMBER},
-  {"REF_HAS_PEEL", NULL, 8, CONST_NUMBER},
 #ifdef GIT_REVWALKOVER
   {"REVWALKOVER", NULL, GIT_REVWALKOVER, CONST_NUMBER},
-#endif
-#ifdef GIT_EBUFS
-  {"EBUFS", NULL, GIT_EBUFS, CONST_NUMBER},
-#endif
-#ifdef GIT_ENOTFOUND
-  {"ENOTFOUND", NULL, GIT_ENOTFOUND, CONST_NUMBER},
-#endif
-  {"REF_PACKED", NULL, 4, CONST_NUMBER},
-#ifdef GIT_EEXISTS
-  {"EEXISTS", NULL, GIT_EEXISTS, CONST_NUMBER},
 #endif
 #ifdef GIT_OK
   {"OK", NULL, GIT_OK, CONST_NUMBER},
 #endif
-  {"REF_LISTALL", NULL, 7, CONST_NUMBER},
   {"REF_OID", NULL, 1, CONST_NUMBER},
-#ifdef GIT_PASSTHROUGH
-  {"PASSTHROUGH", NULL, GIT_PASSTHROUGH, CONST_NUMBER},
-#endif
 #ifdef GIT_ERROR
   {"ERROR", NULL, GIT_ERROR, CONST_NUMBER},
 #endif
-  {"REF_SYMBOLIC", NULL, 2, CONST_NUMBER},
+  {"REF_PACKED", NULL, 4, CONST_NUMBER},
+#ifdef GIT_ENOTFOUND
+  {"ENOTFOUND", NULL, GIT_ENOTFOUND, CONST_NUMBER},
+#endif
+  {"REF_LISTALL", NULL, 7, CONST_NUMBER},
+#ifdef GIT_EEXISTS
+  {"EEXISTS", NULL, GIT_EEXISTS, CONST_NUMBER},
+#endif
+  {"REF_HAS_PEEL", NULL, 8, CONST_NUMBER},
 #ifdef GIT_EAMBIGUOUS
   {"EAMBIGUOUS", NULL, GIT_EAMBIGUOUS, CONST_NUMBER},
+#endif
+  {"REF_SYMBOLIC", NULL, 2, CONST_NUMBER},
+#ifdef GIT_EBUFS
+  {"EBUFS", NULL, GIT_EBUFS, CONST_NUMBER},
+#endif
+  {"REF_INVALID", NULL, 0, CONST_NUMBER},
+#ifdef GIT_PASSTHROUGH
+  {"PASSTHROUGH", NULL, GIT_PASSTHROUGH, CONST_NUMBER},
 #endif
   {NULL, NULL, 0.0 , 0}
 };
